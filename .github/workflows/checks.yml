@@ -1,13 +1,13 @@
 name: checks
 on:
   push:
-    branches: [ main ]
+    branches: [ release-23.10.x, main ]
   pull_request:
   workflow_dispatch:
 
 jobs:
   spotless:
-    runs-on: [besu-research-ubuntu-16]
+    runs-on: ubuntu-latest
     if: ${{ github.actor != 'dependabot[bot]' }}
     steps:
       - name: Checkout Repo
@@ -21,7 +21,7 @@ jobs:
       - name: spotless
         run: ./gradlew --no-daemon --parallel clean spotlessCheck
   javadoc_17:
-    runs-on: [besu-research-ubuntu-8]
+    runs-on: ubuntu-latest
     if: ${{ github.actor != 'dependabot[bot]' }}
     steps:
       - name: Checkout Repo

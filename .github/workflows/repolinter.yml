@@ -8,14 +8,16 @@ on:
     branches:
       - master
       - main
+      - release-23.10.x
   pull_request:
     branches:
       - master
       - main
+      - release-23.10.x
 
 jobs:
   build:
-    runs-on: [besu-research-ubuntu-16]
+    runs-on: ubuntu-latest
     container: ghcr.io/todogroup/repolinter:v0.10.1
     steps:
       - name: Checkout Code

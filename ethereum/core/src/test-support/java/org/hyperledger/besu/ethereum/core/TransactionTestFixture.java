@@ -92,6 +92,8 @@ public class TransactionTestFixture {
               builder.kzgBlobs(bwc.getKzgCommitments(), bwc.getBlobs(), bwc.getKzgProofs());
             });
         break;
+      case OPTIMISM_DEPOSIT:
+        break;
     }
 
     to.ifPresent(builder::to);
