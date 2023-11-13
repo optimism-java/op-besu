@@ -14,7 +14,7 @@ permissions:
 jobs:
   Analysis:
     runs-on: ubuntu-latest
-    if: github.repository == 'hyperledger/besu'
+    if: github.repository == 'optimism-java/op-besu'
     steps:
       - name: checkout
         uses: actions/checkout@v3

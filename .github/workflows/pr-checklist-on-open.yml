@@ -2,11 +2,11 @@ name: "comment on pr with checklist"
 on:
   pull_request_target:
     types: [ opened ]
-    branches: [ main ]
+    branches: [ release-23.10.x, main ]
 jobs:
   checklist:
     name: "add checklist as a comment on newly opened PRs"
-    runs-on: [besu-research-ubuntu-8]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v5
         with:

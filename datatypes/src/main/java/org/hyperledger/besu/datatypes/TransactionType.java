@@ -27,7 +27,10 @@ public enum TransactionType {
   /** Eip1559 transaction type. */
   EIP1559(0x02),
   /** Blob transaction type. */
-  BLOB(0x03);
+  BLOB(0x03),
+
+  /** Optimism Deposit transaction type. */
+  OPTIMISM_DEPOSIT(0x7e);
 
   private static final Set<TransactionType> ACCESS_LIST_SUPPORTED_TRANSACTION_TYPES =
       Set.of(ACCESS_LIST, EIP1559, BLOB);

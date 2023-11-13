@@ -13,9 +13,9 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ main ]
+    branches: [ release-23.10.x, main ]
   pull_request:
-    branches: [ main ]
+    branches: [ release-23.10.x, main ]
     paths-ignore:
       - '**/*.json'
       - '**/*.md'
@@ -24,7 +24,7 @@ on:
 jobs:
   analyze:
     name: Analyze
-    runs-on: [besu-research-ubuntu-16]
+    runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read

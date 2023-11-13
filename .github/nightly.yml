@@ -1,0 +1,51 @@
+#name: nightly
+#on:
+#  schedule:
+#  - cron: 0 19 * * *
+#   # 'filters' was not transformed because there is no suitable equivalent in GitHub Actions
+#jobs:
+#  assemble:
+#    runs-on: ubuntu-latest
+#    container:
+#      image: openjdk:17.0
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+#    - name: Assemble
+#      run: "./gradlew --no-daemon clean compileJava compileTestJava assemble"
+#    - name: save_cache
+#      uses: actions/cache@v3.3.2
+#      with:
+#        path: |-
+#          .gradle
+#          ~/.gradle
+#        key: deps-{{ checksum "gradle/versions.gradle" }}-{{ .Branch }}-{{ .Revision }}
+#    - uses: actions/upload-artifact@v3.1.3
+#      with:
+#        path: "~/project/./"
+#    - uses: actions/upload-artifact@v3.1.3
+#      with:
+#        path: build/distributions
+#  dockerScan:
+#    runs-on: ubuntu-latest
+#    container:
+#      image: docker:stable-git
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/restore_gradle_cache"
+##     # 'setup_remote_docker' was not transformed because there is no suitable equivalent in GitHub Actions
+#    - name: Install trivy
+#      run: |-
+#        apk add --update-cache --upgrade curl bash
+#        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+#    - name: Scan with trivy
+#      run: |-
+#        for FILE in $(ls docker)
+#        do
+#          if [[ $FILE == "test.sh" || $FILE == "tests" ]]; then
+#            continue
+#          fi
+#          docker pull -q "hyperledger/besu:develop-$FILE"
+#          trivy -q image --exit-code 1 --no-progress --severity HIGH,CRITICAL "hyperledger/besu:develop-$FILE"
+#        done
+#      shell: "/bin/sh"
