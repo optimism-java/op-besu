@@ -119,6 +119,12 @@ public class Transaction
 
   private final Optional<BlobsWithCommitments> blobsWithCommitments;
 
+  private final Optional<Hash> sourceHash;
+
+  private final Optional<BigInteger> mint;
+
+  private final Optional<Boolean> isSystemTx;
+
   public static Builder builder() {
     return new Builder();
   }
@@ -155,6 +161,9 @@ public class Transaction
    *     otherwise it should contain an address.
    *     <p>The {@code chainId} must be greater than 0 to be applied to a specific chain; otherwise
    *     it will default to any chain.
+   * @param sourceHash Hash that uniquely identifies the source of the deposit.
+   * @param mint The ETH value to mint on L2.
+   * @param isSystemTx Field indicating if this transaction is exempt from the L2 gas limit.
    */
   private Transaction(
       final boolean forCopy,
@@ -173,7 +182,13 @@ public class Transaction
       final Address sender,
       final Optional<BigInteger> chainId,
       final Optional<List<VersionedHash>> versionedHashes,
-      final Optional<BlobsWithCommitments> blobsWithCommitments) {
+      final Optional<BlobsWithCommitments> blobsWithCommitments,
+      final Optional<Hash> sourceHash,
+      final Optional<BigInteger> mint,
+      final Optional<Boolean> isSystemTx) {
+    this.sourceHash = sourceHash;
+    this.mint = mint;
+    this.isSystemTx = isSystemTx;
 
     if (!forCopy) {
       if (transactionType.requiresChainId()) {
@@ -1057,7 +1072,10 @@ public class Transaction
         sender,
         chainId,
         detachedVersionedHashes,
-        detachedBlobsWithCommitments);
+        detachedBlobsWithCommitments,
+        sourceHash,
+        mint,
+        isSystemTx);
   }
 
   private AccessListEntry accessListDetachedCopy(final AccessListEntry accessListEntry) {
@@ -1117,6 +1135,12 @@ public class Transaction
     protected Optional<BigInteger> v = Optional.empty();
     protected List<VersionedHash> versionedHashes = null;
     private BlobsWithCommitments blobsWithCommitments;
+
+    private Hash sourceHash;
+
+    private BigInteger mint;
+
+    private Boolean isSystemTx;
 
     public Builder type(final TransactionType transactionType) {
       this.transactionType = transactionType;
@@ -1201,6 +1225,21 @@ public class Transaction
       return this;
     }
 
+    public Builder sourceHash(final Hash sourceHash) {
+      this.sourceHash = sourceHash;
+      return this;
+    }
+
+    public Builder mint(final BigInteger mint) {
+      this.mint = mint;
+      return this;
+    }
+
+    public Builder isSystemTx(final Boolean isSystemTx) {
+      this.isSystemTx = isSystemTx;
+      return this;
+    }
+
     public Builder guessType() {
       if (versionedHashes != null && !versionedHashes.isEmpty()) {
         transactionType = TransactionType.BLOB;
@@ -1237,12 +1276,16 @@ public class Transaction
           sender,
           chainId,
           Optional.ofNullable(versionedHashes),
-          Optional.ofNullable(blobsWithCommitments));
+          Optional.ofNullable(blobsWithCommitments),
+          Optional.ofNullable(sourceHash),
+          Optional.ofNullable(mint),
+          Optional.ofNullable(isSystemTx));
     }
 
     public Transaction signAndBuild(final KeyPair keys) {
       checkState(
           signature == null, "The transaction signature has already been provided to this builder");
+
       signature(computeSignature(keys));
       sender(Address.extract(Hash.hash(keys.getPublicKey().getEncodedBytes())));
       return build();
