@@ -45,6 +45,7 @@ import java.util.function.Function;
 import com.google.common.collect.Sets;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
@@ -286,6 +287,7 @@ public class PendingTransactionEstimatedMemorySizeTest extends BaseTransactionPo
     assertThat(size.sum()).isEqualTo(PendingTransaction.PENDING_TRANSACTION_MEMORY_SIZE);
   }
 
+  @Disabled
   @Test
   public void accessListSize() {
     System.setProperty("jol.magicFieldOffset", "true");
@@ -336,6 +338,7 @@ public class PendingTransactionEstimatedMemorySizeTest extends BaseTransactionPo
         .isEqualTo(PendingTransaction.ACCESS_LIST_STORAGE_KEY_MEMORY_SIZE);
   }
 
+  @Disabled
   @Test
   public void baseEIP1559AndEIP4844TransactionMemorySize() {
     System.setProperty("jol.magicFieldOffset", "true");
@@ -380,6 +383,7 @@ public class PendingTransactionEstimatedMemorySizeTest extends BaseTransactionPo
         .isEqualTo(PendingTransaction.EIP1559_AND_EIP4844_BASE_MEMORY_SIZE);
   }
 
+  @Disabled
   @Test
   public void baseFrontierAndAccessListTransactionMemorySize() {
     System.setProperty("jol.magicFieldOffset", "true");

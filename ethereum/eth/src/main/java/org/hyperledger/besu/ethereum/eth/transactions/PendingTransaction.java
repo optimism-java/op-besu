@@ -131,7 +131,6 @@ public abstract class PendingTransaction
           case ACCESS_LIST -> computeAccessListMemorySize();
           case EIP1559 -> computeEIP1559MemorySize();
           case BLOB -> computeBlobMemorySize();
-          case OPTIMISM_DEPOSIT -> throw new UnsupportedOperationException("Not yet implemented");
         }
         + PENDING_TRANSACTION_MEMORY_SIZE;
   }

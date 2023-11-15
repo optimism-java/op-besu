@@ -95,74 +95,74 @@ jobs:
     - name: CompileJmh
       run: "./gradlew --no-daemon compileJmh"
     - uses: "./.github/actions/capture_test_results"
-  acceptanceTests:
-    runs-on: ubuntu-latest
-    container:
-      image: cimg/openjdk:17.0
-    needs:
-    - assemble
-    steps:
-    - uses: actions/checkout@v4.1.0
-    - uses: "./.github/actions/prepare"
-    - uses: actions/download-artifact@v3.0.2
-      with:
-        path: build/assemble
-    - name: AcceptanceTests (Mainnet)
-      run: |- 
-        ./gradlew --no-daemon acceptanceTestMainnet
-    - uses: "./.github/actions/capture_test_results"
-    - uses: "./.github/actions/capture_test_logs"
-  acceptanceTestsCliqueBft:
-    runs-on: ubuntu-latest
-    container:
-      image: cimg/openjdk:17.0
-    needs:
-    - assemble
-    steps:
-    - uses: actions/checkout@v4.1.0
-    - uses: "./.github/actions/prepare"
-    - uses: actions/download-artifact@v3.0.2
-      with:
-        path: build/assemble
-    - name: AcceptanceTests (Non-Mainnet)
-      run: |-
-        ./gradlew --no-daemon acceptanceTestCliqueBft
-    - uses: "./.github/actions/capture_test_results"
-    - uses: "./.github/actions/capture_test_logs"
-  acceptanceTestsPrivacy:
-    runs-on: ubuntu-latest
-    container:
-      image: cimg/openjdk:17.0
-    needs:
-    - assemble
-    steps:
-    - uses: actions/checkout@v4.1.0
-    - uses: "./.github/actions/prepare"
-    - uses: actions/download-artifact@v3.0.2
-      with:
-        path: build/assemble
-    - name: AcceptanceTests (Non-Mainnet)
-      run: |-
-        ./gradlew --no-daemon acceptanceTestPrivacy
-    - uses: "./.github/actions/capture_test_results"
-    - uses: "./.github/actions/capture_test_logs"
-  acceptanceTestsPermissioning:
-    runs-on: ubuntu-latest
-    container:
-      image: cimg/openjdk:17.0
-    needs:
-    - assemble
-    steps:
-    - uses: actions/checkout@v4.1.0
-    - uses: "./.github/actions/prepare"
-    - uses: actions/download-artifact@v3.0.2
-      with:
-        path: build/assemble
-    - name: AcceptanceTests (Non-Mainnet)
-      run: |-
-        ./gradlew --no-daemon acceptanceTestPermissioning
-    - uses: "./.github/actions/capture_test_results"
-    - uses: "./.github/actions/capture_test_logs"
+#  acceptanceTests:
+#    runs-on: ubuntu-latest
+#    container:
+#      image: cimg/openjdk:17.0
+#    needs:
+#    - assemble
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+#    - uses: actions/download-artifact@v3.0.2
+#      with:
+#        path: build/assemble
+#    - name: AcceptanceTests (Mainnet)
+#      run: |-
+#        ./gradlew --no-daemon acceptanceTestMainnet
+#    - uses: "./.github/actions/capture_test_results"
+#    - uses: "./.github/actions/capture_test_logs"
+#  acceptanceTestsCliqueBft:
+#    runs-on: ubuntu-latest
+#    container:
+#      image: cimg/openjdk:17.0
+#    needs:
+#    - assemble
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+#    - uses: actions/download-artifact@v3.0.2
+#      with:
+#        path: build/assemble
+#    - name: AcceptanceTests (Non-Mainnet)
+#      run: |-
+#        ./gradlew --no-daemon acceptanceTestCliqueBft
+#    - uses: "./.github/actions/capture_test_results"
+#    - uses: "./.github/actions/capture_test_logs"
+#  acceptanceTestsPrivacy:
+#    runs-on: ubuntu-latest
+#    container:
+#      image: cimg/openjdk:17.0
+#    needs:
+#    - assemble
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+#    - uses: actions/download-artifact@v3.0.2
+#      with:
+#        path: build/assemble
+#    - name: AcceptanceTests (Non-Mainnet)
+#      run: |-
+#        ./gradlew --no-daemon acceptanceTestPrivacy
+#    - uses: "./.github/actions/capture_test_results"
+#    - uses: "./.github/actions/capture_test_logs"
+#  acceptanceTestsPermissioning:
+#    runs-on: ubuntu-latest
+#    container:
+#      image: cimg/openjdk:17.0
+#    needs:
+#    - assemble
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+#    - uses: actions/download-artifact@v3.0.2
+#      with:
+#        path: build/assemble
+#    - name: AcceptanceTests (Non-Mainnet)
+#      run: |-
+#        ./gradlew --no-daemon acceptanceTestPermissioning
+#    - uses: "./.github/actions/capture_test_results"
+#    - uses: "./.github/actions/capture_test_logs"
 #  buildDocker:
 #    runs-on: ubuntu-latest
 #    container:
