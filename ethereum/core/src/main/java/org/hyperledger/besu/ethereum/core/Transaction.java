@@ -121,7 +121,7 @@ public class Transaction
 
   private final Optional<Hash> sourceHash;
 
-  private final Optional<BigInteger> mint;
+  private final Optional<Wei> mint;
 
   private final Optional<Boolean> isSystemTx;
 
@@ -184,7 +184,7 @@ public class Transaction
       final Optional<List<VersionedHash>> versionedHashes,
       final Optional<BlobsWithCommitments> blobsWithCommitments,
       final Optional<Hash> sourceHash,
-      final Optional<BigInteger> mint,
+      final Optional<Wei> mint,
       final Optional<Boolean> isSystemTx) {
     this.sourceHash = sourceHash;
     this.mint = mint;
@@ -243,7 +243,9 @@ public class Transaction
     this.versionedHashes = versionedHashes;
     this.blobsWithCommitments = blobsWithCommitments;
 
-    if (!forCopy && isUpfrontGasCostTooHigh()) {
+    if (!forCopy
+        && transactionType != TransactionType.OPTIMISM_DEPOSIT
+        && isUpfrontGasCostTooHigh()) {
       throw new IllegalArgumentException("Upfront gas cost exceeds UInt256");
     }
   }
@@ -676,6 +678,21 @@ public class Transaction
   @Override
   public Optional<BlobsWithCommitments> getBlobsWithCommitments() {
     return blobsWithCommitments;
+  }
+
+  @Override
+  public Optional<Hash> getSourceHash() {
+    return sourceHash;
+  }
+
+  @Override
+  public Optional<Wei> getMint() {
+    return mint;
+  }
+
+  @Override
+  public Optional<Boolean> getIsSystemTx() {
+    return isSystemTx;
   }
 
   /**
@@ -1138,7 +1155,7 @@ public class Transaction
 
     private Hash sourceHash;
 
-    private BigInteger mint;
+    private Wei mint;
 
     private Boolean isSystemTx;
 
@@ -1230,7 +1247,7 @@ public class Transaction
       return this;
     }
 
-    public Builder mint(final BigInteger mint) {
+    public Builder mint(final Wei mint) {
       this.mint = mint;
       return this;
     }
