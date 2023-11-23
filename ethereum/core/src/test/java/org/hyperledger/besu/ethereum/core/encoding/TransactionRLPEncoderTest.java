@@ -16,6 +16,10 @@ package org.hyperledger.besu.ethereum.core.encoding;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.hyperledger.besu.datatypes.Address;
+import org.hyperledger.besu.datatypes.Hash;
+import org.hyperledger.besu.datatypes.TransactionType;
+import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.core.Block;
 import org.hyperledger.besu.ethereum.core.BlockDataGenerator;
 import org.hyperledger.besu.ethereum.core.Transaction;
@@ -34,6 +38,25 @@ class TransactionRLPEncoderTest {
       "0xb8a902f8a686796f6c6f7632800285012a05f20082753094000000000000000000000000000000000000aaaa8080f838f794000000000000000000000000000000000000aaaae1a0000000000000000000000000000000000000000000000000000000000000000001a00c1d69648e348fe26155b45de45004f0e4195f6352d8f0935bc93e98a3e2a862a060064e5b9765c0ac74223b0cf49635c59ae0faf82044fd17bcc68a549ade6f95";
   private static final String NONCE_64_BIT_MAX_MINUS_2_TX_RLP =
       "0xf86788fffffffffffffffe0182520894095e7baea6a6c7c4c2dfeb977efac326af552d8780801ba048b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353a01fffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804";
+
+  private static final String OPTIMISM_DEPOSIT_TX_RLP =
+      "0xb8417ef83ea0000000000000000000000000000000000000000000000000000000000000000094000000000000000000000000000000000000000080648082c3500180";
+
+  @Test
+  void encodeOptimismDepositNominalCase() {
+    final Transaction transaction =
+        Transaction.builder()
+            .type(TransactionType.OPTIMISM_DEPOSIT)
+            .sourceHash(Hash.ZERO)
+            .sender(Address.ZERO)
+            .mint(Wei.of(100L))
+            .gasLimit(50000L)
+            .isSystemTx(true)
+            .build();
+    final BytesValueRLPOutput output = new BytesValueRLPOutput();
+    encodeRLP(transaction, output);
+    assertThat(output.encoded().toHexString()).isEqualTo(OPTIMISM_DEPOSIT_TX_RLP);
+  }
 
   @Test
   void encodeFrontierTxNominalCase() {

@@ -46,6 +46,12 @@ public abstract class PendingTransaction
   static final int BLOB_SIZE = 131136;
   static final int BLOBS_WITH_COMMITMENTS_SIZE = 32;
   static final int PENDING_TRANSACTION_MEMORY_SIZE = 40;
+
+  static final int SOURCE_HASH_SIZE = 32;
+
+  static final int IS_SYSTEM_TX_SIZE = 1;
+
+  static final int MINT_SIZE = 32;
   private static final AtomicLong TRANSACTIONS_ADDED = new AtomicLong();
   private final Transaction transaction;
   private final long addedAt;
@@ -131,6 +137,7 @@ public abstract class PendingTransaction
           case ACCESS_LIST -> computeAccessListMemorySize();
           case EIP1559 -> computeEIP1559MemorySize();
           case BLOB -> computeBlobMemorySize();
+          case OPTIMISM_DEPOSIT -> computeOptimismDepositMemorySize();
         }
         + PENDING_TRANSACTION_MEMORY_SIZE;
   }
@@ -208,6 +215,16 @@ public abstract class PendingTransaction
               return totalSize;
             })
         .orElse(0);
+  }
+
+  // TODO: correct memory size for OptimismDeposit transactions
+  private int computeOptimismDepositMemorySize() {
+    return FRONTIER_AND_ACCESS_LIST_BASE_MEMORY_SIZE
+        + computePayloadMemorySize()
+        + computeToMemorySize()
+        + SOURCE_HASH_SIZE
+        + IS_SYSTEM_TX_SIZE
+        + MINT_SIZE;
   }
 
   public static List<Transaction> toTransactionList(

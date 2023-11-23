@@ -17,7 +17,11 @@ package org.hyperledger.besu.ethereum.core.encoding;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hyperledger.besu.evm.account.Account.MAX_NONCE;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.hyperledger.besu.datatypes.Address;
+import org.hyperledger.besu.datatypes.Hash;
+import org.hyperledger.besu.datatypes.TransactionType;
 import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.rlp.RLP;
@@ -42,6 +46,24 @@ class TransactionRLPDecoderTest {
       "0xb8a902f8a686796f6c6f7632800285012a05f20082753094000000000000000000000000000000000000aaaa8080f838f794000000000000000000000000000000000000aaaae1a0000000000000000000000000000000000000000000000000000000000000000001a00c1d69648e348fe26155b45de45004f0e4195f6352d8f0935bc93e98a3e2a862a060064e5b9765c0ac74223b0cf49635c59ae0faf82044fd17bcc68a549ade6f95";
   private static final String NONCE_64_BIT_MAX_MINUS_2_TX_RLP =
       "0xf86788fffffffffffffffe0182520894095e7baea6a6c7c4c2dfeb977efac326af552d8780801ba048b55bfa915ac795c431978d8a6a992b628d557da5ff759b307d495a36649353a01fffd310ac743f371de3b9f7f9cb56c0b28ad43601b4ab949f53faa07bd2c804";
+
+  private static final String OPTIMISM_DEPOSIT_TX_RLP =
+      "0xb8417ef83ea0000000000000000000000000000000000000000000000000000000000000000094000000000000000000000000000000000000000080648082c3500180";
+
+  @Test
+  void decodeOptimismDepositNominalCase() {
+    final Transaction transaction =
+        decodeRLP(RLP.input(Bytes.fromHexString(OPTIMISM_DEPOSIT_TX_RLP)));
+    assertThat(transaction).isNotNull();
+    assertThat(transaction.getType()).isEqualTo(TransactionType.OPTIMISM_DEPOSIT);
+    assertThat(transaction.getSourceHash().get()).isEqualTo(Hash.ZERO);
+    assertThat(transaction.getSender()).isEqualTo(Address.ZERO);
+    assertTrue(transaction.getIsSystemTx().get());
+    assertThat(transaction.getMint().get()).isEqualByComparingTo(Wei.of(100L));
+    assertThat(transaction.getValue()).isEqualByComparingTo(Wei.ZERO);
+    assertThat(transaction.getGasLimit()).isEqualTo(50000L);
+    assertTrue(transaction.getData().isEmpty());
+  }
 
   @Test
   void decodeFrontierNominalCase() {
@@ -84,7 +106,8 @@ class TransactionRLPDecoderTest {
         new Object[][] {
           {FRONTIER_TX_RLP, "FRONTIER_TX_RLP"},
           {EIP1559_TX_RLP, "EIP1559_TX_RLP"},
-          {NONCE_64_BIT_MAX_MINUS_2_TX_RLP, "NONCE_64_BIT_MAX_MINUS_2_TX_RLP"}
+          {NONCE_64_BIT_MAX_MINUS_2_TX_RLP, "NONCE_64_BIT_MAX_MINUS_2_TX_RLP"},
+          {OPTIMISM_DEPOSIT_TX_RLP, "OPTIMISM_DEPOSIT_TX_RLP"}
         });
   }
 
@@ -102,7 +125,13 @@ class TransactionRLPDecoderTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {FRONTIER_TX_RLP, EIP1559_TX_RLP, NONCE_64_BIT_MAX_MINUS_2_TX_RLP})
+  @ValueSource(
+      strings = {
+        FRONTIER_TX_RLP,
+        EIP1559_TX_RLP,
+        NONCE_64_BIT_MAX_MINUS_2_TX_RLP,
+        OPTIMISM_DEPOSIT_TX_RLP
+      })
   void shouldReturnCorrectEncodedBytes(final String txRlp) {
     final Transaction transaction = decodeRLP(RLP.input(Bytes.fromHexString(txRlp)));
     assertThat(transaction.encoded()).isEqualTo(Bytes.fromHexString(txRlp));
