@@ -465,7 +465,8 @@ public abstract class MainnetProtocolSpecs {
                     Set.of(
                         TransactionType.FRONTIER,
                         TransactionType.ACCESS_LIST,
-                        TransactionType.EIP1559),
+                        TransactionType.EIP1559,
+                        TransactionType.OPTIMISM_DEPOSIT),
                     Integer.MAX_VALUE))
         .transactionProcessorBuilder(
             (gasCalculator,
@@ -624,7 +625,8 @@ public abstract class MainnetProtocolSpecs {
                     Set.of(
                         TransactionType.FRONTIER,
                         TransactionType.ACCESS_LIST,
-                        TransactionType.EIP1559),
+                        TransactionType.EIP1559,
+                        TransactionType.OPTIMISM_DEPOSIT),
                     SHANGHAI_INIT_CODE_SIZE_LIMIT))
         .withdrawalsProcessor(new WithdrawalsProcessor())
         .withdrawalsValidator(new WithdrawalsValidator.AllowedWithdrawals())
@@ -696,7 +698,8 @@ public abstract class MainnetProtocolSpecs {
                         TransactionType.FRONTIER,
                         TransactionType.ACCESS_LIST,
                         TransactionType.EIP1559,
-                        TransactionType.BLOB),
+                        TransactionType.BLOB,
+                        TransactionType.OPTIMISM_DEPOSIT),
                     SHANGHAI_INIT_CODE_SIZE_LIMIT))
         .precompileContractRegistryBuilder(MainnetPrecompiledContractRegistries::cancun)
         .blockHeaderValidatorBuilder(MainnetBlockHeaderValidator::cancunBlockHeaderValidator)

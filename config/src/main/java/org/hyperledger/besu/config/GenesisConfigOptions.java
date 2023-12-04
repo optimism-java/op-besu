@@ -82,6 +82,13 @@ public interface GenesisConfigOptions {
   }
 
   /**
+   * Is Optimism boolean
+   *
+   * @return the boolean
+   */
+  boolean isOptimism();
+
+  /**
    * Gets consensus engine.
    *
    * @return the consensus engine
@@ -129,6 +136,13 @@ public interface GenesisConfigOptions {
    * @return the ethash config options
    */
   EthashConfigOptions getEthashConfigOptions();
+
+  /**
+   * Gets optimism config options
+   *
+   * @return the optimism config options.
+   */
+  OptimismConfigOptions getOptimismConfigOptions();
 
   /**
    * Gets homestead block number.
@@ -255,6 +269,29 @@ public interface GenesisConfigOptions {
    * @return the experimental eips time
    */
   OptionalLong getExperimentalEipsTime();
+
+  /**
+   * Gets bedrock switch block number.
+   *
+   * @return the bedrock switch block number
+   */
+  OptionalLong getBedrockBlock();
+
+  /**
+   * Gets regolith time.
+   *
+   * @return the regolith time
+   */
+  OptionalLong getRegolithTime();
+
+  /**
+   * Gets canyon time.
+   *
+   * @return the canyon time
+   */
+  OptionalLong getCanyonTime();
+
+
 
   /**
    * Gets base fee per gas.

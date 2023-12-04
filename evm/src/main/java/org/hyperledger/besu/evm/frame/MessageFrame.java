@@ -17,6 +17,7 @@ package org.hyperledger.besu.evm.frame;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Collections.emptySet;
 
+import java.math.BigInteger;
 import org.hyperledger.besu.collections.undo.UndoSet;
 import org.hyperledger.besu.collections.undo.UndoTable;
 import org.hyperledger.besu.datatypes.Address;
@@ -231,6 +232,9 @@ public class MessageFrame {
   private final Wei value;
   private final Wei apparentValue;
   private final Code code;
+  private final boolean isSystemTx;
+  private final boolean isDepositTx;
+  private final Optional<Wei> mint;
 
   private Optional<Bytes> revertReason;
 
@@ -271,7 +275,10 @@ public class MessageFrame {
       final Consumer<MessageFrame> completer,
       final Map<String, Object> contextVariables,
       final Optional<Bytes> revertReason,
-      final TxValues txValues) {
+      final TxValues txValues,
+      final boolean isSystemTx,
+      final boolean isDepositTx,
+      final Optional<Wei> mint) {
 
     this.txValues = txValues;
     this.type = type;
@@ -299,6 +306,9 @@ public class MessageFrame {
     this.revertReason = revertReason;
 
     this.undoMark = txValues.transientStorage().mark();
+    this.isSystemTx = isSystemTx;
+    this.isDepositTx = isDepositTx;
+    this.mint = mint;
   }
 
   /**
@@ -1393,6 +1403,10 @@ public class MessageFrame {
 
     private Optional<List<VersionedHash>> versionedHashes = Optional.empty();
 
+    private boolean isSystemTx;
+    private boolean isDepositTx;
+    private Optional<Wei> mint;
+
     /**
      * The "parent" message frame. When present some fields will be populated from the parent and
      * ignored if passed in via builder
@@ -1669,6 +1683,21 @@ public class MessageFrame {
       return this;
     }
 
+    public Builder isSystemTx(final boolean isSystemTx) {
+      this.isSystemTx = isSystemTx;
+      return this;
+    }
+
+    public Builder isDepositTx(final boolean isDepositTx) {
+      this.isDepositTx = isDepositTx;
+      return this;
+    }
+
+    public Builder mint(final Optional<Wei> mint) {
+      this.mint = mint;
+      return this;
+    }
+
     private void validate() {
       if (parentMessageFrame == null) {
         checkState(worldUpdater != null, "Missing message frame world updater");
@@ -1743,7 +1772,10 @@ public class MessageFrame {
               completer,
               contextVariables == null ? Map.of() : contextVariables,
               reason,
-              newTxValues);
+              newTxValues,
+              isSystemTx,
+              isDepositTx,
+              mint);
       newTxValues.messageFrameStack().addFirst(messageFrame);
       messageFrame.warmUpAddress(sender);
       messageFrame.warmUpAddress(contract);

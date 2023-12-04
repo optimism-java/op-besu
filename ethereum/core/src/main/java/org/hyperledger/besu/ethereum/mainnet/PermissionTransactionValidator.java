@@ -42,9 +42,10 @@ public class PermissionTransactionValidator implements TransactionValidator {
   @Override
   public ValidationResult<TransactionInvalidReason> validate(
       final Transaction transaction,
+      final long blockTimestamp,
       final Optional<Wei> baseFee,
       final TransactionValidationParams transactionValidationParams) {
-    return delegate.validate(transaction, baseFee, transactionValidationParams);
+    return delegate.validate(transaction, blockTimestamp, baseFee, transactionValidationParams);
   }
 
   @Override
