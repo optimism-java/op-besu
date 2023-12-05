@@ -247,7 +247,10 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
       final Bytes32 prevRandao,
       final Address feeRecipient,
       final Optional<List<Withdrawal>> withdrawals,
-      final Optional<Bytes32> parentBeaconBlockRoot) {
+      final Optional<Bytes32> parentBeaconBlockRoot,
+      final Optional<Boolean> noTxPool,
+      final Optional<List<Transaction>> transactions,
+      final Optional<Long> gasLimit) {
 
     // we assume that preparePayload is always called sequentially, since the RPC Engine calls
     // are sequential, if this assumption changes then more synchronization should be added to
@@ -260,7 +263,10 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
             prevRandao,
             feeRecipient,
             withdrawals,
-            parentBeaconBlockRoot);
+            parentBeaconBlockRoot,
+            noTxPool,
+            transactions,
+            gasLimit);
 
     if (blockCreationTasks.containsKey(payloadIdentifier)) {
       LOG.debug(

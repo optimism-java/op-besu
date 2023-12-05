@@ -435,6 +435,7 @@ public class TransactionPool implements BlockAddedObserver {
         getTransactionValidator()
             .validate(
                 transaction,
+                1,
                 chainHeadBlockHeader.getBaseFee(),
                 TransactionValidationParams.transactionPool());
     if (!basicValidationResult.isValid()) {

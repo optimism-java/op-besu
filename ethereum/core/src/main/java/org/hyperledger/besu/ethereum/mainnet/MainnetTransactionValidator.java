@@ -16,7 +16,6 @@ package org.hyperledger.besu.ethereum.mainnet;
 
 import static org.hyperledger.besu.evm.account.Account.MAX_NONCE;
 
-import java.util.OptionalLong;
 import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.crypto.SECPSignature;
 import org.hyperledger.besu.crypto.SignatureAlgorithmFactory;
@@ -141,12 +140,14 @@ public class MainnetTransactionValidator implements TransactionValidator {
     }
 
     if (transaction.getType().equals(TransactionType.OPTIMISM_DEPOSIT)) {
-      genesisOptions.orElseThrow();
+      //      genesisOptions.orElseThrow();
       if (transaction.getIsSystemTx().orElse(false)) {
         var regolithTime = genesisOptions.get().getRegolithTime();
         if (genesisOptions.get().isOptimism() && regolithTime.orElseThrow() <= blockTimestamp) {
-          return ValidationResult.invalid(TransactionInvalidReason.SYSTEM_TX_NOT_SUPPORT,
-              String.format("system tx not supported: address = %s", transaction.getSender().toHexString()));
+          return ValidationResult.invalid(
+              TransactionInvalidReason.SYSTEM_TX_NOT_SUPPORT,
+              String.format(
+                  "system tx not supported: address = %s", transaction.getSender().toHexString()));
         }
       }
       return ValidationResult.valid();

@@ -31,6 +31,7 @@ import org.hyperledger.besu.ethereum.api.jsonrpc.internal.response.JsonRpcRespon
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.response.JsonRpcSuccessResponse;
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.response.RpcErrorType;
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.EnginePreparePayloadResult;
+import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.Withdrawal;
 
 import java.util.List;
@@ -38,6 +39,7 @@ import java.util.Optional;
 
 import graphql.VisibleForTesting;
 import io.vertx.core.Vertx;
+import org.apache.tuweni.bytes.Bytes;
 
 public class EnginePreparePayloadDebug extends ExecutionEngineJsonRpcMethod {
   private final MergeMiningCoordinator mergeCoordinator;
@@ -68,6 +70,9 @@ public class EnginePreparePayloadDebug extends ExecutionEngineJsonRpcMethod {
                     Optional.empty(),
                     Optional.empty(),
                     Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty(),
                     Optional.empty()));
 
     final var requestId = requestContext.getRequest().getId();
@@ -89,6 +94,10 @@ public class EnginePreparePayloadDebug extends ExecutionEngineJsonRpcMethod {
     final List<Withdrawal> withdrawals =
         param.getWithdrawals().stream().map(WithdrawalParameter::toWithdrawal).collect(toList());
 
+    final List<Transaction> transactions =
+        param.getTransactions().stream()
+            .map(s -> Transaction.readFrom(Bytes.fromHexString(s)))
+            .collect(toList());
     return param
         .getParentHash()
         .map(header -> protocolContext.getBlockchain().getBlockHeader(header))
@@ -101,6 +110,9 @@ public class EnginePreparePayloadDebug extends ExecutionEngineJsonRpcMethod {
                     param.getPrevRandao(),
                     param.getFeeRecipient(),
                     Optional.of(withdrawals),
-                    param.getParentBeaconBlockRoot()));
+                    param.getParentBeaconBlockRoot(),
+                    param.isNoTxPool(),
+                    Optional.of(transactions),
+                    param.getGasLimit()));
   }
 }
