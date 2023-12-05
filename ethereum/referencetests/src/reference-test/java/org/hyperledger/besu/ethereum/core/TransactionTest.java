@@ -144,7 +144,7 @@ public class TransactionTest {
       final Transaction transaction = Transaction.readFrom(RLP.input(rlp));
       final ValidationResult<TransactionInvalidReason> validation =
           transactionValidator(milestone)
-              .validate(transaction, baseFee, TransactionValidationParams.processingBlock());
+              .validate(transaction, 1,baseFee, TransactionValidationParams.processingBlock());
       if (!validation.isValid()) {
         throw new RuntimeException(
             String.format(

@@ -107,6 +107,9 @@ public class EngineGetPayloadV6110Test extends AbstractEngineGetPayloadTest {
             Bytes32.random(),
             Address.fromHexString("0x42"),
             Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
             Optional.empty());
 
     BlobTestFixture blobTestFixture = new BlobTestFixture();

@@ -33,6 +33,11 @@ public class EnginePreparePayloadParameter {
   final List<WithdrawalParameter> withdrawals;
   private final Optional<Bytes32> parentBeaconBlockRoot;
 
+  // optimism payload attributes
+  private final Optional<Boolean> noTxPool;
+  private final List<String> transactions;
+  private final Optional<Long> gasLimit;
+
   @JsonCreator
   public EnginePreparePayloadParameter(
       @JsonProperty("parentHash") final Optional<Hash> parentHash,
@@ -40,13 +45,19 @@ public class EnginePreparePayloadParameter {
       @JsonProperty("timestamp") final Optional<UnsignedLongParameter> timestamp,
       @JsonProperty("prevRandao") final Optional<String> prevRandao,
       @JsonProperty("withdrawals") final Optional<List<WithdrawalParameter>> withdrawals,
-      @JsonProperty("parentBeaconBlockRoot") final Optional<Bytes32> parentBeaconBlockRoot) {
+      @JsonProperty("parentBeaconBlockRoot") final Optional<Bytes32> parentBeaconBlockRoot,
+      @JsonProperty("noTxPool") final Optional<Boolean> noTxPool,
+      @JsonProperty("transactions") final Optional<List<String>> transactions,
+      @JsonProperty("gasLimit") final Optional<Long> gasLimit) {
     this.parentHash = parentHash;
     this.feeRecipient = feeRecipient.orElse(Address.ZERO);
     this.timestamp = timestamp.map(UnsignedLongParameter::getValue);
     this.prevRandao = Bytes32.fromHexStringLenient(prevRandao.orElse("deadbeef"));
     this.withdrawals = withdrawals.orElse(Collections.emptyList());
     this.parentBeaconBlockRoot = parentBeaconBlockRoot;
+    this.noTxPool = noTxPool;
+    this.transactions = transactions.orElse(Collections.emptyList());
+    this.gasLimit = gasLimit;
   }
 
   public Optional<Hash> getParentHash() {
@@ -71,5 +82,17 @@ public class EnginePreparePayloadParameter {
 
   public Optional<Bytes32> getParentBeaconBlockRoot() {
     return parentBeaconBlockRoot;
+  }
+
+  public Optional<Boolean> isNoTxPool() {
+    return noTxPool;
+  }
+
+  public List<String> getTransactions() {
+    return transactions;
+  }
+
+  public Optional<Long> getGasLimit() {
+    return gasLimit;
   }
 }

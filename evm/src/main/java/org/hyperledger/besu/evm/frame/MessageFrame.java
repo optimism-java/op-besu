@@ -17,7 +17,6 @@ package org.hyperledger.besu.evm.frame;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Collections.emptySet;
 
-import java.math.BigInteger;
 import org.hyperledger.besu.collections.undo.UndoSet;
 import org.hyperledger.besu.collections.undo.UndoTable;
 import org.hyperledger.besu.datatypes.Address;
@@ -943,6 +942,7 @@ public class MessageFrame {
   public void addCreate(final Address address) {
     txValues.creates().add(address);
   }
+
   /**
    * Add addresses to the create set if they are not already present.
    *
@@ -1117,6 +1117,7 @@ public class MessageFrame {
   public int getDepth() {
     return getMessageStackSize() - 1;
   }
+
   /**
    * Returns the recipient that originated the message.
    *
@@ -1365,6 +1366,33 @@ public class MessageFrame {
    */
   public Optional<List<VersionedHash>> getVersionedHashes() {
     return txValues.versionedHashes();
+  }
+
+  /**
+   * Is deposit tx boolean.
+   *
+   * @return the boolean
+   */
+  public boolean isDepositTx() {
+    return isDepositTx;
+  }
+
+  /**
+   * Is system tx boolean.
+   *
+   * @return the boolean
+   */
+  public boolean isSystemTx() {
+    return isSystemTx;
+  }
+
+  /**
+   * Gets mint.
+   *
+   * @return the mint
+   */
+  public Optional<Wei> getMint() {
+    return mint;
   }
 
   /** Reset. */
@@ -1683,16 +1711,34 @@ public class MessageFrame {
       return this;
     }
 
+    /**
+     * Is system tx builder.
+     *
+     * @param isSystemTx the is system tx
+     * @return the builder
+     */
     public Builder isSystemTx(final boolean isSystemTx) {
       this.isSystemTx = isSystemTx;
       return this;
     }
 
+    /**
+     * Is deposit tx builder.
+     *
+     * @param isDepositTx the is deposit tx
+     * @return the builder
+     */
     public Builder isDepositTx(final boolean isDepositTx) {
       this.isDepositTx = isDepositTx;
       return this;
     }
 
+    /**
+     * Mint builder.
+     *
+     * @param mint the mint
+     * @return the builder
+     */
     public Builder mint(final Optional<Wei> mint) {
       this.mint = mint;
       return this;

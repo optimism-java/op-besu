@@ -50,10 +50,9 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
   private OptionalLong cancunTime = OptionalLong.empty();
   private OptionalLong futureEipsTime = OptionalLong.empty();
   private OptionalLong experimentalEipsTime = OptionalLong.empty();
-  private OptionalLong bedrockBlock = OptionalLong.empty();
-  private OptionalLong regolithTime = OptionalLong.empty();
-  private OptionalLong canyonTime = OptionalLong.empty();
-
+  private final OptionalLong bedrockBlock = OptionalLong.empty();
+  private final OptionalLong regolithTime = OptionalLong.empty();
+  private final OptionalLong canyonTime = OptionalLong.empty();
 
   private OptionalLong terminalBlockNumber = OptionalLong.empty();
   private Optional<Hash> terminalBlockHash = Optional.empty();

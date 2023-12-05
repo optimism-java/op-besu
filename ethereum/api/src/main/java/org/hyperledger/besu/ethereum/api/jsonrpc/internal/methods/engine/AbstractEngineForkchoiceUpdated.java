@@ -36,6 +36,7 @@ import org.hyperledger.besu.ethereum.api.jsonrpc.internal.response.JsonRpcSucces
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.response.RpcErrorType;
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.EngineUpdateForkchoiceResult;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
+import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.Withdrawal;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
 import org.hyperledger.besu.ethereum.mainnet.ScheduledProtocolSpec;
@@ -46,10 +47,12 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import io.vertx.core.Vertx;
+import org.apache.tuweni.bytes.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractEngineForkchoiceUpdated extends ExecutionEngineJsonRpcMethod {
+
   private static final Logger LOG = LoggerFactory.getLogger(AbstractEngineForkchoiceUpdated.class);
   private final MergeMiningCoordinator mergeCoordinator;
   protected final Long cancunTimestamp;
@@ -207,7 +210,15 @@ public abstract class AbstractEngineForkchoiceUpdated extends ExecutionEngineJso
                     payloadAttributes.getPrevRandao(),
                     payloadAttributes.getSuggestedFeeRecipient(),
                     finalWithdrawals,
-                    Optional.ofNullable(payloadAttributes.getParentBeaconBlockRoot())));
+                    Optional.ofNullable(payloadAttributes.getParentBeaconBlockRoot()),
+                    Optional.ofNullable(payloadAttributes.isNoTxPool()),
+                    Optional.ofNullable(
+                        payloadAttributes.getTransactions() == null
+                            ? null
+                            : payloadAttributes.getTransactions().stream()
+                                .map(s -> Transaction.readFrom(Bytes.fromHexString(s)))
+                                .collect(toList())),
+                    Optional.ofNullable(payloadAttributes.getGasLimit())));
 
     payloadId.ifPresent(
         pid ->

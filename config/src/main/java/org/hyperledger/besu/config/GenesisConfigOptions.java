@@ -291,8 +291,6 @@ public interface GenesisConfigOptions {
    */
   OptionalLong getCanyonTime();
 
-
-
   /**
    * Gets base fee per gas.
    *

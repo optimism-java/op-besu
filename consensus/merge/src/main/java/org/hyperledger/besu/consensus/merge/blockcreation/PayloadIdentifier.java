@@ -17,17 +17,23 @@ package org.hyperledger.besu.consensus.merge.blockcreation;
 import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.datatypes.Hash;
 import org.hyperledger.besu.datatypes.Quantity;
+import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.Withdrawal;
+import org.hyperledger.besu.ethereum.rlp.BytesValueRLPOutput;
 
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.primitives.Longs;
 import org.apache.tuweni.bytes.Bytes32;
 import org.apache.tuweni.units.bigints.UInt64;
+import org.bouncycastle.jcajce.provider.digest.SHA256;
+import org.web3j.utils.Numeric;
 
 /** The Payload identifier. */
 public class PayloadIdentifier implements Quantity {
@@ -63,6 +69,9 @@ public class PayloadIdentifier implements Quantity {
    * @param feeRecipient the fee recipient
    * @param withdrawals the withdrawals
    * @param parentBeaconBlockRoot the parent beacon block root
+   * @param noTxPool the no tx pool
+   * @param transactions the transactions
+   * @param gasLimit the gas limit
    * @return the payload identifier
    */
   public static PayloadIdentifier forPayloadParams(
@@ -71,7 +80,36 @@ public class PayloadIdentifier implements Quantity {
       final Bytes32 prevRandao,
       final Address feeRecipient,
       final Optional<List<Withdrawal>> withdrawals,
-      final Optional<Bytes32> parentBeaconBlockRoot) {
+      final Optional<Bytes32> parentBeaconBlockRoot,
+      final Optional<Boolean> noTxPool,
+      final Optional<List<Transaction>> transactions,
+      final Optional<Long> gasLimit) {
+    // Optimism: gasLimit will exist
+    if (gasLimit.isPresent()) {
+      SHA256.Digest digest = new SHA256.Digest();
+      digest.update(parentHash.toArrayUnsafe());
+      digest.update(Longs.toByteArray(timestamp));
+      digest.update(prevRandao.toArrayUnsafe());
+      digest.update(feeRecipient.toArrayUnsafe());
+      withdrawals.ifPresent(
+          withdrawalList -> {
+            final BytesValueRLPOutput out = new BytesValueRLPOutput();
+            out.writeList(withdrawalList, Withdrawal::writeTo);
+            digest.update(out.encoded().toArrayUnsafe());
+          });
+      parentBeaconBlockRoot.ifPresent(
+          parentBeaconBlockRootBytes -> digest.update(parentBeaconBlockRootBytes.toArrayUnsafe()));
+      boolean noTxPoolFlag = noTxPool.orElse(false);
+      List<Transaction> txList = transactions.orElse(Collections.emptyList());
+      if (noTxPoolFlag || !txList.isEmpty()) {
+        digest.update(new byte[] {(byte) (noTxPoolFlag ? 1 : 0)});
+        digest.update(Longs.toByteArray(txList.size()));
+        txList.forEach(tx -> digest.update(tx.getHash().toArrayUnsafe()));
+      }
+      digest.update(Longs.toByteArray(gasLimit.get()));
+
+      return new PayloadIdentifier(Numeric.toBigInt(digest.digest(), 0, 8).longValue());
+    }
 
     return new PayloadIdentifier(
         timestamp

@@ -16,7 +16,6 @@ package org.hyperledger.besu.ethereum.api.jsonrpc.internal.parameters;
 
 import org.hyperledger.besu.datatypes.Address;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,7 +34,7 @@ public class EnginePayloadAttributesParameter {
 
   // optimism payload attributes
   private final Boolean noTxPool;
-  private final String[] transactions;
+  private final List<String> transactions;
   private final Long gasLimit;
 
   @JsonCreator
@@ -46,7 +45,7 @@ public class EnginePayloadAttributesParameter {
       @JsonProperty("withdrawals") final List<WithdrawalParameter> withdrawals,
       @JsonProperty("parentBeaconBlockRoot") final String parentBeaconBlockRoot,
       @JsonProperty("noTxPool") final Boolean noTxPool,
-      @JsonProperty("transactions") final String[] transactions,
+      @JsonProperty("transactions") final List<String> transactions,
       @JsonProperty("gasLimit") final Long gasLimit) {
     this.timestamp = Long.decode(timestamp);
     this.prevRandao = Bytes32.fromHexString(prevRandao);
@@ -83,7 +82,7 @@ public class EnginePayloadAttributesParameter {
     return noTxPool;
   }
 
-  public String[] getTransactions() {
+  public List<String> getTransactions() {
     return transactions;
   }
 
@@ -109,7 +108,7 @@ public class EnginePayloadAttributesParameter {
       json.put("noTxPool", noTxPool);
     }
     if (transactions != null) {
-      json.put("transactions", Arrays.stream(transactions).toList());
+      json.put("transactions", transactions);
     }
     if (gasLimit != null) {
       json.put("gasLimit", gasLimit);
