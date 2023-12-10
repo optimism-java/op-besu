@@ -52,7 +52,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractEngineForkchoiceUpdated extends ExecutionEngineJsonRpcMethod {
-
   private static final Logger LOG = LoggerFactory.getLogger(AbstractEngineForkchoiceUpdated.class);
   private final MergeMiningCoordinator mergeCoordinator;
   protected final Long cancunTimestamp;
@@ -74,6 +73,15 @@ public abstract class AbstractEngineForkchoiceUpdated extends ExecutionEngineJso
   protected ValidationResult<RpcErrorType> validateParameter(
       final EngineForkchoiceUpdatedParameter forkchoiceUpdatedParameter,
       final Optional<EnginePayloadAttributesParameter> maybePayloadAttributes) {
+    // According to the spec
+    // https://github.com/ethereum-optimism/optimism/blob/develop/specs/exec-engine.md#extended-payloadattributesv2,
+    // gasLimit is needed when the engine is running in optimism mode.
+    if (mergeContext.get().isOptimism() && maybePayloadAttributes.isPresent()) {
+      if (null == maybePayloadAttributes.get().getGasLimit()) {
+        logForkchoiceUpdatedCall(INVALID, forkchoiceUpdatedParameter);
+        return ValidationResult.invalid(RpcErrorType.INVALID_PARAMS);
+      }
+    }
     return ValidationResult.valid();
   }
 

@@ -70,10 +70,11 @@ import org.slf4j.LoggerFactory;
  *   <li>A list of transactions evaluated but not included in the block being constructed.
  * </ul>
  *
- * Once "used" this class must be discarded and another created. This class contains state which is
- * not cleared between executions of buildTransactionListForBlock().
+ * <p>Once "used" this class must be discarded and another created. This class contains state which
+ * is not cleared between executions of buildTransactionListForBlock().
  */
 public class BlockTransactionSelector {
+
   private static final Logger LOG = LoggerFactory.getLogger(BlockTransactionSelector.class);
 
   private final Supplier<Boolean> isCancelled;
@@ -175,6 +176,21 @@ public class BlockTransactionSelector {
   }
 
   /**
+   * Evaluates a list of pending transactions and updates the selection results accordingly. If a
+   * transaction is not selected during the evaluation, it is updated as not selected in the
+   * transaction selection results.
+   *
+   * @param transactions The list of pending transactions to be evaluated.
+   * @return The {@code TransactionSelectionResults} containing the results of the transaction
+   *     evaluations.
+   */
+  public TransactionSelectionResults evaluatePendingTransactions(
+      final List<PendingTransaction> transactions) {
+    transactions.forEach(this::evaluateTransaction);
+    return transactionSelectionResults;
+  }
+
+  /**
    * Passed into the PendingTransactions, and is called on each transaction until sufficient
    * transactions are found which fill a block worth of gas. This function will continue to be
    * called until the block under construction is suitably full (in terms of gasLimit) and the
@@ -217,6 +233,9 @@ public class BlockTransactionSelector {
    */
   private TransactionSelectionResult evaluatePreProcessing(
       final PendingTransaction pendingTransaction) {
+    if (pendingTransaction.isMustSelect()) {
+      return TransactionSelectionResult.SELECTED;
+    }
 
     for (var selector : transactionSelectors) {
       TransactionSelectionResult result =
