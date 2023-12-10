@@ -98,7 +98,9 @@ class MergeBlockCreator extends AbstractBlockCreator {
       final Bytes32 random,
       final long timestamp,
       final Optional<List<Withdrawal>> withdrawals,
-      final Optional<Bytes32> parentBeaconBlockRoot) {
+      final Optional<Bytes32> parentBeaconBlockRoot,
+      final Optional<Boolean> noTxFromPool,
+      final Optional<Long> gasLimit) {
 
     return createBlock(
         maybeTransactions,
@@ -107,7 +109,9 @@ class MergeBlockCreator extends AbstractBlockCreator {
         Optional.of(random),
         parentBeaconBlockRoot,
         timestamp,
-        false);
+        false,
+        noTxFromPool,
+        gasLimit);
   }
 
   @Override

@@ -47,7 +47,6 @@ import org.hyperledger.besu.plugin.services.exception.StorageException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -286,11 +285,13 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
     final Block emptyBlock =
         mergeBlockCreator
             .createBlock(
-                Optional.of(Collections.emptyList()),
+                transactions,
                 prevRandao,
                 timestamp,
                 withdrawals,
-                parentBeaconBlockRoot)
+                parentBeaconBlockRoot,
+                Optional.of(true),
+                gasLimit)
             .getBlock();
 
     BlockProcessingResult result = validateProposedBlock(emptyBlock);
@@ -312,13 +313,21 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
       }
     }
 
+    if (mergeContext.isOptimism() && noTxPool.isPresent() && noTxPool.get()) {
+      LOG.info("optimism: no tx pool, no need external txs from tx pool");
+      return payloadIdentifier;
+    }
+
     tryToBuildBetterBlock(
         timestamp,
         prevRandao,
         payloadIdentifier,
         mergeBlockCreator,
         withdrawals,
-        parentBeaconBlockRoot);
+        parentBeaconBlockRoot,
+        Optional.of(false),
+        transactions,
+        gasLimit);
 
     return payloadIdentifier;
   }
@@ -359,12 +368,21 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
       final PayloadIdentifier payloadIdentifier,
       final MergeBlockCreator mergeBlockCreator,
       final Optional<List<Withdrawal>> withdrawals,
-      final Optional<Bytes32> parentBeaconBlockRoot) {
+      final Optional<Bytes32> parentBeaconBlockRoot,
+      final Optional<Boolean> noTxPool,
+      final Optional<List<Transaction>> transactions,
+      final Optional<Long> gasLimit) {
 
     final Supplier<BlockCreationResult> blockCreator =
         () ->
             mergeBlockCreator.createBlock(
-                Optional.empty(), random, timestamp, withdrawals, parentBeaconBlockRoot);
+                transactions,
+                random,
+                timestamp,
+                withdrawals,
+                parentBeaconBlockRoot,
+                noTxPool,
+                gasLimit);
 
     LOG.debug(
         "Block creation started for payload id {}, remaining time is {}ms",

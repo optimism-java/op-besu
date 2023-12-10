@@ -59,6 +59,8 @@ public abstract class PendingTransaction
 
   private int memorySize = NOT_INITIALIZED;
 
+  private boolean mustSelect = false;
+
   private PendingTransaction(
       final Transaction transaction, final long addedAt, final long sequence) {
     this.transaction = transaction;
@@ -120,6 +122,14 @@ public abstract class PendingTransaction
   @Override
   public long getAddedAt() {
     return addedAt;
+  }
+
+  public boolean isMustSelect() {
+    return mustSelect;
+  }
+
+  public void setMustSelect(final boolean mustSelect) {
+    this.mustSelect = mustSelect;
   }
 
   public int memorySize() {
