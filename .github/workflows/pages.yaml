@@ -26,7 +26,7 @@ jobs:
           mv index.html tmp/pages/index.html
           touch tmp/pages/.nojekyll
           if [ "$GITHUB_REPOSITORY" == "optimism-java/op-besu" ]; then
-              echo "op-besu.optimism.io" > tmp/pages/CNAME
+              echo "op-besu.github.io" > tmp/pages/CNAME
           fi;
 
       - name: Deploy
