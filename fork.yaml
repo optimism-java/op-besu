@@ -36,6 +36,32 @@ def:
                 - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/encoding/TransactionEncoder.java"
                 - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/Transaction.java"
                 - "ethereum/eth/src/main/java/org/hyperledger/besu/ethereum/eth/transactions/PendingTransaction.java"
+        - title: "Block Creation modifications"
+          description: |
+            The block creation code implements the changes to support the transaction-inclusion, 
+            tx-pool toggle and gaslimit parameters of the Engine API.
+          globs:
+            - "consensus/merge/src/main/java/org/hyperledger/besu/consensus/merge/blockcreation/MergeCoordinator.java"
+            - "consensus/merge/src/main/java/org/hyperledger/besu/consensus/merge/blockcreation/MergeMiningCoordinator.java"
+            - "consensus/merge/src/main/java/org/hyperledger/besu/consensus/merge/blockcreation/MergeBlockCreator.java.java"
+            - "consensus/merge/src/main/java/org/hyperledger/besu/consensus/merge/blockcreation/PayloadIdentifier.java"
+            - "consensus/merge/src/main/java/org/hyperledger/besu/consensus/merge/blockcreation/TransitionCoordinator.java"
+            - "ethereum/blockcreation/src/main/java/org/hyperledger/besu/ethereum/blockcreation/AbstractBlockCreator.java"
+            - "ethereum/blockcreation/src/main/java/org/hyperledger/besu/ethereum/blockcreation/txselection/BlockTransactionSelector.java"
+            - "ethereum/eth/src/main/java/org/hyperledger/besu/ethereum/eth/transactions/PendingTransaction.java"
+        - title: "Engine API modifications"
+          description: |
+            The Engine API is extended to insert transactions into the block and optionally exclude the tx-pool,
+            to reproduce the exact block of the sequencer from just the inputs, as derived from L1 by the rollup-node.
+            See [L2 execution engine specs](https://github.com/ethereum-optimism/optimism/blob/develop/specs/exec-engine.md).
+          globs:
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/methods/engine/AbstractEngineForkchoiceUpdated.java"
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/methods/engine/EnginePreparePayloadDebug.java"
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/methods/engine/EngineForkchoiceUpdatedV2.java"
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/methods/engine/EngineForkchoiceUpdatedV3.java"
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/parameters/EnginePayloadAttributesParameter.java"
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/parameters/EnginePreparePayloadParameter.java"
+
 # files can be ignored globally, these will be listed in a separate grayed-out section,
 # and do not count towards the total line count.
 ignore:
