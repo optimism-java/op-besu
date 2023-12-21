@@ -35,7 +35,6 @@ def:
                 - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/encoding/TransactionDecoder.java"
                 - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/encoding/TransactionEncoder.java"
                 - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/Transaction.java"
-                - "ethereum/eth/src/main/java/org/hyperledger/besu/ethereum/eth/transactions/PendingTransaction.java"
         - title: "Block Creation modifications"
           description: |
             The block creation code implements the changes to support the transaction-inclusion, 
