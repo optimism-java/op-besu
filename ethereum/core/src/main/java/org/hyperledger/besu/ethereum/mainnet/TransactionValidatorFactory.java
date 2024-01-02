@@ -103,7 +103,8 @@ public class TransactionValidatorFactory {
                     checkSignatureMalleability,
                     chainId,
                     acceptedTransactionTypes,
-                    maxInitcodeSize));
+                    maxInitcodeSize,
+                    Optional.of(genesisOptions)));
   }
 
   public void setPermissionTransactionFilter(

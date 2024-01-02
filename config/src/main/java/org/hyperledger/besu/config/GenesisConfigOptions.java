@@ -278,6 +278,14 @@ public interface GenesisConfigOptions {
   OptionalLong getBedrockBlock();
 
   /**
+   * Returns whether a fork scheduled at bedrock block number is active at the given head block
+   * number
+   *
+   * @return the boolean
+   */
+  boolean isBedrockBlock(long headBlock);
+
+  /**
    * Gets regolith time.
    *
    * @return the regolith time
@@ -285,11 +293,25 @@ public interface GenesisConfigOptions {
   OptionalLong getRegolithTime();
 
   /**
+   * Returns whether a fork scheduled at regolith timestamp is active at the given head timestamp.
+   *
+   * @return the boolean
+   */
+  boolean isRegolith(long headTime);
+
+  /**
    * Gets canyon time.
    *
    * @return the canyon time
    */
   OptionalLong getCanyonTime();
+
+  /**
+   * Returns whether a fork scheduled at canyon timestamp is active at the given head timestamp.
+   *
+   * @return the boolean
+   */
+  boolean isCanyon(long headTime);
 
   /**
    * Gets base fee per gas.

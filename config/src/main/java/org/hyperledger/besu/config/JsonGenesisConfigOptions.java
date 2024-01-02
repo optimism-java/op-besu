@@ -317,17 +317,50 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
 
   @Override
   public OptionalLong getBedrockBlock() {
-    return getOptionalLong("bedrockBlock");
+    return getOptionalLong("bedrockblock");
+  }
+
+  @Override
+  public boolean isBedrockBlock(final long headBlock) {
+    OptionalLong bedrockBlock = getBedrockBlock();
+    if (!bedrockBlock.isPresent()) {
+      return false;
+    }
+    return bedrockBlock.getAsLong() <= headBlock;
   }
 
   @Override
   public OptionalLong getRegolithTime() {
-    return getOptionalLong("regolithTime");
+    return getOptionalLong("regolithtime");
+  }
+
+  @Override
+  public boolean isRegolith(final long headTime) {
+    if (!isOptimism()) {
+      return false;
+    }
+    var regolithTime = getRegolithTime();
+    if (regolithTime.isPresent()) {
+      return regolithTime.getAsLong() <= headTime;
+    }
+    return false;
   }
 
   @Override
   public OptionalLong getCanyonTime() {
-    return getOptionalLong("canyonTime");
+    return getOptionalLong("canyontime");
+  }
+
+  @Override
+  public boolean isCanyon(final long headTime) {
+    if (!isOptimism()) {
+      return false;
+    }
+    var canyonTime = getCanyonTime();
+    if (canyonTime.isPresent()) {
+      return canyonTime.getAsLong() <= headTime;
+    }
+    return false;
   }
 
   @Override

@@ -108,10 +108,12 @@ public class MainnetTransactionValidator implements TransactionValidator {
       final long blockTimestamp,
       final Optional<Wei> baseFee,
       final TransactionValidationParams transactionValidationParams) {
-    final ValidationResult<TransactionInvalidReason> signatureResult =
-        validateTransactionSignature(transaction);
-    if (transaction.getType() != TransactionType.OPTIMISM_DEPOSIT && !signatureResult.isValid()) {
-      return signatureResult;
+    if (transaction.getType() != TransactionType.OPTIMISM_DEPOSIT) {
+      final ValidationResult<TransactionInvalidReason> signatureResult =
+          validateTransactionSignature(transaction);
+      if (!signatureResult.isValid()) {
+        return signatureResult;
+      }
     }
 
     if (transaction.getType().supportsBlob()) {
@@ -228,6 +230,9 @@ public class MainnetTransactionValidator implements TransactionValidator {
       final Transaction transaction,
       final Account sender,
       final TransactionValidationParams validationParams) {
+    if (TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+      return ValidationResult.valid();
+    }
     Wei senderBalance = Account.DEFAULT_BALANCE;
     long senderNonce = Account.DEFAULT_NONCE;
     Hash codeHash = Hash.EMPTY;
@@ -237,6 +242,8 @@ public class MainnetTransactionValidator implements TransactionValidator {
       senderNonce = sender.getNonce();
       if (sender.getCodeHash() != null) codeHash = sender.getCodeHash();
     }
+
+    // todo calculate gas cost with l1 gas cost
 
     final Wei upfrontCost =
         transaction.getUpfrontCost(gasCalculator.blobGasCost(transaction.getBlobCount()));

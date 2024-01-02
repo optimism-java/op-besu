@@ -31,6 +31,7 @@ import org.hyperledger.besu.datatypes.BlobsWithCommitments;
 import org.hyperledger.besu.datatypes.Hash;
 import org.hyperledger.besu.datatypes.KZGCommitment;
 import org.hyperledger.besu.datatypes.KZGProof;
+import org.hyperledger.besu.datatypes.RollupGasData;
 import org.hyperledger.besu.datatypes.Sha256Hash;
 import org.hyperledger.besu.datatypes.TransactionType;
 import org.hyperledger.besu.datatypes.VersionedHash;
@@ -125,6 +126,8 @@ public class Transaction
 
   private final Optional<Boolean> isSystemTx;
 
+  private final RollupGasData rollupGasData;
+
   public static Builder builder() {
     return new Builder();
   }
@@ -185,10 +188,12 @@ public class Transaction
       final Optional<BlobsWithCommitments> blobsWithCommitments,
       final Optional<Hash> sourceHash,
       final Optional<Wei> mint,
-      final Optional<Boolean> isSystemTx) {
+      final Optional<Boolean> isSystemTx,
+      final RollupGasData rollupGasData) {
     this.sourceHash = sourceHash;
     this.mint = mint;
     this.isSystemTx = isSystemTx;
+    this.rollupGasData = rollupGasData;
 
     if (!forCopy) {
       if (transactionType.requiresChainId()) {
@@ -695,6 +700,11 @@ public class Transaction
     return isSystemTx;
   }
 
+  @Override
+  public RollupGasData getRollupGasData() {
+    return rollupGasData;
+  }
+
   /**
    * Return the list of transaction hashes extracted from the collection of Transaction passed as
    * argument
@@ -1071,7 +1081,7 @@ public class Transaction
             : Optional.of(
                 blobsWithCommitmentsDetachedCopy(
                     blobsWithCommitments.get(), detachedVersionedHashes.get()));
-
+    final Bytes copiedPayload = payload.copy();
     return new Transaction(
         true,
         transactionType,
@@ -1084,7 +1094,7 @@ public class Transaction
         detachedTo,
         value,
         signature,
-        payload.copy(),
+        copiedPayload,
         detachedAccessList,
         sender,
         chainId,
@@ -1092,7 +1102,8 @@ public class Transaction
         detachedBlobsWithCommitments,
         sourceHash,
         mint,
-        isSystemTx);
+        isSystemTx,
+        RollupGasData.fromPayload(copiedPayload));
   }
 
   private AccessListEntry accessListDetachedCopy(final AccessListEntry accessListEntry) {
@@ -1296,7 +1307,8 @@ public class Transaction
           Optional.ofNullable(blobsWithCommitments),
           Optional.ofNullable(sourceHash),
           Optional.ofNullable(mint),
-          Optional.ofNullable(isSystemTx));
+          Optional.ofNullable(isSystemTx),
+          RollupGasData.fromPayload(payload));
     }
 
     public Transaction signAndBuild(final KeyPair keys) {

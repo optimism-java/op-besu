@@ -22,6 +22,7 @@ import org.hyperledger.besu.evm.worldstate.WorldUpdater;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalLong;
 
 import org.slf4j.Logger;
@@ -49,7 +50,8 @@ public class ClassicBlockProcessor extends AbstractBlockProcessor {
         blockReward,
         miningBeneficiaryCalculator,
         skipZeroBlockRewards,
-        protocolSchedule);
+        protocolSchedule,
+        Optional.empty());
     eraLength = eraLen.orElse(DEFAULT_ERA_LENGTH);
   }
 

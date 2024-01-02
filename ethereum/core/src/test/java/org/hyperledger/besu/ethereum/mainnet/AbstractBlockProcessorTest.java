@@ -156,7 +156,8 @@ abstract class AbstractBlockProcessorTest {
           blockReward,
           miningBeneficiaryCalculator,
           skipZeroBlockRewards,
-          protocolSchedule);
+          protocolSchedule,
+          Optional.empty());
     }
 
     @Override

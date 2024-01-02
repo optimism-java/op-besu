@@ -36,8 +36,9 @@ import org.hyperledger.besu.ethereum.api.jsonrpc.internal.response.JsonRpcSucces
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.response.RpcErrorType;
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.EngineUpdateForkchoiceResult;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
-import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.Withdrawal;
+import org.hyperledger.besu.ethereum.core.encoding.EncodingContext;
+import org.hyperledger.besu.ethereum.core.encoding.TransactionDecoder;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
 import org.hyperledger.besu.ethereum.mainnet.ScheduledProtocolSpec;
 import org.hyperledger.besu.ethereum.mainnet.ValidationResult;
@@ -224,7 +225,11 @@ public abstract class AbstractEngineForkchoiceUpdated extends ExecutionEngineJso
                         payloadAttributes.getTransactions() == null
                             ? null
                             : payloadAttributes.getTransactions().stream()
-                                .map(s -> Transaction.readFrom(Bytes.fromHexString(s)))
+                                .map(Bytes::fromHexString)
+                                .map(
+                                    in ->
+                                        TransactionDecoder.decodeOpaqueBytes(
+                                            in, EncodingContext.BLOCK_BODY))
                                 .collect(toList())),
                     Optional.ofNullable(payloadAttributes.getGasLimit())));
 

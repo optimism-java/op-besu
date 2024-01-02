@@ -217,7 +217,8 @@ public abstract class MainnetProtocolSpecs {
                 blockReward,
                 miningBeneficiaryCalculator,
                 skipZeroBlockRewards,
-                protocolSchedule) ->
+                protocolSchedule,
+                genesisConfigOptions) ->
                 new DaoBlockProcessor(
                     new MainnetBlockProcessor(
                         transactionProcessor,
@@ -225,7 +226,8 @@ public abstract class MainnetProtocolSpecs {
                         blockReward,
                         miningBeneficiaryCalculator,
                         skipZeroBlockRewards,
-                        protocolSchedule)))
+                        protocolSchedule,
+                        genesisConfigOptions)))
         .name("DaoRecoveryInit");
   }
 
@@ -483,7 +485,9 @@ public abstract class MainnetProtocolSpecs {
                     false,
                     stackSizeLimit,
                     feeMarket,
-                    CoinbaseFeePriceCalculator.eip1559()))
+                    CoinbaseFeePriceCalculator.eip1559(),
+                    Optional.of(genesisConfigOptions),
+                    Optional.of(new L1CostCalculator())))
         .contractCreationProcessorBuilder(
             (gasCalculator, evm) ->
                 new ContractCreationProcessor(
@@ -506,6 +510,7 @@ public abstract class MainnetProtocolSpecs {
                 MainnetBlockHeaderValidator.createBaseFeeMarketOmmerValidator(
                     (BaseFeeMarket) feeMarket))
         .blockBodyValidatorBuilder(BaseFeeBlockBodyValidator::new)
+        .genesisConfigOptions(Optional.of(genesisConfigOptions))
         .name("London");
   }
 
@@ -612,7 +617,9 @@ public abstract class MainnetProtocolSpecs {
                     true,
                     stackSizeLimit,
                     feeMarket,
-                    CoinbaseFeePriceCalculator.eip1559()))
+                    CoinbaseFeePriceCalculator.eip1559(),
+                    Optional.of(genesisConfigOptions),
+                    Optional.of(new L1CostCalculator())))
         // Contract creation rules for EIP-3860 Limit and meter intitcode
         .transactionValidatorFactoryBuilder(
             (gasCalculator, gasLimitCalculator, feeMarket) ->
@@ -627,9 +634,11 @@ public abstract class MainnetProtocolSpecs {
                         TransactionType.ACCESS_LIST,
                         TransactionType.EIP1559,
                         TransactionType.OPTIMISM_DEPOSIT),
-                    SHANGHAI_INIT_CODE_SIZE_LIMIT))
+                    SHANGHAI_INIT_CODE_SIZE_LIMIT,
+                    genesisConfigOptions))
         .withdrawalsProcessor(new WithdrawalsProcessor())
         .withdrawalsValidator(new WithdrawalsValidator.AllowedWithdrawals())
+        .genesisConfigOptions(Optional.of(genesisConfigOptions))
         .name("Shanghai");
   }
 
@@ -703,7 +712,74 @@ public abstract class MainnetProtocolSpecs {
                     SHANGHAI_INIT_CODE_SIZE_LIMIT))
         .precompileContractRegistryBuilder(MainnetPrecompiledContractRegistries::cancun)
         .blockHeaderValidatorBuilder(MainnetBlockHeaderValidator::cancunBlockHeaderValidator)
+        .genesisConfigOptions(Optional.of(genesisConfigOptions))
         .name("Cancun");
+  }
+
+  static ProtocolSpecBuilder canyonDefinition(
+      final Optional<BigInteger> chainId,
+      final OptionalInt configContractSizeLimit,
+      final OptionalInt configStackSizeLimit,
+      final boolean enableRevertReason,
+      final GenesisConfigOptions genesisConfigOptions,
+      final EvmConfiguration evmConfiguration) {
+
+    // extra variables need to support flipping the warm coinbase flag.
+    final int stackSizeLimit = configStackSizeLimit.orElse(MessageFrame.DEFAULT_MAX_STACK_SIZE);
+
+    return parisDefinition(
+            chainId,
+            configContractSizeLimit,
+            configStackSizeLimit,
+            enableRevertReason,
+            genesisConfigOptions,
+            evmConfiguration)
+        // gas calculator has new code to support EIP-3860 limit and meter initcode
+        .gasCalculator(ShanghaiGasCalculator::new)
+        // EVM has a new operation for EIP-3855 PUSH0 instruction
+        .evmBuilder(
+            (gasCalculator, jdCacheConfig) ->
+                MainnetEVMs.shanghai(
+                    gasCalculator, chainId.orElse(BigInteger.ZERO), evmConfiguration))
+        // we need to flip the Warm Coinbase flag for EIP-3651 warm coinbase
+        .transactionProcessorBuilder(
+            (gasCalculator,
+                feeMarket,
+                transactionValidatorFactory,
+                contractCreationProcessor,
+                messageCallProcessor) ->
+                new MainnetTransactionProcessor(
+                    gasCalculator,
+                    transactionValidatorFactory,
+                    contractCreationProcessor,
+                    messageCallProcessor,
+                    true,
+                    true,
+                    stackSizeLimit,
+                    feeMarket,
+                    CoinbaseFeePriceCalculator.eip1559(),
+                    Optional.of(genesisConfigOptions),
+                    Optional.of(new L1CostCalculator())))
+        // Contract creation rules for EIP-3860 Limit and meter intitcode
+        .transactionValidatorFactoryBuilder(
+            (gasCalculator, gasLimitCalculator, feeMarket) ->
+                new TransactionValidatorFactory(
+                    gasCalculator,
+                    gasLimitCalculator,
+                    feeMarket,
+                    true,
+                    chainId,
+                    Set.of(
+                        TransactionType.FRONTIER,
+                        TransactionType.ACCESS_LIST,
+                        TransactionType.EIP1559,
+                        TransactionType.OPTIMISM_DEPOSIT),
+                    SHANGHAI_INIT_CODE_SIZE_LIMIT,
+                    genesisConfigOptions))
+        .withdrawalsProcessor(new WithdrawalsProcessor())
+        .withdrawalsValidator(new WithdrawalsValidator.AllowedWithdrawals())
+        .genesisConfigOptions(Optional.of(genesisConfigOptions))
+        .name("Canyon");
   }
 
   static ProtocolSpecBuilder futureEipsDefinition(

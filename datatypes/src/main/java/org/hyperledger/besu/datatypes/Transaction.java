@@ -221,6 +221,13 @@ public interface Transaction {
   Optional<Boolean> getIsSystemTx();
 
   /**
+   * Return the roll up gas data.
+   *
+   * @return roll up gas data
+   */
+  RollupGasData getRollupGasData();
+
+  /**
    * Return the address of the contract, if the transaction creates one
    *
    * @return address of new contract or empty otherwise

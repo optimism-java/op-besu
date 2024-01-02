@@ -19,6 +19,7 @@ import static org.hyperledger.besu.ethereum.core.PrivacyParameters.DEFAULT_PRIVA
 import static org.hyperledger.besu.ethereum.core.PrivacyParameters.FLEXIBLE_PRIVACY;
 import static org.hyperledger.besu.ethereum.core.PrivacyParameters.PLUGIN_PRIVACY;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.BlockValidator;
 import org.hyperledger.besu.ethereum.GasLimitCalculator;
@@ -81,6 +82,7 @@ public class ProtocolSpecBuilder {
   private PoWHasher powHasher = PoWHasher.ETHASH_LIGHT;
   private boolean isPoS = false;
   private boolean isReplayProtectionSupported = false;
+  private Optional<GenesisConfigOptions> genesisConfigOptions = Optional.empty();
 
   public ProtocolSpecBuilder gasCalculator(final Supplier<GasCalculator> gasCalculatorBuilder) {
     this.gasCalculatorBuilder = gasCalculatorBuilder;
@@ -276,6 +278,11 @@ public class ProtocolSpecBuilder {
     return this;
   }
 
+  public ProtocolSpecBuilder genesisConfigOptions(final Optional<GenesisConfigOptions> options) {
+    this.genesisConfigOptions = options;
+    return this;
+  }
+
   public ProtocolSpec build(final ProtocolSchedule protocolSchedule) {
     checkNotNull(gasCalculatorBuilder, "Missing gasCalculator");
     checkNotNull(gasLimitCalculatorBuilder, "Missing gasLimitCalculatorBuilder");
@@ -333,7 +340,8 @@ public class ProtocolSpecBuilder {
 
     final BlockBodyValidator blockBodyValidator = blockBodyValidatorBuilder.apply(protocolSchedule);
 
-    BlockProcessor blockProcessor = createBlockProcessor(transactionProcessor, protocolSchedule);
+    BlockProcessor blockProcessor =
+        createBlockProcessor(transactionProcessor, protocolSchedule, genesisConfigOptions);
     // Set private Tx Processor
     PrivateTransactionProcessor privateTransactionProcessor =
         createPrivateTransactionProcessor(
@@ -426,14 +434,16 @@ public class ProtocolSpecBuilder {
 
   private BlockProcessor createBlockProcessor(
       final MainnetTransactionProcessor transactionProcessor,
-      final ProtocolSchedule protocolSchedule) {
+      final ProtocolSchedule protocolSchedule,
+      final Optional<GenesisConfigOptions> genesisConfigOptions) {
     return blockProcessorBuilder.apply(
         transactionProcessor,
         transactionReceiptFactory,
         blockReward,
         miningBeneficiaryCalculator,
         skipZeroBlockRewards,
-        protocolSchedule);
+        protocolSchedule,
+        genesisConfigOptions);
   }
 
   private BlockHeaderValidator createBlockHeaderValidator(
@@ -472,7 +482,8 @@ public class ProtocolSpecBuilder {
         Wei blockReward,
         MiningBeneficiaryCalculator miningBeneficiaryCalculator,
         boolean skipZeroBlockRewards,
-        ProtocolSchedule protocolSchedule);
+        ProtocolSchedule protocolSchedule,
+        Optional<GenesisConfigOptions> genesisConfigOptions);
   }
 
   public interface BlockValidatorBuilder {

@@ -261,13 +261,28 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
   }
 
   @Override
+  public boolean isBedrockBlock(final long headBlock) {
+    return false;
+  }
+
+  @Override
   public OptionalLong getRegolithTime() {
     return regolithTime;
   }
 
   @Override
+  public boolean isRegolith(final long headTime) {
+    return false;
+  }
+
+  @Override
   public OptionalLong getCanyonTime() {
     return canyonTime;
+  }
+
+  @Override
+  public boolean isCanyon(final long headTime) {
+    return false;
   }
 
   @Override

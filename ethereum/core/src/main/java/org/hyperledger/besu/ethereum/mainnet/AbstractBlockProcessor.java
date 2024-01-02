@@ -16,6 +16,7 @@ package org.hyperledger.besu.ethereum.mainnet;
 
 import static org.hyperledger.besu.ethereum.mainnet.feemarket.ExcessBlobGasCalculator.calculateExcessBlobGasForParent;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.datatypes.TransactionType;
 import org.hyperledger.besu.datatypes.Wei;
@@ -35,6 +36,8 @@ import org.hyperledger.besu.ethereum.processing.TransactionProcessingResult;
 import org.hyperledger.besu.ethereum.trie.MerkleTrieException;
 import org.hyperledger.besu.ethereum.vm.BlockHashLookup;
 import org.hyperledger.besu.ethereum.vm.CachingBlockHashLookup;
+import org.hyperledger.besu.evm.account.Account;
+import org.hyperledger.besu.evm.account.MutableAccount;
 import org.hyperledger.besu.evm.tracing.OperationTracer;
 import org.hyperledger.besu.evm.worldstate.WorldState;
 import org.hyperledger.besu.evm.worldstate.WorldUpdater;
@@ -72,6 +75,8 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
   protected final boolean skipZeroBlockRewards;
   private final ProtocolSchedule protocolSchedule;
 
+  private final Optional<GenesisConfigOptions> genesisOptions;
+
   protected final MiningBeneficiaryCalculator miningBeneficiaryCalculator;
 
   protected AbstractBlockProcessor(
@@ -80,13 +85,15 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
       final Wei blockReward,
       final MiningBeneficiaryCalculator miningBeneficiaryCalculator,
       final boolean skipZeroBlockRewards,
-      final ProtocolSchedule protocolSchedule) {
+      final ProtocolSchedule protocolSchedule,
+      final Optional<GenesisConfigOptions> genesisOptions) {
     this.transactionProcessor = transactionProcessor;
     this.transactionReceiptFactory = transactionReceiptFactory;
     this.blockReward = blockReward;
     this.miningBeneficiaryCalculator = miningBeneficiaryCalculator;
     this.skipZeroBlockRewards = skipZeroBlockRewards;
     this.protocolSchedule = protocolSchedule;
+    this.genesisOptions = genesisOptions;
   }
 
   @Override
@@ -114,6 +121,16 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
       if (!hasAvailableBlockBudget(blockHeader, transaction, currentGasUsed)) {
         return new BlockProcessingResult(Optional.empty(), "provided gas insufficient");
       }
+      transaction
+          .getMint()
+          .ifPresent(
+              mint -> {
+                WorldUpdater mintUpdater = worldState.updater();
+                final MutableAccount sender =
+                    mintUpdater.getOrCreateSenderAccount(transaction.getSender());
+                sender.incrementBalance(transaction.getMint().orElse(Wei.ZERO));
+                mintUpdater.commit();
+              });
 
       final WorldUpdater worldStateUpdater = worldState.updater();
 
@@ -133,6 +150,9 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
                           .blobGasPricePerGas(
                               calculateExcessBlobGasForParent(protocolSpec, parentHeader)))
               .orElse(Wei.ZERO);
+
+      Account sender = worldState.get(transaction.getSender());
+      long nonce = sender.getNonce();
 
       final TransactionProcessingResult result =
           transactionProcessor.processTransaction(
@@ -163,10 +183,29 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
       worldStateUpdater.commit();
 
       currentGasUsed += transaction.getGasLimit() - result.getGasRemaining();
-      final TransactionReceipt transactionReceipt =
-          transactionReceiptFactory.create(
-              transaction.getType(), result, worldState, currentGasUsed);
-      receipts.add(transactionReceipt);
+      TransactionReceipt receipt;
+      if (!TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+        receipt =
+            transactionReceiptFactory.create(
+                transaction.getType(), result, worldState, currentGasUsed);
+      } else {
+        GenesisConfigOptions options = genesisOptions.orElseThrow();
+        Optional<Long> depositNonce =
+            options.isRegolith(blockHeader.getTimestamp()) ? Optional.of(nonce) : Optional.empty();
+
+        Optional<Long> canyonDepositReceiptVer =
+            options.isCanyon(blockHeader.getTimestamp()) ? Optional.of(1L) : Optional.empty();
+        receipt =
+            new TransactionReceipt(
+                transaction.getType(),
+                result.isSuccessful() ? 1 : 0,
+                currentGasUsed,
+                result.getLogs(),
+                Optional.empty(),
+                depositNonce,
+                canyonDepositReceiptVer);
+      }
+      receipts.add(receipt);
     }
 
     final Optional<WithdrawalsProcessor> maybeWithdrawalsProcessor =

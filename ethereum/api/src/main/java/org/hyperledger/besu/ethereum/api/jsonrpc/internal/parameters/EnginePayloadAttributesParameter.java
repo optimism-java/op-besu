@@ -46,7 +46,7 @@ public class EnginePayloadAttributesParameter {
       @JsonProperty("parentBeaconBlockRoot") final String parentBeaconBlockRoot,
       @JsonProperty("noTxPool") final Boolean noTxPool,
       @JsonProperty("transactions") final List<String> transactions,
-      @JsonProperty("gasLimit") final Long gasLimit) {
+      @JsonProperty("gasLimit") final UnsignedLongParameter gasLimit) {
     this.timestamp = Long.decode(timestamp);
     this.prevRandao = Bytes32.fromHexString(prevRandao);
     this.suggestedFeeRecipient = Address.fromHexString(suggestedFeeRecipient);
@@ -55,7 +55,7 @@ public class EnginePayloadAttributesParameter {
         parentBeaconBlockRoot == null ? null : Bytes32.fromHexString(parentBeaconBlockRoot);
     this.noTxPool = noTxPool;
     this.transactions = transactions;
-    this.gasLimit = gasLimit;
+    this.gasLimit = gasLimit.getValue();
   }
 
   public Long getTimestamp() {

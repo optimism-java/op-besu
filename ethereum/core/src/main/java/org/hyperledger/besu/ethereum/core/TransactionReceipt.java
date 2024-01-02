@@ -57,6 +57,9 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
   private final TransactionReceiptType transactionReceiptType;
   private final Optional<Bytes> revertReason;
 
+  private final Optional<Long> depositNonce;
+  private final Optional<Long> depositReceptVersion;
+
   /**
    * Creates an instance of a state root-encoded transaction receipt.
    *
@@ -77,24 +80,9 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
         cumulativeGasUsed,
         logs,
         LogsBloomFilter.builder().insertLogs(logs).build(),
-        revertReason);
-  }
-
-  private TransactionReceipt(
-      final TransactionType transactionType,
-      final Hash stateRoot,
-      final long cumulativeGasUsed,
-      final List<Log> logs,
-      final LogsBloomFilter bloomFilter,
-      final Optional<Bytes> revertReason) {
-    this(
-        transactionType,
-        stateRoot,
-        NONEXISTENT,
-        cumulativeGasUsed,
-        logs,
-        bloomFilter,
-        revertReason);
+        revertReason,
+        Optional.empty(),
+        Optional.empty());
   }
 
   /**
@@ -117,7 +105,9 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
         cumulativeGasUsed,
         logs,
         LogsBloomFilter.builder().insertLogs(logs).build(),
-        revertReason);
+        revertReason,
+        Optional.empty(),
+        Optional.empty());
   }
 
   public TransactionReceipt(
@@ -127,7 +117,16 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
       final List<Log> logs,
       final LogsBloomFilter bloomFilter,
       final Optional<Bytes> revertReason) {
-    this(transactionType, null, status, cumulativeGasUsed, logs, bloomFilter, revertReason);
+    this(
+        transactionType,
+        null,
+        status,
+        cumulativeGasUsed,
+        logs,
+        bloomFilter,
+        revertReason,
+        Optional.empty(),
+        Optional.empty());
   }
 
   public TransactionReceipt(
@@ -145,6 +144,26 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
         maybeRevertReason);
   }
 
+  public TransactionReceipt(
+      final TransactionType transactionType,
+      final int status,
+      final long cumulativeGasUsed,
+      final List<Log> logs,
+      final Optional<Bytes> maybeRevertReason,
+      final Optional<Long> depositNonce,
+      final Optional<Long> depositReceptVersion) {
+    this(
+        transactionType,
+        null,
+        status,
+        cumulativeGasUsed,
+        logs,
+        LogsBloomFilter.builder().insertLogs(logs).build(),
+        maybeRevertReason,
+        depositNonce,
+        depositReceptVersion);
+  }
+
   private TransactionReceipt(
       final TransactionType transactionType,
       final Hash stateRoot,
@@ -152,7 +171,9 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
       final long cumulativeGasUsed,
       final List<Log> logs,
       final LogsBloomFilter bloomFilter,
-      final Optional<Bytes> revertReason) {
+      final Optional<Bytes> revertReason,
+      final Optional<Long> depositNonce,
+      final Optional<Long> depositReceptVersion) {
     this.transactionType = transactionType;
     this.stateRoot = stateRoot;
     this.cumulativeGasUsed = cumulativeGasUsed;
@@ -161,6 +182,8 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     this.bloomFilter = bloomFilter;
     this.transactionReceiptType =
         stateRoot == null ? TransactionReceiptType.STATUS : TransactionReceiptType.ROOT;
+    this.depositNonce = depositNonce;
+    this.depositReceptVersion = depositReceptVersion;
     this.revertReason = revertReason;
   }
 
@@ -202,6 +225,12 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     rlpOutput.writeLongScalar(cumulativeGasUsed);
     rlpOutput.writeBytes(bloomFilter);
     rlpOutput.writeList(logs, Log::writeTo);
+
+    if (transactionType.equals(TransactionType.OPTIMISM_DEPOSIT)) {
+      depositNonce.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
+      depositReceptVersion.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
+    }
+
     if (withRevertReason && revertReason.isPresent()) {
       rlpOutput.writeBytes(revertReason.get());
     }
@@ -245,10 +274,16 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     final LogsBloomFilter bloomFilter = LogsBloomFilter.readFrom(input);
     final List<Log> logs = input.readList(Log::readFrom);
     final Optional<Bytes> revertReason;
+    Optional<Long> depositNonce = Optional.empty();
+    Optional<Long> depositReceptVersion = Optional.empty();
     if (input.isEndOfCurrentList()) {
       revertReason = Optional.empty();
     } else {
-      if (!revertReasonAllowed) {
+      if (transactionType.equals(TransactionType.OPTIMISM_DEPOSIT)) {
+        depositNonce = Optional.of(input.readBytes()).map(Bytes::toLong);
+        depositReceptVersion = Optional.of(input.readBytes()).map(Bytes::toLong);
+      }
+      if (revertReasonAllowed) {
         throw new RLPException("Unexpected value at end of TransactionReceipt");
       }
       revertReason = Optional.of(input.readBytes());
@@ -260,12 +295,28 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
       final int status = firstElement.readIntScalar();
       input.leaveList();
       return new TransactionReceipt(
-          transactionType, status, cumulativeGas, logs, bloomFilter, revertReason);
+          transactionType,
+          null,
+          status,
+          cumulativeGas,
+          logs,
+          bloomFilter,
+          revertReason,
+          depositNonce,
+          depositReceptVersion);
     } else {
       final Hash stateRoot = Hash.wrap(firstElement.readBytes32());
       input.leaveList();
       return new TransactionReceipt(
-          transactionType, stateRoot, cumulativeGas, logs, bloomFilter, revertReason);
+          transactionType,
+          stateRoot,
+          0,
+          cumulativeGas,
+          logs,
+          bloomFilter,
+          revertReason,
+          depositNonce,
+          depositReceptVersion);
     }
   }
 
@@ -334,6 +385,14 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
   @Override
   public Optional<Bytes> getRevertReason() {
     return revertReason;
+  }
+
+  public Optional<Long> getDepositNonce() {
+    return depositNonce;
+  }
+
+  public Optional<Long> getDepositReceptVersion() {
+    return depositReceptVersion;
   }
 
   @Override
