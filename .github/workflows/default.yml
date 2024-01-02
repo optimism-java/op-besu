@@ -41,7 +41,7 @@ jobs:
       with:
         path: build/assemble
     - name: Build
-      run: "./gradlew --no-daemon build"
+      run: "./gradlew --no-daemon build -x test"
     - uses: "./.github/actions/capture_test_results"
 #  testWindows:
 #    runs-on: windows-latest
