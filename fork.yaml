@@ -35,6 +35,16 @@ def:
                 - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/encoding/TransactionDecoder.java"
                 - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/encoding/TransactionEncoder.java"
                 - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/Transaction.java"
+            - title: "Transaction processing"
+              description: |
+                Deposit transactions have special processing rules: gas is pre-paid on L1,
+                and deposits with EVM-failure are included with rolled back changes (except mint).
+                For regular transactions, at the end of the transition, the 1559 burn and L1 cost are routed to vaults.
+              globs:
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/MainnetTransactionProcessor.java"
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/MainnetTransactionValidator.java"
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/MainnetBlockProcessor.java"
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/L1CostCalculator.java"
         - title: "Block Creation modifications"
           description: |
             The block creation code implements the changes to support the transaction-inclusion, 
