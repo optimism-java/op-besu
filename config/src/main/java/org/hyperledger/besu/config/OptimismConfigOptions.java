@@ -45,7 +45,7 @@ public class OptimismConfigOptions {
    * @return the EIP1559 elasticity
    */
   public OptionalLong getEIP1559Elasticity() {
-    return JsonUtil.getLong(optimismConfigRoot, "eip1559Elasticity");
+    return JsonUtil.getLong(optimismConfigRoot, "eip1559elasticity");
   }
 
   /**
@@ -54,7 +54,7 @@ public class OptimismConfigOptions {
    * @return the EIP1559 denominator
    */
   public OptionalLong getEIP1559Denominator() {
-    return JsonUtil.getLong(optimismConfigRoot, "eip1559Denominator");
+    return JsonUtil.getLong(optimismConfigRoot, "eip1559denominator");
   }
 
   /**
@@ -63,7 +63,7 @@ public class OptimismConfigOptions {
    * @return the EIP1559 denominatorCanyon
    */
   public OptionalLong getEIP1559DenominatorCanyon() {
-    return JsonUtil.getLong(optimismConfigRoot, "eip1559DenominatorCanyon");
+    return JsonUtil.getLong(optimismConfigRoot, "eip1559denominatorcanyon");
   }
 
   /**

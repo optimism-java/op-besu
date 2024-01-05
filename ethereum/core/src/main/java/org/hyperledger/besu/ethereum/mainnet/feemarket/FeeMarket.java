@@ -14,6 +14,7 @@
  */
 package org.hyperledger.besu.ethereum.mainnet.feemarket;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.BlobGas;
 import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.core.Transaction;
@@ -36,12 +37,14 @@ public interface FeeMarket {
   boolean satisfiesFloorTxFee(Transaction txn);
 
   static BaseFeeMarket london(final long londonForkBlockNumber) {
-    return london(londonForkBlockNumber, Optional.empty());
+    return london(londonForkBlockNumber, Optional.empty(), Optional.empty());
   }
 
   static BaseFeeMarket london(
-      final long londonForkBlockNumber, final Optional<Wei> baseFeePerGasOverride) {
-    return new LondonFeeMarket(londonForkBlockNumber, baseFeePerGasOverride);
+      final long londonForkBlockNumber,
+      final Optional<Wei> baseFeePerGasOverride,
+      final Optional<GenesisConfigOptions> chainOptions) {
+    return new LondonFeeMarket(londonForkBlockNumber, baseFeePerGasOverride, chainOptions);
   }
 
   static BaseFeeMarket cancun(

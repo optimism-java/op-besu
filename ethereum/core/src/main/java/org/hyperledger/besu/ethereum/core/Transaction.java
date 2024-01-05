@@ -316,7 +316,8 @@ public class Transaction
         .map(
             baseFee -> {
               if (getType().supports1559FeeMarket()) {
-                if (baseFee.greaterOrEqualThan(getMaxFeePerGas().get())) {
+                if (getType().equals(TransactionType.OPTIMISM_DEPOSIT)
+                    || baseFee.greaterOrEqualThan(getMaxFeePerGas().get())) {
                   return Wei.ZERO;
                 }
                 return UInt256s.min(

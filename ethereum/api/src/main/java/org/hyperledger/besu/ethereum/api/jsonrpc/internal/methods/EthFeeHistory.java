@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
@@ -138,7 +139,8 @@ public class EthFeeHistory implements JsonRpcMethod {
                                   explicitlyRequestedBaseFees.get(
                                       explicitlyRequestedBaseFees.size() - 1),
                                   lastBlockHeader.getGasUsed(),
-                                  feeMarket.targetGasUsed(lastBlockHeader));
+                                  feeMarket.targetGasUsed(lastBlockHeader),
+                                  OptionalLong.of(chainHeadHeader.getTimestamp()));
                             })
                         .orElse(Wei.ZERO));
 

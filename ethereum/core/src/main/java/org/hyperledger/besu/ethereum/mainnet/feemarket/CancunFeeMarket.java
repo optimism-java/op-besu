@@ -30,7 +30,7 @@ public class CancunFeeMarket extends LondonFeeMarket {
 
   public CancunFeeMarket(
       final long londonForkBlockNumber, final Optional<Wei> baseFeePerGasOverride) {
-    super(londonForkBlockNumber, baseFeePerGasOverride);
+    super(londonForkBlockNumber, baseFeePerGasOverride, Optional.empty());
   }
 
   @Override

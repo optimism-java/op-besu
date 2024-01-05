@@ -25,6 +25,7 @@ import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.TransactionTestFixture;
 
 import java.util.Optional;
+import java.util.OptionalLong;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ public class ZeroBaseFeeMarketTest {
 
   @Test
   public void getBasefeeMaxChangeDenominatorShouldUseLondonDefault() {
-    assertThat(zeroBaseFeeMarket.getBasefeeMaxChangeDenominator())
+    assertThat(zeroBaseFeeMarket.getBasefeeMaxChangeDenominator(OptionalLong.empty()))
         .isEqualTo(LondonFeeMarket.DEFAULT_BASEFEE_MAX_CHANGE_DENOMINATOR);
   }
 
@@ -100,7 +101,8 @@ public class ZeroBaseFeeMarketTest {
 
   @Test
   public void computeBaseFeeReturnsZero() {
-    assertThat(zeroBaseFeeMarket.computeBaseFee(1L, Wei.of(8), 1L, 2L)).isEqualTo(Wei.ZERO);
+    assertThat(zeroBaseFeeMarket.computeBaseFee(1L, Wei.of(8), 1L, 2L, OptionalLong.empty()))
+        .isEqualTo(Wei.ZERO);
   }
 
   @Test

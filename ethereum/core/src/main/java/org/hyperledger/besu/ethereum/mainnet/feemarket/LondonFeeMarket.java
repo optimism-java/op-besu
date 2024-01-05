@@ -15,11 +15,13 @@
 package org.hyperledger.besu.ethereum.mainnet.feemarket;
 
 import org.hyperledger.besu.config.GenesisConfigFile;
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.feemarket.TransactionPriceCalculator;
 
 import java.util.Optional;
+import java.util.OptionalLong;
 
 import org.apache.tuweni.units.bigints.UInt256s;
 import org.slf4j.Logger;
@@ -39,28 +41,48 @@ public class LondonFeeMarket implements BaseFeeMarket {
   private final long londonForkBlockNumber;
   private final TransactionPriceCalculator txPriceCalculator;
   private final Wei baseFeeFloor;
+  private final Optional<GenesisConfigOptions> chainOptions;
 
   public LondonFeeMarket(final long londonForkBlockNumber) {
-    this(londonForkBlockNumber, Optional.empty());
+    this(londonForkBlockNumber, Optional.empty(), Optional.empty());
   }
 
   public LondonFeeMarket(
-      final long londonForkBlockNumber, final Optional<Wei> baseFeePerGasOverride) {
-    this(TransactionPriceCalculator.eip1559(), londonForkBlockNumber, baseFeePerGasOverride);
+      final long londonForkBlockNumber,
+      final Optional<Wei> baseFeePerGasOverride,
+      final Optional<GenesisConfigOptions> chainOptions) {
+    this(
+        TransactionPriceCalculator.eip1559(),
+        londonForkBlockNumber,
+        baseFeePerGasOverride,
+        chainOptions);
   }
 
   protected LondonFeeMarket(
       final TransactionPriceCalculator txPriceCalculator,
       final long londonForkBlockNumber,
-      final Optional<Wei> baseFeePerGasOverride) {
+      final Optional<Wei> baseFeePerGasOverride,
+      final Optional<GenesisConfigOptions> chainOptions) {
     this.txPriceCalculator = txPriceCalculator;
     this.londonForkBlockNumber = londonForkBlockNumber;
     this.baseFeeInitialValue = baseFeePerGasOverride.orElse(DEFAULT_BASEFEE_INITIAL_VALUE);
     this.baseFeeFloor = baseFeeInitialValue.isZero() ? Wei.ZERO : DEFAULT_BASEFEE_FLOOR;
+    this.chainOptions = chainOptions;
   }
 
   @Override
-  public long getBasefeeMaxChangeDenominator() {
+  public long getBasefeeMaxChangeDenominator(final OptionalLong time) {
+    if (time.isPresent() && this.chainOptions.isPresent()) {
+      if (this.chainOptions.get().isCanyon(time.getAsLong())) {
+        return chainOptions
+            .get()
+            .getOptimismConfigOptions()
+            .getEIP1559DenominatorCanyon()
+            .orElseThrow();
+      } else {
+        return chainOptions.get().getOptimismConfigOptions().getEIP1559Denominator().orElseThrow();
+      }
+    }
     return DEFAULT_BASEFEE_MAX_CHANGE_DENOMINATOR;
   }
 
@@ -71,6 +93,9 @@ public class LondonFeeMarket implements BaseFeeMarket {
 
   @Override
   public long getSlackCoefficient() {
+    if (chainOptions.isPresent() && chainOptions.get().isOptimism()) {
+      return chainOptions.get().getOptimismConfigOptions().getEIP1559Elasticity().orElseThrow();
+    }
     return DEFAULT_SLACK_COEFFICIENT;
   }
 
@@ -94,7 +119,8 @@ public class LondonFeeMarket implements BaseFeeMarket {
       final long blockNumber,
       final Wei parentBaseFee,
       final long parentBlockGasUsed,
-      final long targetGasUsed) {
+      final long targetGasUsed,
+      final OptionalLong time) {
     if (londonForkBlockNumber == blockNumber) {
       return getInitialBasefee();
     }
@@ -105,16 +131,16 @@ public class LondonFeeMarket implements BaseFeeMarket {
       return parentBaseFee;
     } else if (parentBlockGasUsed > targetGasUsed) {
       gasDelta = parentBlockGasUsed - targetGasUsed;
-      final long denominator = getBasefeeMaxChangeDenominator();
+      final long denominator = getBasefeeMaxChangeDenominator(time);
       feeDelta =
           UInt256s.max(
               parentBaseFee.multiply(gasDelta).divide(targetGasUsed).divide(denominator), Wei.ONE);
       baseFee = parentBaseFee.add(feeDelta);
     } else {
       gasDelta = targetGasUsed - parentBlockGasUsed;
-      final long denominator = getBasefeeMaxChangeDenominator();
+      final long denominator = getBasefeeMaxChangeDenominator(time);
       feeDelta = parentBaseFee.multiply(gasDelta).divide(targetGasUsed).divide(denominator);
-      baseFee = parentBaseFee.subtract(feeDelta);
+      baseFee = UInt256s.max(parentBaseFee.subtract(feeDelta), Wei.ZERO);
     }
     LOG.trace(
         "block #{} parentBaseFee: {} parentGasUsed: {} parentGasTarget: {} baseFee: {}",
