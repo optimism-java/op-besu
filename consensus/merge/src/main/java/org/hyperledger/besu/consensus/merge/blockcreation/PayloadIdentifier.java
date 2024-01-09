@@ -91,12 +91,13 @@ public class PayloadIdentifier implements Quantity {
       digest.update(Longs.toByteArray(timestamp));
       digest.update(prevRandao.toArrayUnsafe());
       digest.update(feeRecipient.toArrayUnsafe());
-      withdrawals.ifPresent(
-          withdrawalList -> {
-            final BytesValueRLPOutput out = new BytesValueRLPOutput();
-            out.writeList(withdrawalList, Withdrawal::writeTo);
-            digest.update(out.encoded().toArrayUnsafe());
-          });
+      final BytesValueRLPOutput out = new BytesValueRLPOutput();
+      if (withdrawals.isPresent()) {
+        out.writeList(withdrawals.get(), Withdrawal::writeTo);
+      } else {
+        out.writeEmptyList();
+      }
+      digest.update(out.encoded().toArrayUnsafe());
       parentBeaconBlockRoot.ifPresent(
           parentBeaconBlockRootBytes -> digest.update(parentBeaconBlockRootBytes.toArrayUnsafe()));
       boolean noTxPoolFlag = noTxPool.orElse(false);
