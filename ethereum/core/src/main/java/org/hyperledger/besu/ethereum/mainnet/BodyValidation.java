@@ -119,7 +119,6 @@ public final class BodyValidation {
                     indexKey(i),
                     RLP.encode(
                         rlpOutput -> receipts.get(i).writeToForReceiptTrie(rlpOutput, false))));
-
     return Hash.wrap(trie.getRootHash());
   }
 

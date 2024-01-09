@@ -14,6 +14,7 @@
  */
 package org.hyperledger.besu.consensus.merge.blockcreation;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.ProtocolContext;
@@ -68,7 +69,8 @@ class MergeBlockCreator extends AbstractBlockCreator {
       final Wei minTransactionGasPrice,
       final Address miningBeneficiary,
       final BlockHeader parentHeader,
-      final Optional<Address> depositContractAddress) {
+      final Optional<Address> depositContractAddress,
+      final Optional<GenesisConfigOptions> genesisConfigOptions) {
     super(
         miningBeneficiary,
         __ -> miningBeneficiary,
@@ -80,7 +82,8 @@ class MergeBlockCreator extends AbstractBlockCreator {
         minTransactionGasPrice,
         TRY_FILL_BLOCK,
         parentHeader,
-        depositContractAddress);
+        depositContractAddress,
+        genesisConfigOptions);
   }
 
   /**

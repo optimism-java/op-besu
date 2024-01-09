@@ -82,6 +82,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -154,7 +155,7 @@ public class MergeCoordinatorTest implements MergeGenesisConfigHelper {
   private final Address suggestedFeeRecipient = Address.ZERO;
   private final BlockHeaderTestFixture headerGenerator = new BlockHeaderTestFixture();
   private final BaseFeeMarket feeMarket =
-      new LondonFeeMarket(0, genesisState.getBlock().getHeader().getBaseFee());
+      new LondonFeeMarket(0, genesisState.getBlock().getHeader().getBaseFee(), Optional.empty());
 
   private final org.hyperledger.besu.metrics.StubMetricsSystem metricsSystem =
       new StubMetricsSystem();
@@ -235,6 +236,7 @@ public class MergeCoordinatorTest implements MergeGenesisConfigHelper {
             transactionPool,
             miningParameters,
             backwardSyncContext,
+            Optional.empty(),
             Optional.empty());
   }
 
@@ -290,6 +292,7 @@ public class MergeCoordinatorTest implements MergeGenesisConfigHelper {
                       this.miningParameters.getMinTransactionGasPrice(),
                       address.or(miningParameters::getCoinbase).orElse(Address.ZERO),
                       parentHeader,
+                      Optional.empty(),
                       Optional.empty()));
 
           doCallRealMethod()
@@ -790,6 +793,7 @@ public class MergeCoordinatorTest implements MergeGenesisConfigHelper {
             transactionPool,
             miningParameters,
             backwardSyncContext,
+            Optional.empty(),
             Optional.empty());
 
     final PayloadIdentifier payloadId =
@@ -1040,7 +1044,8 @@ public class MergeCoordinatorTest implements MergeGenesisConfigHelper {
                 genesisState.getBlock().getHeader().getNumber() + 1,
                 genesisState.getBlock().getHeader().getBaseFee().orElse(Wei.of(0x3b9aca00)),
                 0,
-                15000000l))
+                15000000l,
+                OptionalLong.empty()))
         .timestamp(1)
         .gasLimit(genesisState.getBlock().getHeader().getGasLimit())
         .stateRoot(genesisState.getBlock().getHeader().getStateRoot())
@@ -1063,7 +1068,8 @@ public class MergeCoordinatorTest implements MergeGenesisConfigHelper {
                 genesisState.getBlock().getHeader().getNumber() + 1,
                 parentHeader.getBaseFee().orElse(Wei.of(0x3b9aca00)),
                 0,
-                15000000l))
+                15000000l,
+                OptionalLong.empty()))
         .buildHeader();
   }
 

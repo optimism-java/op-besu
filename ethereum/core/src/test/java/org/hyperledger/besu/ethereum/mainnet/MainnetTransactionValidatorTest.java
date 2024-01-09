@@ -383,7 +383,7 @@ public class MainnetTransactionValidatorTest {
         createTransactionValidator(
             gasCalculator,
             GasLimitCalculator.constant(),
-            FeeMarket.london(0L, zeroBaseFee),
+            FeeMarket.london(0L, zeroBaseFee, Optional.empty()),
             false,
             Optional.of(BigInteger.ONE),
             Set.of(TransactionType.FRONTIER, TransactionType.EIP1559),

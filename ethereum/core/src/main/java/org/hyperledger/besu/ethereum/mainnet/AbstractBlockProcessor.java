@@ -37,7 +37,6 @@ import org.hyperledger.besu.ethereum.trie.MerkleTrieException;
 import org.hyperledger.besu.ethereum.vm.BlockHashLookup;
 import org.hyperledger.besu.ethereum.vm.CachingBlockHashLookup;
 import org.hyperledger.besu.evm.account.Account;
-import org.hyperledger.besu.evm.account.MutableAccount;
 import org.hyperledger.besu.evm.tracing.OperationTracer;
 import org.hyperledger.besu.evm.worldstate.WorldState;
 import org.hyperledger.besu.evm.worldstate.WorldUpdater;
@@ -121,16 +120,6 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
       if (!hasAvailableBlockBudget(blockHeader, transaction, currentGasUsed)) {
         return new BlockProcessingResult(Optional.empty(), "provided gas insufficient");
       }
-      transaction
-          .getMint()
-          .ifPresent(
-              mint -> {
-                WorldUpdater mintUpdater = worldState.updater();
-                final MutableAccount sender =
-                    mintUpdater.getOrCreateSenderAccount(transaction.getSender());
-                sender.incrementBalance(transaction.getMint().orElse(Wei.ZERO));
-                mintUpdater.commit();
-              });
 
       final WorldUpdater worldStateUpdater = worldState.updater();
 
@@ -151,7 +140,7 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
                               calculateExcessBlobGasForParent(protocolSpec, parentHeader)))
               .orElse(Wei.ZERO);
 
-      Account sender = worldState.get(transaction.getSender());
+      Account sender = worldStateUpdater.getOrCreate(transaction.getSender());
       long nonce = sender.getNonce();
 
       final TransactionProcessingResult result =

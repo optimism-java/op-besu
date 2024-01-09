@@ -177,7 +177,8 @@ public class MergeBesuControllerBuilder extends BesuControllerBuilder {
         transactionPool,
         miningParameters,
         backwardSyncContext,
-        depositContractAddress);
+        depositContractAddress,
+        Optional.of(genesisConfigOptions));
   }
 
   @Override

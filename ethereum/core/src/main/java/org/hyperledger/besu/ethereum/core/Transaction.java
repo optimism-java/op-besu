@@ -262,6 +262,9 @@ public class Transaction
    */
   @Override
   public long getNonce() {
+    if (TransactionType.OPTIMISM_DEPOSIT.equals(transactionType)) {
+      return 0L;
+    }
     return nonce;
   }
 
@@ -501,17 +504,25 @@ public class Transaction
 
   @Override
   public BigInteger getR() {
+    if (TransactionType.OPTIMISM_DEPOSIT.equals(transactionType)) {
+      return BigInteger.ZERO;
+    }
     return signature.getR();
   }
 
   @Override
   public BigInteger getS() {
+    if (TransactionType.OPTIMISM_DEPOSIT.equals(transactionType)) {
+      return BigInteger.ZERO;
+    }
     return signature.getS();
   }
 
   @Override
   public BigInteger getV() {
-
+    if (TransactionType.OPTIMISM_DEPOSIT.equals(transactionType)) {
+      return BigInteger.ZERO;
+    }
     final BigInteger recId = BigInteger.valueOf(signature.getRecId());
 
     if (transactionType != null && transactionType != TransactionType.FRONTIER) {
@@ -668,6 +679,9 @@ public class Transaction
    * @return the effective gas price.
    */
   public final Wei getEffectiveGasPrice(final Optional<Wei> baseFeePerGas) {
+    if (TransactionType.OPTIMISM_DEPOSIT.equals(transactionType)) {
+      return Wei.ZERO;
+    }
     return getEffectivePriorityFeePerGas(baseFeePerGas).addExact(baseFeePerGas.orElse(Wei.ZERO));
   }
 

@@ -303,6 +303,16 @@ public class MainnetTransactionProcessor {
       final PrivateMetadataUpdater privateMetadataUpdater,
       final Wei blobGasPrice) {
     try {
+      transaction
+          .getMint()
+          .ifPresent(
+              mint -> {
+                WorldUpdater mintUpdater = worldState.updater();
+                final MutableAccount sender =
+                    mintUpdater.getOrCreateSenderAccount(transaction.getSender());
+                sender.incrementBalance(transaction.getMint().orElse(Wei.ZERO));
+                mintUpdater.commit();
+              });
       final var transactionValidator = transactionValidatorFactory.get();
       LOG.trace("Starting execution of {}", transaction);
       ValidationResult<TransactionInvalidReason> validationResult =

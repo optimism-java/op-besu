@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.apache.tuweni.bytes.Bytes;
+import org.apache.tuweni.bytes.DelegatingBytes;
 
 @JsonPropertyOrder({
   "accessList",
@@ -39,6 +40,7 @@ import org.apache.tuweni.bytes.Bytes;
   "maxPriorityFeePerGas",
   "maxFeePerGas",
   "maxFeePerBlobGas",
+  "mint",
   "hash",
   "input",
   "nonce",
@@ -49,6 +51,7 @@ import org.apache.tuweni.bytes.Bytes;
   "v",
   "r",
   "s",
+  "sourceHash",
   "blobVersionedHashes"
 })
 public class TransactionCompleteResult implements TransactionResult {
@@ -75,6 +78,9 @@ public class TransactionCompleteResult implements TransactionResult {
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private final String maxFeePerBlobGas;
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private final String mint;
+
   private final String hash;
   private final String input;
   private final String nonce;
@@ -85,6 +91,9 @@ public class TransactionCompleteResult implements TransactionResult {
   private final String v;
   private final String r;
   private final String s;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private final String sourceHash;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private final List<VersionedHash> versionedHashes;
@@ -110,6 +119,7 @@ public class TransactionCompleteResult implements TransactionResult {
                 .getGasPrice()
                 .orElseGet(() -> transaction.getEffectiveGasPrice(tx.getBaseFee())));
     this.hash = transaction.getHash().toString();
+    this.mint = transaction.getMint().map(Wei::toShortHexString).orElse(null);
     this.input = transaction.getPayload().toString();
     this.nonce = Quantity.create(transaction.getNonce());
     this.to = transaction.getTo().map(Bytes::toHexString).orElse(null);
@@ -122,6 +132,7 @@ public class TransactionCompleteResult implements TransactionResult {
     this.v = Quantity.create(transaction.getV());
     this.r = Quantity.create(transaction.getR());
     this.s = Quantity.create(transaction.getS());
+    this.sourceHash = transaction.getSourceHash().map(DelegatingBytes::toString).orElse(null);
     this.versionedHashes = transaction.getVersionedHashes().orElse(null);
   }
 
@@ -180,6 +191,11 @@ public class TransactionCompleteResult implements TransactionResult {
     return hash;
   }
 
+  @JsonGetter(value = "mint")
+  public String getMint() {
+    return mint;
+  }
+
   @JsonGetter(value = "input")
   public String getInput() {
     return input;
@@ -223,6 +239,11 @@ public class TransactionCompleteResult implements TransactionResult {
   @JsonGetter(value = "s")
   public String getS() {
     return s;
+  }
+
+  @JsonGetter(value = "sourceHash")
+  public String getSourceHash() {
+    return sourceHash;
   }
 
   @JsonGetter(value = "blobVersionedHashes")

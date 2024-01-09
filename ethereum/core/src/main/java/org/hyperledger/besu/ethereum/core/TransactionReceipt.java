@@ -58,7 +58,7 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
   private final Optional<Bytes> revertReason;
 
   private final Optional<Long> depositNonce;
-  private final Optional<Long> depositReceptVersion;
+  private final Optional<Long> depositReceiptVersion;
 
   /**
    * Creates an instance of a state root-encoded transaction receipt.
@@ -151,7 +151,7 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
       final List<Log> logs,
       final Optional<Bytes> maybeRevertReason,
       final Optional<Long> depositNonce,
-      final Optional<Long> depositReceptVersion) {
+      final Optional<Long> depositReceiptVersion) {
     this(
         transactionType,
         null,
@@ -161,10 +161,10 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
         LogsBloomFilter.builder().insertLogs(logs).build(),
         maybeRevertReason,
         depositNonce,
-        depositReceptVersion);
+        depositReceiptVersion);
   }
 
-  private TransactionReceipt(
+  public TransactionReceipt(
       final TransactionType transactionType,
       final Hash stateRoot,
       final int status,
@@ -173,7 +173,7 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
       final LogsBloomFilter bloomFilter,
       final Optional<Bytes> revertReason,
       final Optional<Long> depositNonce,
-      final Optional<Long> depositReceptVersion) {
+      final Optional<Long> depositReceiptVersion) {
     this.transactionType = transactionType;
     this.stateRoot = stateRoot;
     this.cumulativeGasUsed = cumulativeGasUsed;
@@ -183,7 +183,7 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     this.transactionReceiptType =
         stateRoot == null ? TransactionReceiptType.STATUS : TransactionReceiptType.ROOT;
     this.depositNonce = depositNonce;
-    this.depositReceptVersion = depositReceptVersion;
+    this.depositReceiptVersion = depositReceiptVersion;
     this.revertReason = revertReason;
   }
 
@@ -227,8 +227,10 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     rlpOutput.writeList(logs, Log::writeTo);
 
     if (transactionType.equals(TransactionType.OPTIMISM_DEPOSIT)) {
-      depositNonce.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
-      depositReceptVersion.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
+      if (depositReceiptVersion.isPresent()) {
+        depositNonce.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
+        depositReceiptVersion.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
+      }
     }
 
     if (withRevertReason && revertReason.isPresent()) {
@@ -273,20 +275,24 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     // TODO consider validating that the logs and bloom filter match.
     final LogsBloomFilter bloomFilter = LogsBloomFilter.readFrom(input);
     final List<Log> logs = input.readList(Log::readFrom);
-    final Optional<Bytes> revertReason;
+    Optional<Bytes> revertReason = Optional.empty();
     Optional<Long> depositNonce = Optional.empty();
     Optional<Long> depositReceptVersion = Optional.empty();
-    if (input.isEndOfCurrentList()) {
-      revertReason = Optional.empty();
-    } else {
-      if (transactionType.equals(TransactionType.OPTIMISM_DEPOSIT)) {
-        depositNonce = Optional.of(input.readBytes()).map(Bytes::toLong);
+    if (transactionType.equals(TransactionType.OPTIMISM_DEPOSIT) && !input.isEndOfCurrentList()) {
+      var element = input.readBytes();
+      if (input.isEndOfCurrentList() && revertReasonAllowed) {
+        revertReason = Optional.of(element);
+      } else {
+        depositNonce = Optional.of(element).map(Bytes::toLong);
         depositReceptVersion = Optional.of(input.readBytes()).map(Bytes::toLong);
       }
-      if (revertReasonAllowed) {
+    }
+    if (revertReasonAllowed && revertReason.isEmpty()) {
+      if (input.isEndOfCurrentList()) {
         throw new RLPException("Unexpected value at end of TransactionReceipt");
+      } else {
+        revertReason = Optional.of(input.readBytes());
       }
-      revertReason = Optional.of(input.readBytes());
     }
 
     // Status code-encoded transaction receipts have a single
@@ -391,8 +397,8 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     return depositNonce;
   }
 
-  public Optional<Long> getDepositReceptVersion() {
-    return depositReceptVersion;
+  public Optional<Long> getDepositReceiptVersion() {
+    return depositReceiptVersion;
   }
 
   @Override

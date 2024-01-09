@@ -46,6 +46,7 @@ import org.hyperledger.besu.util.LogConfigurator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -78,7 +79,7 @@ public class MergeReorgTest implements MergeGenesisConfigHelper {
   private final Address coinbase = genesisAllocations(getPowGenesisConfigFile()).findFirst().get();
   private final BlockHeaderTestFixture headerGenerator = new BlockHeaderTestFixture();
   private final BaseFeeMarket feeMarket =
-      new LondonFeeMarket(0, genesisState.getBlock().getHeader().getBaseFee());
+      new LondonFeeMarket(0, genesisState.getBlock().getHeader().getBaseFee(), Optional.empty());
 
   @BeforeEach
   public void setUp() {
@@ -95,6 +96,7 @@ public class MergeReorgTest implements MergeGenesisConfigHelper {
             mockTransactionPool,
             new MiningParameters.Builder().coinbase(coinbase).build(),
             mock(BackwardSyncContext.class),
+            Optional.empty(),
             Optional.empty());
     mergeContext.setIsPostMerge(genesisState.getBlock().getHeader().getDifficulty());
     blockchain.observeBlockAdded(
@@ -186,7 +188,8 @@ public class MergeReorgTest implements MergeGenesisConfigHelper {
                   genesisState.getBlock().getHeader().getNumber() + 1,
                   newParent.getBaseFee().orElse(Wei.of(0x3b9aca00)),
                   0,
-                  15000000))
+                  15000000,
+                  OptionalLong.empty()))
           .gasLimit(newParent.getGasLimit())
           .timestamp(newParent.getTimestamp() + 1)
           .stateRoot(newParent.getStateRoot());
@@ -212,7 +215,8 @@ public class MergeReorgTest implements MergeGenesisConfigHelper {
                     genesisState.getBlock().getHeader().getNumber() + 1,
                     parent.getBaseFee().orElse(Wei.of(0x3b9aca00)),
                     0,
-                    15000000l))
+                    15000000l,
+                    OptionalLong.empty()))
             .gasLimit(parent.getGasLimit())
             .timestamp(parent.getTimestamp() + 1)
             .stateRoot(parent.getStateRoot())

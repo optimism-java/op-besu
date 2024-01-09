@@ -24,6 +24,7 @@ import org.hyperledger.besu.ethereum.mainnet.feemarket.FeeMarket;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,7 +72,9 @@ public class BaseFeeMarketBaseFeeTest {
       final long parentGasUsed,
       final long parentTargetGasUsed,
       final Wei expectedBaseFee) {
-    assertThat(baseFeeMarket.computeBaseFee(0L, parentBaseFee, parentGasUsed, parentTargetGasUsed))
+    assertThat(
+            baseFeeMarket.computeBaseFee(
+                0L, parentBaseFee, parentGasUsed, parentTargetGasUsed, OptionalLong.empty()))
         .isEqualTo(expectedBaseFee);
   }
 

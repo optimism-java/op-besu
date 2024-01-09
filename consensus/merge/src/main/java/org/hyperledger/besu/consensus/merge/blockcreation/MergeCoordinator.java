@@ -17,6 +17,7 @@ package org.hyperledger.besu.consensus.merge.blockcreation;
 import static java.util.stream.Collectors.joining;
 import static org.hyperledger.besu.consensus.merge.blockcreation.MergeMiningCoordinator.ForkchoiceResult.Status.INVALID;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.consensus.merge.MergeContext;
 import org.hyperledger.besu.consensus.merge.PayloadWrapper;
 import org.hyperledger.besu.datatypes.Address;
@@ -112,7 +113,8 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
       final TransactionPool transactionPool,
       final MiningParameters miningParams,
       final BackwardSyncContext backwardSyncContext,
-      final Optional<Address> depositContractAddress) {
+      final Optional<Address> depositContractAddress,
+      final Optional<GenesisConfigOptions> genesisConfigOptions) {
     this.protocolContext = protocolContext;
     this.protocolSchedule = protocolSchedule;
     this.blockBuilderExecutor = blockBuilderExecutor;
@@ -138,7 +140,8 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
                 this.miningParameters.getMinTransactionGasPrice(),
                 address.or(miningParameters::getCoinbase).orElse(Address.ZERO),
                 parentHeader,
-                depositContractAddress);
+                depositContractAddress,
+                genesisConfigOptions);
 
     this.backwardSyncContext.subscribeBadChainListener(this);
   }

@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -212,7 +213,8 @@ public class ReferenceTestEnv extends BlockHeader {
                   number,
                   Wei.fromHexString(parentBaseFee),
                   Long.decode(parentGasUsed),
-                  gasLimit / 2));
+                  gasLimit / 2,
+                  OptionalLong.empty()));
     }
     if (difficulty == null && parentDifficulty != null) {
       builder.difficulty(

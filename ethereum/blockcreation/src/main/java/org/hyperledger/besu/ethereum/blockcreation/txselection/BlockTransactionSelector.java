@@ -14,7 +14,9 @@
  */
 package org.hyperledger.besu.ethereum.blockcreation.txselection;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.Address;
+import org.hyperledger.besu.datatypes.TransactionType;
 import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.GasLimitCalculator;
 import org.hyperledger.besu.ethereum.blockcreation.txselection.selectors.AbstractTransactionSelector;
@@ -37,6 +39,7 @@ import org.hyperledger.besu.ethereum.mainnet.feemarket.FeeMarket;
 import org.hyperledger.besu.ethereum.processing.TransactionProcessingResult;
 import org.hyperledger.besu.ethereum.vm.BlockHashLookup;
 import org.hyperledger.besu.ethereum.vm.CachingBlockHashLookup;
+import org.hyperledger.besu.evm.account.Account;
 import org.hyperledger.besu.evm.gascalculator.GasCalculator;
 import org.hyperledger.besu.evm.tracing.OperationTracer;
 import org.hyperledger.besu.evm.worldstate.WorldUpdater;
@@ -88,6 +91,7 @@ public class BlockTransactionSelector {
   private final List<AbstractTransactionSelector> transactionSelectors;
   private final PluginTransactionSelector pluginTransactionSelector;
   private final OperationTracer pluginOperationTracer;
+  private final Optional<GenesisConfigOptions> genesisConfigOptions;
 
   public BlockTransactionSelector(
       final MainnetTransactionProcessor transactionProcessor,
@@ -104,7 +108,8 @@ public class BlockTransactionSelector {
       final FeeMarket feeMarket,
       final GasCalculator gasCalculator,
       final GasLimitCalculator gasLimitCalculator,
-      final Optional<PluginTransactionSelectorFactory> transactionSelectorFactory) {
+      final Optional<PluginTransactionSelectorFactory> transactionSelectorFactory,
+      final Optional<GenesisConfigOptions> genesisConfigOptions) {
     this.transactionProcessor = transactionProcessor;
     this.blockchain = blockchain;
     this.worldState = worldState;
@@ -127,6 +132,7 @@ public class BlockTransactionSelector {
             .map(PluginTransactionSelectorFactory::create)
             .orElse(AllAcceptingTransactionSelector.INSTANCE);
     pluginOperationTracer = pluginTransactionSelector.getOperationTracer();
+    this.genesisConfigOptions = genesisConfigOptions;
   }
 
   private List<AbstractTransactionSelector> createTransactionSelectors(
@@ -210,6 +216,8 @@ public class BlockTransactionSelector {
     }
 
     final WorldUpdater worldStateUpdater = worldState.updater();
+    Account sender = worldStateUpdater.getOrCreate(pendingTransaction.getTransaction().getSender());
+    final long nonce = sender.getNonce();
     final TransactionProcessingResult processingResult =
         processTransaction(pendingTransaction, worldStateUpdater);
 
@@ -219,7 +227,8 @@ public class BlockTransactionSelector {
       return handleTransactionNotSelected(pendingTransaction, postProcessingSelectionResult);
     }
 
-    return handleTransactionSelected(pendingTransaction, processingResult, worldStateUpdater);
+    return handleTransactionSelected(
+        nonce, pendingTransaction, processingResult, worldStateUpdater);
   }
 
   /**
@@ -309,6 +318,7 @@ public class BlockTransactionSelector {
    * @return The result of the transaction selection process.
    */
   private TransactionSelectionResult handleTransactionSelected(
+      final long nonce,
       final PendingTransaction pendingTransaction,
       final TransactionProcessingResult processingResult,
       final WorldUpdater worldStateUpdater) {
@@ -322,9 +332,32 @@ public class BlockTransactionSelector {
     final long blobGasUsed =
         blockSelectionContext.gasCalculator().blobGasCost(transaction.getBlobCount());
 
-    final TransactionReceipt receipt =
-        transactionReceiptFactory.create(
-            transaction.getType(), processingResult, worldState, cumulativeGasUsed);
+    TransactionReceipt receipt;
+    if (!TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+      receipt =
+          transactionReceiptFactory.create(
+              transaction.getType(), processingResult, worldState, cumulativeGasUsed);
+    } else {
+      GenesisConfigOptions options = genesisConfigOptions.orElseThrow();
+      Optional<Long> depositNonce =
+          options.isRegolith(blockSelectionContext.processableBlockHeader().getTimestamp())
+              ? Optional.of(nonce)
+              : Optional.empty();
+
+      Optional<Long> canyonDepositReceiptVer =
+          options.isCanyon(blockSelectionContext.processableBlockHeader().getTimestamp())
+              ? Optional.of(1L)
+              : Optional.empty();
+      receipt =
+          new TransactionReceipt(
+              transaction.getType(),
+              processingResult.isSuccessful() ? 1 : 0,
+              cumulativeGasUsed,
+              processingResult.getLogs(),
+              Optional.empty(),
+              depositNonce,
+              canyonDepositReceiptVer);
+    }
 
     logTransactionSelection(pendingTransaction.getTransaction());
 

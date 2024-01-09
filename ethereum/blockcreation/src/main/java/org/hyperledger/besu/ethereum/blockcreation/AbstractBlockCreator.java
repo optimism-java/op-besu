@@ -16,6 +16,7 @@ package org.hyperledger.besu.ethereum.blockcreation;
 
 import static org.hyperledger.besu.ethereum.mainnet.feemarket.ExcessBlobGasCalculator.calculateExcessBlobGasForParent;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.datatypes.BlobGas;
 import org.hyperledger.besu.datatypes.Hash;
@@ -95,6 +96,7 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
   private final Double minBlockOccupancyRatio;
   protected final BlockHeader parentHeader;
   private final Optional<Address> depositContractAddress;
+  private final Optional<GenesisConfigOptions> genesisConfigOptions;
 
   private final AtomicBoolean isCancelled = new AtomicBoolean(false);
 
@@ -110,6 +112,34 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
       final Double minBlockOccupancyRatio,
       final BlockHeader parentHeader,
       final Optional<Address> depositContractAddress) {
+    this(
+        coinbase,
+        miningBeneficiaryCalculator,
+        targetGasLimitSupplier,
+        extraDataCalculator,
+        transactionPool,
+        protocolContext,
+        protocolSchedule,
+        minTransactionGasPrice,
+        minBlockOccupancyRatio,
+        parentHeader,
+        depositContractAddress,
+        Optional.empty());
+  }
+
+  protected AbstractBlockCreator(
+      final Address coinbase,
+      final MiningBeneficiaryCalculator miningBeneficiaryCalculator,
+      final Supplier<Optional<Long>> targetGasLimitSupplier,
+      final ExtraDataCalculator extraDataCalculator,
+      final TransactionPool transactionPool,
+      final ProtocolContext protocolContext,
+      final ProtocolSchedule protocolSchedule,
+      final Wei minTransactionGasPrice,
+      final Double minBlockOccupancyRatio,
+      final BlockHeader parentHeader,
+      final Optional<Address> depositContractAddress,
+      final Optional<GenesisConfigOptions> genesisConfigOptions) {
     this.coinbase = coinbase;
     this.miningBeneficiaryCalculator = miningBeneficiaryCalculator;
     this.targetGasLimitSupplier = targetGasLimitSupplier;
@@ -122,6 +152,7 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
     this.parentHeader = parentHeader;
     this.depositContractAddress = depositContractAddress;
     blockHeaderFunctions = ScheduleBasedBlockHeaderFunctions.create(protocolSchedule);
+    this.genesisConfigOptions = genesisConfigOptions;
   }
 
   /**
@@ -364,7 +395,8 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
             protocolSpec.getFeeMarket(),
             protocolSpec.getGasCalculator(),
             protocolSpec.getGasLimitCalculator(),
-            protocolContext.getTransactionSelectorFactory());
+            protocolContext.getTransactionSelectorFactory(),
+            genesisConfigOptions);
 
     if (noTxFromPool.isEmpty()) {
       if (transactions.isPresent()) {
