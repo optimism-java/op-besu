@@ -56,7 +56,16 @@ public class PayloadIdentifier implements Quantity {
    * @param payloadId the payload id
    */
   public PayloadIdentifier(final Long payloadId) {
-    this.val = UInt64.valueOf(Math.abs(payloadId));
+    this.val = UInt64.valueOf(payloadId);
+  }
+
+  /**
+   * Instantiates a new Payload identifier.
+   *
+   * @param payloadId the payload id
+   */
+  public PayloadIdentifier(final BigInteger payloadId) {
+    this.val = UInt64.valueOf(payloadId);
   }
 
   /**
@@ -109,7 +118,7 @@ public class PayloadIdentifier implements Quantity {
       }
       digest.update(Longs.toByteArray(gasLimit.get()));
 
-      return new PayloadIdentifier(Numeric.toBigInt(digest.digest(), 0, 8).longValue());
+      return new PayloadIdentifier(Numeric.toBigInt(digest.digest(), 0, 8));
     }
 
     return new PayloadIdentifier(

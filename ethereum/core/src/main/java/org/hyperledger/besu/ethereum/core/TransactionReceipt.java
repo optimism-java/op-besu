@@ -288,11 +288,11 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
       }
     }
     if (revertReasonAllowed && revertReason.isEmpty()) {
-      if (input.isEndOfCurrentList()) {
-        throw new RLPException("Unexpected value at end of TransactionReceipt");
-      } else {
+      if (!input.isEndOfCurrentList()) {
         revertReason = Optional.of(input.readBytes());
       }
+    } else if (!revertReasonAllowed && !input.isEndOfCurrentList()) {
+      throw new RLPException("Unexpected value at end of TransactionReceipt");
     }
 
     // Status code-encoded transaction receipts have a single
