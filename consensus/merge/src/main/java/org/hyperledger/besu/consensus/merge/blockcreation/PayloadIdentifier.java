@@ -47,7 +47,7 @@ public class PayloadIdentifier implements Quantity {
    */
   @JsonCreator
   public PayloadIdentifier(final String payloadId) {
-    this(Long.decode(payloadId));
+    this.val = UInt64.fromHexString(payloadId);
   }
 
   /**
