@@ -42,6 +42,7 @@ import org.hyperledger.besu.ethereum.eth.transactions.PendingTransaction;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPool;
 import org.hyperledger.besu.ethereum.mainnet.AbstractBlockProcessor;
 import org.hyperledger.besu.ethereum.mainnet.BodyValidation;
+import org.hyperledger.besu.ethereum.mainnet.Create2DeployerFunction;
 import org.hyperledger.besu.ethereum.mainnet.DepositsValidator;
 import org.hyperledger.besu.ethereum.mainnet.DifficultyCalculator;
 import org.hyperledger.besu.ethereum.mainnet.MainnetTransactionProcessor;
@@ -397,6 +398,11 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
             protocolSpec.getGasLimitCalculator(),
             protocolContext.getTransactionSelectorFactory(),
             genesisConfigOptions);
+
+    Create2DeployerFunction.ensureCreate2Deployer(
+        genesisConfigOptions,
+        processableBlockHeader.getTimestamp(),
+        disposableWorldState.updater());
 
     if (noTxFromPool.isEmpty()) {
       if (transactions.isPresent()) {

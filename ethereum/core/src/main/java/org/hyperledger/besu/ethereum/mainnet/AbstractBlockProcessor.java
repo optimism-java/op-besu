@@ -116,6 +116,12 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
           updater, blockHeader.getTimestamp(), blockHeader.getParentBeaconBlockRoot().get());
     }
 
+    Create2DeployerFunction.ensureCreate2Deployer(
+        genesisOptions,
+        blockHeader.getTimestamp(),
+        worldState.updater()
+    );
+
     for (final Transaction transaction : transactions) {
       if (!hasAvailableBlockBudget(blockHeader, transaction, currentGasUsed)) {
         return new BlockProcessingResult(Optional.empty(), "provided gas insufficient");
