@@ -505,8 +505,6 @@ public class MainnetTransactionProcessor {
             gasAvailable - initialFrame.getRemainingGas());
       }
 
-      final long gasUsedByTransaction = transaction.getGasLimit() - initialFrame.getRemainingGas();
-
       boolean isRegolith =
           genesisConfigOptions
               .map(options -> options.isRegolith(blockHeader.getTimestamp()))
@@ -534,7 +532,7 @@ public class MainnetTransactionProcessor {
       final long selfDestructRefund =
           gasCalculator.getSelfDestructRefundAmount() * initialFrame.getSelfDestructs().size();
       final long baseRefundGas = initialFrame.getGasRefund() + selfDestructRefund;
-      final long refundedGas = refunded(transaction, initialFrame.getRemainingGas(), baseRefundGas);
+      final long refundedGas = refunded(transaction, initialFrame, baseRefundGas);
       final Wei refundedWei = transactionGasPrice.multiply(refundedGas);
       final Wei balancePriorToRefund = sender.getBalance();
       sender.incrementBalance(refundedWei);
@@ -545,6 +543,8 @@ public class MainnetTransactionProcessor {
           .addArgument(balancePriorToRefund)
           .addArgument(sender.getBalance())
           .log();
+
+      final long gasUsedByTransaction = transaction.getGasLimit() - initialFrame.getRemainingGas();
 
       // Skip coinbase payments for deposit tx in Regolith
       if (initialFrame.isDepositTx() && isRegolith) {
@@ -667,11 +667,13 @@ public class MainnetTransactionProcessor {
   }
 
   protected long refunded(
-      final Transaction transaction, final long gasRemaining, final long gasRefund) {
+      final Transaction transaction, final MessageFrame initialFrame, final long gasRefund) {
     // Integer truncation takes care of the floor calculation needed after the divide.
+    final long gasRemaining = initialFrame.getRemainingGas();
     final long maxRefundAllowance =
         (transaction.getGasLimit() - gasRemaining) / gasCalculator.getMaxRefundQuotient();
     final long refundAllowance = Math.min(maxRefundAllowance, gasRefund);
+    initialFrame.incrementRemainingGas(refundAllowance);
     return gasRemaining + refundAllowance;
   }
 }
