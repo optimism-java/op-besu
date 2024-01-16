@@ -126,8 +126,6 @@ public class Transaction
 
   private final Optional<Boolean> isSystemTx;
 
-  private final RollupGasData rollupGasData;
-
   public static Builder builder() {
     return new Builder();
   }
@@ -188,12 +186,10 @@ public class Transaction
       final Optional<BlobsWithCommitments> blobsWithCommitments,
       final Optional<Hash> sourceHash,
       final Optional<Wei> mint,
-      final Optional<Boolean> isSystemTx,
-      final RollupGasData rollupGasData) {
+      final Optional<Boolean> isSystemTx) {
     this.sourceHash = sourceHash;
     this.mint = mint;
     this.isSystemTx = isSystemTx;
-    this.rollupGasData = rollupGasData;
 
     if (!forCopy) {
       if (transactionType.requiresChainId()) {
@@ -717,7 +713,8 @@ public class Transaction
 
   @Override
   public RollupGasData getRollupGasData() {
-    return rollupGasData;
+    return RollupGasData.fromPayload(
+        TransactionEncoder.encodeOpaqueBytes(this, EncodingContext.BLOCK_BODY));
   }
 
   /**
@@ -1117,8 +1114,7 @@ public class Transaction
         detachedBlobsWithCommitments,
         sourceHash,
         mint,
-        isSystemTx,
-        RollupGasData.fromPayload(copiedPayload));
+        isSystemTx);
   }
 
   private AccessListEntry accessListDetachedCopy(final AccessListEntry accessListEntry) {
@@ -1322,8 +1318,7 @@ public class Transaction
           Optional.ofNullable(blobsWithCommitments),
           Optional.ofNullable(sourceHash),
           Optional.ofNullable(mint),
-          Optional.ofNullable(isSystemTx),
-          RollupGasData.fromPayload(payload));
+          Optional.ofNullable(isSystemTx));
     }
 
     public Transaction signAndBuild(final KeyPair keys) {

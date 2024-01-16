@@ -18,6 +18,7 @@ import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.datatypes.RollupGasData;
 import org.hyperledger.besu.datatypes.TransactionType;
+import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.core.ProcessableBlockHeader;
 import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.evm.account.MutableAccount;
@@ -58,22 +59,21 @@ public class L1CostCalculator {
    * @param worldState instance of the WorldState
    * @return l1 costed gas
    */
-  public long l1Cost(
+  public Wei l1Cost(
       final GenesisConfigOptions options,
       final ProcessableBlockHeader blockHeader,
       final Transaction transaction,
       final WorldUpdater worldState) {
     long gas = 0;
     boolean isRegolith =
-        options.isOptimism()
-            && options.getRegolithTime().orElseThrow() > blockHeader.getTimestamp();
+        options.isRegolith(blockHeader.getTimestamp());
 
     gas += calculateRollupDataGasCost(transaction.getRollupGasData(), isRegolith);
 
     boolean isOptimism = options.isOptimism();
     boolean isDepositTx = TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType());
     if (!isOptimism || isDepositTx || gas == 0) {
-      return 0L;
+      return Wei.ZERO;
     }
     if (blockHeader.getNumber() != cachedBlock) {
       MutableAccount systemConfig = worldState.getOrCreate(l1BlockAddr);
@@ -89,7 +89,7 @@ public class L1CostCalculator {
             .multiply(scalar)
             .divide(UInt256.valueOf(1_000_000L));
 
-    return l1GasUsed.toLong();
+    return Wei.of(l1GasUsed);
   }
 
   /**

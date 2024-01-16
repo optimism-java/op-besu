@@ -374,14 +374,14 @@ public class MainnetTransactionProcessor {
                 || TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
               return;
             }
-            final long l1Cost =
+            final Wei l1Cost =
                 l1CostCalculator
                     .map(
                         l1CostCalculator ->
                             l1CostCalculator.l1Cost(
                                 genesisConfigOptions.get(), blockHeader, transaction, worldState))
-                    .orElse(0L);
-            sender.decrementBalance(Wei.of(l1Cost));
+                    .orElse(Wei.ZERO);
+            sender.decrementBalance(l1Cost);
           });
 
       final List<AccessListEntry> accessListEntries = transaction.getAccessList().orElse(List.of());
@@ -608,11 +608,11 @@ public class MainnetTransactionProcessor {
 
             l1CostCalculator.ifPresent(
                 costCal -> {
-                  final long l1Cost = costCal.l1Cost(options, blockHeader, transaction, worldState);
+                  final Wei l1Cost = costCal.l1Cost(options, blockHeader, transaction, worldState);
                   MutableAccount opL1FeeRecipient =
                       worldState.getOrCreate(
                           Address.fromHexString("0x420000000000000000000000000000000000001A"));
-                  opL1FeeRecipient.incrementBalance(Wei.of(l1Cost));
+                  opL1FeeRecipient.incrementBalance(l1Cost);
                 });
           });
 
@@ -674,6 +674,6 @@ public class MainnetTransactionProcessor {
         (transaction.getGasLimit() - gasRemaining) / gasCalculator.getMaxRefundQuotient();
     final long refundAllowance = Math.min(maxRefundAllowance, gasRefund);
     initialFrame.incrementRemainingGas(refundAllowance);
-    return gasRemaining + refundAllowance;
+    return initialFrame.getRemainingGas();
   }
 }
