@@ -68,7 +68,7 @@ public class LegacyTransactionPoolBaseFeeTest extends AbstractLegacyTransactionP
 
   @Override
   protected FeeMarket getFeeMarket() {
-    return FeeMarket.london(0L, Optional.of(BASE_FEE_FLOOR));
+    return FeeMarket.london(0L, Optional.of(BASE_FEE_FLOOR), Optional.empty());
   }
 
   @Override

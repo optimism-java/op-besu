@@ -1009,7 +1009,8 @@ public abstract class AbstractTransactionPoolTest {
       final boolean noLocalPriority) {
     transactionPool = createTransactionPool(b -> b.noLocalPriority(noLocalPriority));
     when(miningParameters.getMinTransactionGasPrice()).thenReturn(Wei.ZERO);
-    when(protocolSpec.getFeeMarket()).thenReturn(FeeMarket.london(0, Optional.of(Wei.ZERO)));
+    when(protocolSpec.getFeeMarket())
+        .thenReturn(FeeMarket.london(0, Optional.of(Wei.ZERO), Optional.empty()));
     whenBlockBaseFeeIs(Wei.ZERO);
 
     final Transaction frontierTransaction = createFrontierTransaction(0, Wei.ZERO);
@@ -1024,7 +1025,8 @@ public abstract class AbstractTransactionPoolTest {
       final boolean noLocalPriority) {
     transactionPool = createTransactionPool(b -> b.noLocalPriority(noLocalPriority));
     when(miningParameters.getMinTransactionGasPrice()).thenReturn(Wei.ZERO);
-    when(protocolSpec.getFeeMarket()).thenReturn(FeeMarket.london(0, Optional.of(Wei.ZERO)));
+    when(protocolSpec.getFeeMarket())
+        .thenReturn(FeeMarket.london(0, Optional.of(Wei.ZERO), Optional.empty()));
     whenBlockBaseFeeIs(Wei.ZERO);
 
     final Transaction transaction = createTransaction(0, Wei.ZERO);
@@ -1321,7 +1323,8 @@ public abstract class AbstractTransactionPoolTest {
       final boolean isLocal,
       final boolean hasPriority) {
     when(miningParameters.getMinTransactionGasPrice()).thenReturn(minGasPrice);
-    when(protocolSpec.getFeeMarket()).thenReturn(FeeMarket.london(0, Optional.of(genesisBaseFee)));
+    when(protocolSpec.getFeeMarket())
+        .thenReturn(FeeMarket.london(0, Optional.of(genesisBaseFee), Optional.empty()));
     whenBlockBaseFeeIs(lastBlockBaseFee);
 
     final Transaction transaction = createTransaction(0, txMaxFeePerGas);

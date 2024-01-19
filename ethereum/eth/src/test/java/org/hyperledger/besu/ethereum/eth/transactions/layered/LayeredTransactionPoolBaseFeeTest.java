@@ -64,7 +64,7 @@ public class LayeredTransactionPoolBaseFeeTest extends AbstractLayeredTransactio
 
   @Override
   protected FeeMarket getFeeMarket() {
-    return FeeMarket.london(0L, Optional.of(BASE_FEE_FLOOR));
+    return FeeMarket.london(0L, Optional.of(BASE_FEE_FLOOR), Optional.empty());
   }
 
   @Override
