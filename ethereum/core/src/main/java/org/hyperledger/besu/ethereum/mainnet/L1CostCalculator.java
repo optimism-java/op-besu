@@ -65,8 +65,7 @@ public class L1CostCalculator {
       final Transaction transaction,
       final WorldUpdater worldState) {
     long gas = 0;
-    boolean isRegolith =
-        options.isRegolith(blockHeader.getTimestamp());
+    boolean isRegolith = options.isRegolith(blockHeader.getTimestamp());
 
     gas += calculateRollupDataGasCost(transaction.getRollupGasData(), isRegolith);
 

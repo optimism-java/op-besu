@@ -47,7 +47,11 @@ public class PayloadIdentifier implements Quantity {
    */
   @JsonCreator
   public PayloadIdentifier(final String payloadId) {
-    this.val = UInt64.fromHexString(payloadId);
+    if (payloadId.startsWith("0x")) {
+      this.val = UInt64.fromHexString(payloadId);
+    } else {
+      this.val = UInt64.valueOf(Math.abs(Long.parseLong(payloadId)));
+    }
   }
 
   /**
@@ -56,7 +60,7 @@ public class PayloadIdentifier implements Quantity {
    * @param payloadId the payload id
    */
   public PayloadIdentifier(final Long payloadId) {
-    this.val = UInt64.valueOf(payloadId);
+    this.val = UInt64.valueOf(Math.abs(payloadId));
   }
 
   /**

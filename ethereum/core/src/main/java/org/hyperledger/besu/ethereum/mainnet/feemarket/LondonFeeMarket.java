@@ -72,7 +72,7 @@ public class LondonFeeMarket implements BaseFeeMarket {
 
   @Override
   public long getBasefeeMaxChangeDenominator(final OptionalLong time) {
-    if (time.isPresent() && this.chainOptions.isPresent()) {
+    if (this.chainOptions.isPresent() && this.chainOptions.get().isOptimism() && time.isPresent()) {
       if (this.chainOptions.get().isCanyon(time.getAsLong())) {
         return chainOptions
             .get()

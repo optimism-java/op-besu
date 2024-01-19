@@ -99,7 +99,8 @@ public class MergeBesuControllerBuilderTest {
 
   BigInteger networkId = BigInteger.ONE;
   private final BlockHeaderTestFixture headerGenerator = new BlockHeaderTestFixture();
-  private final BaseFeeMarket feeMarket = new LondonFeeMarket(0, Optional.of(Wei.of(42)));
+  private final BaseFeeMarket feeMarket =
+      new LondonFeeMarket(0, Optional.of(Wei.of(42)), Optional.empty());
   private final TransactionPoolConfiguration poolConfiguration =
       TransactionPoolConfiguration.DEFAULT;
   private final ObservableMetricsSystem observableMetricsSystem = new NoOpMetricsSystem();
@@ -272,7 +273,9 @@ public class MergeBesuControllerBuilderTest {
         .difficulty(Difficulty.MAX_VALUE)
         .parentHash(magicHash)
         .number(blockNumber)
-        .baseFeePerGas(feeMarket.computeBaseFee(blockNumber, Wei.of(0x3b9aca00), 0, 15000000l))
+        .baseFeePerGas(
+            feeMarket.computeBaseFee(
+                blockNumber, Wei.of(0x3b9aca00), 0, 15000000l, OptionalLong.empty()))
         .gasLimit(30000000l)
         .stateRoot(magicHash)
         .buildHeader();

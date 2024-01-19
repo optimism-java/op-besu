@@ -117,10 +117,7 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
     }
 
     Create2DeployerFunction.ensureCreate2Deployer(
-        genesisOptions,
-        blockHeader.getTimestamp(),
-        worldState.updater()
-    );
+        genesisOptions, blockHeader.getTimestamp(), worldState.updater());
 
     for (final Transaction transaction : transactions) {
       if (!hasAvailableBlockBudget(blockHeader, transaction, currentGasUsed)) {
