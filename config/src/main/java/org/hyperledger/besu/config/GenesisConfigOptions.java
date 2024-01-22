@@ -281,6 +281,7 @@ public interface GenesisConfigOptions {
    * Returns whether a fork scheduled at bedrock block number is active at the given head block
    * number
    *
+   * @param headBlock the head block height
    * @return the boolean
    */
   boolean isBedrockBlock(long headBlock);
@@ -295,6 +296,7 @@ public interface GenesisConfigOptions {
   /**
    * Returns whether a fork scheduled at regolith timestamp is active at the given head timestamp.
    *
+   * @param headTime the current head time
    * @return the boolean
    */
   boolean isRegolith(long headTime);
@@ -309,6 +311,7 @@ public interface GenesisConfigOptions {
   /**
    * Returns whether a fork scheduled at canyon timestamp is active at the given head timestamp.
    *
+   * @param headTime the current head time
    * @return the boolean
    */
   boolean isCanyon(long headTime);
