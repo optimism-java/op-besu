@@ -45,6 +45,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,8 +144,11 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
                               calculateExcessBlobGasForParent(protocolSpec, parentHeader)))
               .orElse(Wei.ZERO);
 
-      Account sender = worldStateUpdater.getOrCreate(transaction.getSender());
-      long nonce = sender.getNonce();
+      OptionalLong nonce = OptionalLong.empty();
+      if (TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+        Account sender = worldStateUpdater.getOrCreate(transaction.getSender());
+        nonce = OptionalLong.of(sender.getNonce());
+      }
 
       final TransactionProcessingResult result =
           transactionProcessor.processTransaction(
@@ -183,7 +187,9 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
       } else {
         GenesisConfigOptions options = genesisOptions.orElseThrow();
         Optional<Long> depositNonce =
-            options.isRegolith(blockHeader.getTimestamp()) ? Optional.of(nonce) : Optional.empty();
+            options.isRegolith(blockHeader.getTimestamp()) && nonce.isPresent()
+                ? Optional.of(nonce.getAsLong())
+                : Optional.empty();
 
         Optional<Long> canyonDepositReceiptVer =
             options.isCanyon(blockHeader.getTimestamp()) ? Optional.of(1L) : Optional.empty();
