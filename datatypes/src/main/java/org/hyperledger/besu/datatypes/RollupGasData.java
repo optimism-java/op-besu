@@ -30,14 +30,30 @@ public class RollupGasData {
     this.ones = ones;
   }
 
+  /**
+   * Get the number of zeroes.
+   *
+   * @return the number of zeroes
+   */
   public long getZeroes() {
     return zeroes;
   }
 
+  /**
+   * Get the number of non-zeroes.
+   *
+   * @return the number of non-zeroes
+   */
   public long getOnes() {
     return ones;
   }
 
+  /**
+   * Create a new roll up data record from a payload bytes.
+   *
+   * @param payload the transaction rlp encoded bytes
+   * @return the roll up data record
+   */
   public static RollupGasData fromPayload(final Bytes payload) {
     if (payload == null) {
       return empty;
