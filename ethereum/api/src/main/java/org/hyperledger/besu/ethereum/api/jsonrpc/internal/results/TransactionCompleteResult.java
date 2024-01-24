@@ -121,7 +121,7 @@ public class TransactionCompleteResult implements TransactionResult {
     this.hash = transaction.getHash().toString();
     this.mint = transaction.getMint().map(Wei::toShortHexString).orElse(null);
     this.input = transaction.getPayload().toString();
-    this.nonce = Quantity.create(transaction.getNonce());
+    this.nonce = Quantity.create(tx.getNonce());
     this.to = transaction.getTo().map(Bytes::toHexString).orElse(null);
     this.transactionIndex = Quantity.create(tx.getTransactionIndex().get());
     this.type =

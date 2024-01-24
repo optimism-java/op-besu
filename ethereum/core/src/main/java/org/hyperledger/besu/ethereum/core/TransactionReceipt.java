@@ -208,6 +208,50 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     }
   }
 
+  /**
+   * Write an RLP representation for block chain storage.
+   * @param rlpOutput The RLP output to write to
+   */
+  public void writeToForStorage(final RLPOutput rlpOutput) {
+    if (transactionType.equals(TransactionType.FRONTIER)) {
+      writeToForChainStorage(rlpOutput, true);
+    } else {
+      rlpOutput.writeBytes(RLP.encode(out -> writeToForChainStorage(out, true)));
+    }
+  }
+
+  /**
+   * Write an RLP representation for block chain storage.
+   * Will Always include deposit nonce and deposit receipt version.
+   * @param rlpOutput The RLP output to write to
+   */
+  public void writeToForChainStorage(final RLPOutput rlpOutput, final boolean withRevertReason) {
+    if (!transactionType.equals(TransactionType.FRONTIER)) {
+      rlpOutput.writeIntScalar(transactionType.getSerializedType());
+    }
+
+    rlpOutput.startList();
+
+    // Determine whether it's a state root-encoded transaction receipt
+    // or is a status code-encoded transaction receipt.
+    if (stateRoot != null) {
+      rlpOutput.writeBytes(stateRoot);
+    } else {
+      rlpOutput.writeLongScalar(status);
+    }
+    rlpOutput.writeLongScalar(cumulativeGasUsed);
+    rlpOutput.writeBytes(bloomFilter);
+    rlpOutput.writeList(logs, Log::writeTo);
+
+    depositNonce.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
+    depositReceiptVersion.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
+
+    if (withRevertReason && revertReason.isPresent()) {
+      rlpOutput.writeBytes(revertReason.get());
+    }
+    rlpOutput.endList();
+  }
+
   public void writeToForReceiptTrie(final RLPOutput rlpOutput, final boolean withRevertReason) {
     if (!transactionType.equals(TransactionType.FRONTIER)) {
       rlpOutput.writeIntScalar(transactionType.getSerializedType());
