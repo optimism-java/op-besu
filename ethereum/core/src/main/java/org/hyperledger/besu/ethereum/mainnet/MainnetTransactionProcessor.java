@@ -21,8 +21,10 @@ import static org.hyperledger.besu.ethereum.mainnet.PrivateStateUtils.KEY_TRANSA
 import static org.hyperledger.besu.evm.operation.BlockHashOperation.BlockHashLookup;
 
 import org.hyperledger.besu.collections.trie.BytesTrieSet;
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.AccessListEntry;
 import org.hyperledger.besu.datatypes.Address;
+import org.hyperledger.besu.datatypes.TransactionType;
 import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.core.ProcessableBlockHeader;
 import org.hyperledger.besu.ethereum.core.Transaction;
@@ -44,6 +46,7 @@ import org.hyperledger.besu.evm.processor.AbstractMessageProcessor;
 import org.hyperledger.besu.evm.tracing.OperationTracer;
 import org.hyperledger.besu.evm.worldstate.WorldUpdater;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
@@ -80,6 +83,10 @@ public class MainnetTransactionProcessor {
   protected final FeeMarket feeMarket;
   private final CoinbaseFeePriceCalculator coinbaseFeePriceCalculator;
 
+  private final Optional<GenesisConfigOptions> genesisConfigOptions;
+
+  private final Optional<L1CostCalculator> l1CostCalculator;
+
   public MainnetTransactionProcessor(
       final GasCalculator gasCalculator,
       final TransactionValidatorFactory transactionValidatorFactory,
@@ -98,7 +105,34 @@ public class MainnetTransactionProcessor {
     this.warmCoinbase = warmCoinbase;
     this.maxStackSize = maxStackSize;
     this.feeMarket = feeMarket;
+    this.genesisConfigOptions = Optional.empty();
     this.coinbaseFeePriceCalculator = coinbaseFeePriceCalculator;
+    this.l1CostCalculator = Optional.empty();
+  }
+
+  public MainnetTransactionProcessor(
+      final GasCalculator gasCalculator,
+      final TransactionValidatorFactory transactionValidatorFactory,
+      final AbstractMessageProcessor contractCreationProcessor,
+      final AbstractMessageProcessor messageCallProcessor,
+      final boolean clearEmptyAccounts,
+      final boolean warmCoinbase,
+      final int maxStackSize,
+      final FeeMarket feeMarket,
+      final CoinbaseFeePriceCalculator coinbaseFeePriceCalculator,
+      final Optional<GenesisConfigOptions> genesisConfigOptions,
+      final Optional<L1CostCalculator> l1CostCalculator) {
+    this.gasCalculator = gasCalculator;
+    this.transactionValidatorFactory = transactionValidatorFactory;
+    this.contractCreationProcessor = contractCreationProcessor;
+    this.messageCallProcessor = messageCallProcessor;
+    this.clearEmptyAccounts = clearEmptyAccounts;
+    this.warmCoinbase = warmCoinbase;
+    this.maxStackSize = maxStackSize;
+    this.feeMarket = feeMarket;
+    this.coinbaseFeePriceCalculator = coinbaseFeePriceCalculator;
+    this.genesisConfigOptions = genesisConfigOptions;
+    this.l1CostCalculator = l1CostCalculator;
   }
 
   /**
@@ -259,11 +293,23 @@ public class MainnetTransactionProcessor {
       final PrivateMetadataUpdater privateMetadataUpdater,
       final Wei blobGasPrice) {
     try {
+      transaction
+          .getMint()
+          .ifPresent(
+              mint -> {
+                WorldUpdater mintUpdater = worldState.updater();
+                final MutableAccount sender =
+                    mintUpdater.getOrCreateSenderAccount(transaction.getSender());
+                sender.incrementBalance(transaction.getMint().orElse(Wei.ZERO));
+                mintUpdater.commit();
+              });
+
       final var transactionValidator = transactionValidatorFactory.get();
       LOG.trace("Starting execution of {}", transaction);
       ValidationResult<TransactionInvalidReason> validationResult =
           transactionValidator.validate(
               transaction,
+              blockHeader.getTimestamp(),
               blockHeader.getBaseFee(),
               Optional.ofNullable(blobGasPrice),
               transactionValidationParams);
@@ -295,20 +341,41 @@ public class MainnetTransactionProcessor {
           previousNonce,
           sender.getNonce());
 
-      final Wei transactionGasPrice =
-          feeMarket.getTransactionPriceCalculator().price(transaction, blockHeader.getBaseFee());
+      Wei transactionGasPrice = Wei.ZERO;
+      if (!TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+        transactionGasPrice =
+            feeMarket.getTransactionPriceCalculator().price(transaction, blockHeader.getBaseFee());
 
-      final long blobGas = gasCalculator.blobGasCost(transaction.getBlobCount());
+        final long blobGas = gasCalculator.blobGasCost(transaction.getBlobCount());
 
-      final Wei upfrontGasCost =
-          transaction.getUpfrontGasCost(transactionGasPrice, blobGasPrice, blobGas);
-      final Wei previousBalance = sender.decrementBalance(upfrontGasCost);
-      LOG.trace(
-          "Deducted sender {} upfront gas cost {} ({} -> {})",
-          senderAddress,
-          upfrontGasCost,
-          previousBalance,
-          sender.getBalance());
+        final Wei upfrontGasCost =
+            transaction.getUpfrontGasCost(transactionGasPrice, blobGasPrice, blobGas);
+        final Wei previousBalance = sender.decrementBalance(upfrontGasCost);
+        LOG.trace(
+            "Deducted sender {} upfront gas cost {} ({} -> {})",
+            senderAddress,
+            upfrontGasCost,
+            previousBalance,
+            sender.getBalance());
+      }
+
+      genesisConfigOptions.ifPresent(
+          options -> {
+            if (!options.isOptimism()
+                || !options.isRegolith(blockHeader.getTimestamp())
+                || TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+              return;
+            }
+            final Wei l1Cost =
+                l1CostCalculator
+                    .map(
+                        l1CostCalculator ->
+                            l1CostCalculator.l1Cost(
+                                genesisConfigOptions.get(), blockHeader, transaction, worldState))
+                    .orElse(Wei.ZERO);
+            sender.decrementBalance(l1Cost);
+          }
+      );
 
       final List<AccessListEntry> accessListEntries = transaction.getAccessList().orElse(List.of());
       // we need to keep a separate hash set of addresses in case they specify no storage.
@@ -364,12 +431,16 @@ public class MainnetTransactionProcessor {
               .value(transaction.getValue())
               .apparentValue(transaction.getValue())
               .blockValues(blockHeader)
-              .completer(__ -> {})
+              .completer(__ -> {
+              })
               .miningBeneficiary(miningBeneficiary)
               .blockHashLookup(blockHashLookup)
               .contextVariables(contextVariablesBuilder.build())
               .accessListWarmAddresses(addressList)
-              .accessListWarmStorage(storageList);
+              .accessListWarmStorage(storageList)
+              .isDepositTx(TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType()))
+              .isSystemTx(transaction.getIsSystemTx().orElse(false))
+              .mint(transaction.getMint());
 
       if (transaction.getVersionedHashes().isPresent()) {
         commonMessageFrameBuilder.versionedHashes(
@@ -443,12 +514,32 @@ public class MainnetTransactionProcessor {
             gasAvailable - initialFrame.getRemainingGas());
       }
 
+      boolean isRegolith =
+          genesisConfigOptions.isPresent() && genesisConfigOptions.get().isRegolith(blockHeader.getTimestamp());
+
+      // if deposit: skip refunds, skip tipping coinbase
+      // Regolith changes this behaviour to report the actual gasUsed instead of always reporting
+      // all gas used.
+      if (initialFrame.isDepositTx() && !isRegolith) {
+        var gasUsed = transaction.getGasLimit();
+        if (initialFrame.isSystemTx()) {
+          gasUsed = 0L;
+        }
+        if (initialFrame.getState() == MessageFrame.State.COMPLETED_SUCCESS) {
+          return TransactionProcessingResult.successful(
+              initialFrame.getLogs(), gasUsed, 0L, initialFrame.getOutputData(), validationResult);
+        } else {
+          return TransactionProcessingResult.failed(
+              gasUsed, 0L, validationResult, initialFrame.getRevertReason());
+        }
+      }
+
       // Refund the sender by what we should and pay the miner fee (note that we're doing them one
       // after the other so that if it is the same account somehow, we end up with the right result)
       final long selfDestructRefund =
           gasCalculator.getSelfDestructRefundAmount() * initialFrame.getSelfDestructs().size();
       final long baseRefundGas = initialFrame.getGasRefund() + selfDestructRefund;
-      final long refundedGas = refunded(transaction, initialFrame.getRemainingGas(), baseRefundGas);
+      final long refundedGas = refunded(transaction, initialFrame, baseRefundGas);
       final Wei refundedWei = transactionGasPrice.multiply(refundedGas);
       final Wei balancePriorToRefund = sender.getBalance();
       sender.incrementBalance(refundedWei);
@@ -460,6 +551,21 @@ public class MainnetTransactionProcessor {
           .addArgument(sender.getBalance())
           .log();
       final long gasUsedByTransaction = transaction.getGasLimit() - initialFrame.getRemainingGas();
+
+      // Skip coinbase payments for deposit tx in Regolith
+      if (initialFrame.isDepositTx() && isRegolith) {
+        if (initialFrame.getState() == MessageFrame.State.COMPLETED_SUCCESS) {
+          return TransactionProcessingResult.successful(
+              initialFrame.getLogs(),
+              gasUsedByTransaction,
+              refundedGas,
+              initialFrame.getOutputData(),
+              validationResult);
+        } else {
+          return TransactionProcessingResult.failed(
+              gasUsedByTransaction, refundedGas, validationResult, initialFrame.getRevertReason());
+        }
+      }
 
       // update the coinbase
       final var coinbase = worldState.getOrCreate(miningBeneficiary);
@@ -502,6 +608,30 @@ public class MainnetTransactionProcessor {
         worldState.clearAccountsThatAreEmpty();
       }
 
+      // Check that we are post bedrock to enable op-geth to be able to create pseudo pre-bedrock
+      // blocks (these are pre-bedrock, but don't follow l2 geth rules)
+      // Note optimismConfig will not be nil if rules.IsOptimismBedrock is true
+      genesisConfigOptions.ifPresent(
+          options -> {
+            if (!options.isBedrockBlock(blockHeader.getNumber())) {
+              return;
+            }
+            MutableAccount opBaseFeeRecipient =
+                worldState.getOrCreate(
+                    Address.fromHexString("0x4200000000000000000000000000000000000019"));
+            opBaseFeeRecipient.incrementBalance(
+                blockHeader.getBaseFee().get().multiply(gasUsedByTransaction));
+
+            l1CostCalculator.ifPresent(
+                costCal -> {
+                  final Wei l1Cost = costCal.l1Cost(options, blockHeader, transaction, worldState);
+                  MutableAccount opL1FeeRecipient =
+                      worldState.getOrCreate(
+                          Address.fromHexString("0x420000000000000000000000000000000000001A"));
+                  opL1FeeRecipient.incrementBalance(l1Cost);
+                });
+          });
+
       if (initialFrame.getState() == MessageFrame.State.COMPLETED_SUCCESS) {
         return TransactionProcessingResult.successful(
             initialFrame.getLogs(),
@@ -539,6 +669,22 @@ public class MainnetTransactionProcessor {
       // need to throw to trigger the heal
       throw re;
     } catch (final RuntimeException re) {
+      if (TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+        worldState.revert();
+        worldState.getAccount(transaction.getSender()).incrementNonce();
+        var gasUsed = transaction.getGasLimit();
+        if (transaction.getIsSystemTx().get()
+            && genesisConfigOptions.get().isRegolith(blockHeader.getTimestamp())) {
+          gasUsed = 0L;
+        }
+        final String msg = String.format("failed deposit: %s", re);
+        return TransactionProcessingResult.failed(
+            gasUsed,
+            0L,
+            ValidationResult.valid(),
+            Optional.of(Bytes.wrap(msg.getBytes(StandardCharsets.UTF_8))));
+      }
+
       operationTracer.traceEndTransaction(
           worldState.updater(),
           transaction,
@@ -568,6 +714,17 @@ public class MainnetTransactionProcessor {
       case MESSAGE_CALL -> messageCallProcessor;
       case CONTRACT_CREATION -> contractCreationProcessor;
     };
+  }
+
+  protected long refunded(
+      final Transaction transaction, final MessageFrame initialFrame, final long gasRefund) {
+    final long gasRemaining = initialFrame.getRemainingGas();
+    // Integer truncation takes care of the floor calculation needed after the divide.
+    final long maxRefundAllowance =
+        (transaction.getGasLimit() - gasRemaining) / gasCalculator.getMaxRefundQuotient();
+    final long refundAllowance = Math.min(maxRefundAllowance, gasRefund);
+    initialFrame.incrementRemainingGas(refundAllowance);
+    return initialFrame.getRemainingGas();
   }
 
   protected long refunded(

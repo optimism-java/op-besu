@@ -371,6 +371,10 @@ public class KeyValueStoragePrefixedKeyBlockchainStorage implements BlockchainSt
       blockchainTransaction.remove(Bytes.concatenate(prefix, key).toArrayUnsafe());
     }
 
+//    private Bytes rlpEncode(final List<TransactionReceipt> receipts) {
+//      return RLP.encode(o -> o.writeList(receipts, TransactionReceipt::writeToForStorage));
+//    }
+
     private Bytes rlpEncode(final List<TransactionReceipt> receipts) {
       return RLP.encode(
           o ->

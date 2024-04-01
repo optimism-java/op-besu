@@ -65,7 +65,7 @@ public class EngineForkchoiceUpdatedV3 extends AbstractEngineForkchoiceUpdated {
       return ValidationResult.invalid(
           getInvalidPayloadAttributesError(), "Missing finalized block hash");
     }
-    if (maybePayloadAttributes.isPresent()) {
+    if (maybePayloadAttributes.isPresent() && (!this.mergeContext.get().isOptimism())) {
       if (maybePayloadAttributes.get().getParentBeaconBlockRoot() == null) {
         return ValidationResult.invalid(
             getInvalidPayloadAttributesError(), "Missing parent beacon block root hash");
@@ -76,6 +76,9 @@ public class EngineForkchoiceUpdatedV3 extends AbstractEngineForkchoiceUpdated {
 
   @Override
   protected ValidationResult<RpcErrorType> validateForkSupported(final long blockTimestamp) {
+    if (this.mergeContext.get().isOptimism()) {
+      return ValidationResult.valid();
+    }
     if (protocolSchedule.isPresent()) {
       if (cancun.isPresent() && blockTimestamp >= cancun.get().milestone()) {
         return ValidationResult.valid();
@@ -93,6 +96,9 @@ public class EngineForkchoiceUpdatedV3 extends AbstractEngineForkchoiceUpdated {
   @Override
   protected Optional<JsonRpcErrorResponse> isPayloadAttributesValid(
       final Object requestId, final EnginePayloadAttributesParameter payloadAttributes) {
+    if (this.mergeContext.get().isOptimism()) {
+      return Optional.empty();
+    }
     if (payloadAttributes.getParentBeaconBlockRoot() == null) {
       LOG.error(
           "Parent beacon block root hash not present in payload attributes after cancun hardfork");

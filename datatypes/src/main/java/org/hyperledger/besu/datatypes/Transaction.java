@@ -208,6 +208,34 @@ public interface Transaction {
   Optional<BlobsWithCommitments> getBlobsWithCommitments();
 
   /**
+   * Return the source hash for this transaction.
+   *
+   * @return optional source hash
+   */
+  Optional<Hash> getSourceHash();
+
+  /**
+   * Return the mint value for this transaction.
+   *
+   * @return optional mint value
+   */
+  Optional<Wei> getMint();
+
+  /**
+   * Return the is system transaction flag for this transaction.
+   *
+   * @return optional is system transaction flag
+   */
+  Optional<Boolean> getIsSystemTx();
+
+  /**
+   * Return the roll up gas data.
+   *
+   * @return roll up gas data
+   */
+  RollupGasData getRollupGasData();
+
+  /**
    * Return the address of the contract, if the transaction creates one
    *
    * @return address of new contract or empty otherwise

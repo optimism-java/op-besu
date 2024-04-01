@@ -14,12 +14,16 @@
  */
 package org.hyperledger.besu.consensus.merge.blockcreation;
 
+import com.google.common.primitives.Longs;
+import org.bouncycastle.jcajce.provider.digest.SHA256;
 import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.datatypes.Hash;
 import org.hyperledger.besu.datatypes.Quantity;
+import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.Withdrawal;
 
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +32,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.apache.tuweni.bytes.Bytes32;
 import org.apache.tuweni.units.bigints.UInt64;
+import org.hyperledger.besu.ethereum.rlp.BytesValueRLPOutput;
+import org.web3j.utils.Numeric;
 
 /** The Payload identifier. */
 public class PayloadIdentifier implements Quantity {
@@ -41,7 +47,11 @@ public class PayloadIdentifier implements Quantity {
    */
   @JsonCreator
   public PayloadIdentifier(final String payloadId) {
-    this(Long.decode(payloadId));
+    if (payloadId.startsWith("0x")) {
+      this.val = UInt64.fromHexString(payloadId);
+    } else {
+      this.val = UInt64.valueOf(Math.abs(Long.parseLong(payloadId)));
+    }
   }
 
   /**
@@ -51,6 +61,15 @@ public class PayloadIdentifier implements Quantity {
    */
   public PayloadIdentifier(final Long payloadId) {
     this.val = UInt64.valueOf(Math.abs(payloadId));
+  }
+
+  /**
+   * Instantiates a new Payload identifier.
+   *
+   * @param payloadId the payload id
+   */
+  public PayloadIdentifier(final BigInteger payloadId) {
+    this.val = UInt64.valueOf(payloadId);
   }
 
   /**
@@ -88,6 +107,61 @@ public class PayloadIdentifier implements Quantity {
                                 .reduce(1, (a, b) -> a ^ (b * 31)))
                     .orElse(0)
             ^ ((long) parentBeaconBlockRoot.hashCode()) << 40);
+  }
+
+  /**
+   * Create payload identifier for payload params. This is a deterministic hash of all payload
+   * parameters that aims to avoid collisions
+   *
+   * @param parentHash the parent hash
+   * @param timestamp the timestamp
+   * @param prevRandao the prev randao
+   * @param feeRecipient the fee recipient
+   * @param withdrawals the withdrawals
+   * @param parentBeaconBlockRoot the parent beacon block root
+   * @param noTxPool the no tx pool
+   * @param transactions the transactions
+   * @param gasLimit the gas limit
+   * @return the payload identifier
+   */
+  public static PayloadIdentifier forPayloadParams(
+          final Hash parentHash,
+          final Long timestamp,
+          final Bytes32 prevRandao,
+          final Address feeRecipient,
+          final Optional<List<Withdrawal>> withdrawals,
+          final Optional<Bytes32> parentBeaconBlockRoot,
+          final Optional<Boolean> noTxPool,
+          final Optional<List<Transaction>> transactions,
+          final Optional<Long> gasLimit) {
+    // Optimism: gasLimit will exist
+    if (gasLimit.isPresent()) {
+      SHA256.Digest digest = new SHA256.Digest();
+      digest.update(parentHash.toArrayUnsafe());
+      digest.update(Longs.toByteArray(timestamp));
+      digest.update(prevRandao.toArrayUnsafe());
+      digest.update(feeRecipient.toArrayUnsafe());
+      final BytesValueRLPOutput out = new BytesValueRLPOutput();
+      if (withdrawals.isPresent()) {
+        out.writeList(withdrawals.get(), Withdrawal::writeTo);
+      } else {
+        out.writeEmptyList();
+      }
+      digest.update(out.encoded().toArrayUnsafe());
+      parentBeaconBlockRoot.ifPresent(
+              parentBeaconBlockRootBytes -> digest.update(parentBeaconBlockRootBytes.toArrayUnsafe()));
+      boolean noTxPoolFlag = noTxPool.orElse(false);
+      List<Transaction> txList = transactions.orElse(Collections.emptyList());
+      if (noTxPoolFlag || !txList.isEmpty()) {
+        digest.update(new byte[] {(byte) (noTxPoolFlag ? 1 : 0)});
+        digest.update(Longs.toByteArray(txList.size()));
+        txList.forEach(tx -> digest.update(tx.getHash().toArrayUnsafe()));
+      }
+      digest.update(Longs.toByteArray(gasLimit.get()));
+
+      return new PayloadIdentifier(Numeric.toBigInt(digest.digest(), 0, 8));
+    }
+    return forPayloadParams(parentHash, timestamp, prevRandao, feeRecipient, withdrawals, parentBeaconBlockRoot);
   }
 
   @Override

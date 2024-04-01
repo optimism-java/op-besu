@@ -17,6 +17,7 @@ package org.hyperledger.besu.consensus.merge.blockcreation;
 import static java.util.stream.Collectors.joining;
 import static org.hyperledger.besu.consensus.merge.blockcreation.MergeMiningCoordinator.ForkchoiceResult.Status.INVALID;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.consensus.merge.MergeContext;
 import org.hyperledger.besu.consensus.merge.PayloadWrapper;
 import org.hyperledger.besu.datatypes.Address;
@@ -122,7 +123,8 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
       final TransactionPool transactionPool,
       final MiningParameters miningParams,
       final BackwardSyncContext backwardSyncContext,
-      final Optional<Address> depositContractAddress) {
+      final Optional<Address> depositContractAddress,
+      final Optional<GenesisConfigOptions> genesisConfigOptions) {
     this.protocolContext = protocolContext;
     this.protocolSchedule = protocolSchedule;
     this.ethScheduler = ethScheduler;
@@ -149,7 +151,9 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
               protocolContext,
               protocolSchedule,
               parentHeader,
-              ethScheduler);
+              depositContractAddress,
+              ethScheduler,
+              genesisConfigOptions);
         };
 
     this.backwardSyncContext.subscribeBadChainListener(this);
@@ -257,7 +261,10 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
       final Bytes32 prevRandao,
       final Address feeRecipient,
       final Optional<List<Withdrawal>> withdrawals,
-      final Optional<Bytes32> parentBeaconBlockRoot) {
+      final Optional<Bytes32> parentBeaconBlockRoot,
+      final Optional<Boolean> noTxPool,
+      final Optional<List<Transaction>> transactions,
+      final Optional<Long> gasLimit) {
 
     // we assume that preparePayload is always called sequentially, since the RPC Engine calls
     // are sequential, if this assumption changes then more synchronization should be added to
@@ -270,7 +277,10 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
             prevRandao,
             feeRecipient,
             withdrawals,
-            parentBeaconBlockRoot);
+            parentBeaconBlockRoot,
+            noTxPool,
+            transactions,
+            gasLimit);
 
     if (blockCreationTasks.containsKey(payloadIdentifier)) {
       LOG.debug(
@@ -290,11 +300,13 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
     final Block emptyBlock =
         mergeBlockCreator
             .createBlock(
-                Optional.of(Collections.emptyList()),
+                transactions,
                 prevRandao,
                 timestamp,
                 withdrawals,
-                parentBeaconBlockRoot)
+                parentBeaconBlockRoot,
+                Optional.of(true),
+                gasLimit)
             .getBlock();
 
     BlockProcessingResult result = validateProposedBlock(emptyBlock);
@@ -316,13 +328,21 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
       }
     }
 
+    if (mergeContext.isOptimism() && noTxPool.isPresent() && noTxPool.get()) {
+      LOG.info("optimism: no tx pool, no need external txs from tx pool");
+      return payloadIdentifier;
+    }
+
     tryToBuildBetterBlock(
         timestamp,
         prevRandao,
         payloadIdentifier,
         mergeBlockCreator,
         withdrawals,
-        parentBeaconBlockRoot);
+        parentBeaconBlockRoot
+        ,Optional.of(false),
+        transactions,
+        gasLimit);
 
     return payloadIdentifier;
   }
@@ -363,12 +383,15 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
       final PayloadIdentifier payloadIdentifier,
       final MergeBlockCreator mergeBlockCreator,
       final Optional<List<Withdrawal>> withdrawals,
-      final Optional<Bytes32> parentBeaconBlockRoot) {
+      final Optional<Bytes32> parentBeaconBlockRoot,
+      final Optional<Boolean> noTxPool,
+      final Optional<List<Transaction>> transactions,
+      final Optional<Long> gasLimit) {
 
     final Supplier<BlockCreationResult> blockCreator =
         () ->
             mergeBlockCreator.createBlock(
-                Optional.empty(), random, timestamp, withdrawals, parentBeaconBlockRoot);
+                transactions, random, timestamp, withdrawals, parentBeaconBlockRoot, noTxPool, gasLimit);
 
     LOG.debug(
         "Block creation started for payload id {}, remaining time is {}ms",

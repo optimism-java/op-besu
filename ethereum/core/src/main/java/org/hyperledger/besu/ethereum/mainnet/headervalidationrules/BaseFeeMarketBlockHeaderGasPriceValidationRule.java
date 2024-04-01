@@ -25,6 +25,8 @@ import org.hyperledger.besu.ethereum.mainnet.feemarket.BaseFeeMarket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.OptionalLong;
+
 public class BaseFeeMarketBlockHeaderGasPriceValidationRule
     implements DetachedBlockHeaderValidationRule {
   private static final Logger LOG =
@@ -59,7 +61,11 @@ public class BaseFeeMarketBlockHeaderGasPriceValidationRule
       final long targetGasUsed = baseFeeMarket.targetGasUsed(parent);
       final Wei expectedBaseFee =
           baseFeeMarket.computeBaseFee(
-              header.getNumber(), parentBaseFee, parent.getGasUsed(), targetGasUsed);
+              header.getNumber(),
+              parentBaseFee,
+              parent.getGasUsed(),
+              targetGasUsed,
+              OptionalLong.of(header.getTimestamp()));
       if (!expectedBaseFee.equals(currentBaseFee)) {
         LOG.info(
             "Invalid block header: basefee {} does not equal expected basefee {}",

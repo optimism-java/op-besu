@@ -30,6 +30,7 @@ import org.hyperledger.besu.ethereum.mainnet.feemarket.FeeMarket;
 
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -150,7 +151,8 @@ public class BaseFeePrioritizedTransactions extends AbstractPrioritizedTransacti
           blockHeader.getNumber() + 1,
           blockHeader.getBaseFee().orElse(Wei.ZERO),
           blockHeader.getGasUsed(),
-          baseFeeMarket.targetGasUsed(blockHeader));
+          baseFeeMarket.targetGasUsed(blockHeader),
+          OptionalLong.of(blockHeader.getTimestamp()));
     }
     return Wei.ZERO;
   }

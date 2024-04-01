@@ -66,6 +66,13 @@ public interface GenesisConfigOptions {
   boolean isClique();
 
   /**
+   * Is Optimism boolean
+   *
+   * @return the boolean
+   */
+  boolean isOptimism();
+
+  /**
    * Is a Proof of Authority network.
    *
    * @return the boolean
@@ -136,6 +143,13 @@ public interface GenesisConfigOptions {
    * @return the homestead block number
    */
   OptionalLong getHomesteadBlockNumber();
+
+  /**
+   * Gets optimism config options
+   *
+   * @return the optimism config options.
+   */
+  OptimismConfigOptions getOptimismConfigOptions();
 
   /**
    * Gets dao fork block.
@@ -269,6 +283,82 @@ public interface GenesisConfigOptions {
    * @return the experimental eips time
    */
   OptionalLong getExperimentalEipsTime();
+
+  /**
+   * Gets bedrock switch block number.
+   *
+   * @return the bedrock switch block number
+   */
+  OptionalLong getBedrockBlock();
+
+  /**
+   * Returns whether a fork scheduled at bedrock block number is active at the given head block
+   * number
+   *
+   * @param headBlock the head block height
+   * @return the boolean
+   */
+  boolean isBedrockBlock(long headBlock);
+
+  /**
+   * Gets regolith time.
+   *
+   * @return the regolith time
+   */
+  OptionalLong getRegolithTime();
+
+  /**
+   * Returns whether a fork scheduled at regolith timestamp is active at the given head timestamp.
+   *
+   * @param headTime the current head time
+   * @return the boolean
+   */
+  boolean isRegolith(long headTime);
+
+  /**
+   * Gets canyon time.
+   *
+   * @return the canyon time
+   */
+  OptionalLong getCanyonTime();
+
+  /**
+   * Returns whether a fork scheduled at canyon timestamp is active at the given head timestamp.
+   *
+   * @param headTime the current head time
+   * @return the boolean
+   */
+  boolean isCanyon(long headTime);
+
+  /**
+   * Gets ecotone time.
+   *
+   * @return the ecotone time
+   */
+  OptionalLong getEcotoneTime();
+
+  /**
+   * Returns whether a fork scheduled at ecotone timestamp is active at the given head timestamp.
+   *
+   * @param headTime the current head time
+   * @return the boolean
+   */
+  boolean isEcotone(long headTime);
+
+  /**
+   * Gets interop time.
+   *
+   * @return the interop time
+   */
+  OptionalLong getInteropTime();
+
+  /**
+   * Returns whether a fork scheduled at interop timestamp is active at the given head timestamp.
+   *
+   * @param headTime the current head time
+   * @return the boolean
+   */
+  boolean isInterop(long headTime);
 
   /**
    * Gets base fee per gas.

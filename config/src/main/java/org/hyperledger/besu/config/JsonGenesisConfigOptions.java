@@ -43,6 +43,7 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
   private static final String IBFT2_CONFIG_KEY = "ibft2";
   private static final String QBFT_CONFIG_KEY = "qbft";
   private static final String CLIQUE_CONFIG_KEY = "clique";
+  private static final String OPTIMISM_CONFIG_KEY = "optimism";
   private static final String EC_CURVE_CONFIG_KEY = "eccurve";
   private static final String TRANSITIONS_CONFIG_KEY = "transitions";
   private static final String DISCOVERY_CONFIG_KEY = "discovery";
@@ -153,6 +154,11 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
   }
 
   @Override
+  public boolean isOptimism() {
+    return configRoot.has(OPTIMISM_CONFIG_KEY);
+  }
+
+  @Override
   public BftConfigOptions getBftConfigOptions() {
     final String fieldKey = isIbft2() ? IBFT2_CONFIG_KEY : QBFT_CONFIG_KEY;
     return JsonUtil.getObjectNode(configRoot, fieldKey)
@@ -193,6 +199,13 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
     return JsonUtil.getObjectNode(configRoot, ETHASH_CONFIG_KEY)
         .map(EthashConfigOptions::new)
         .orElse(EthashConfigOptions.DEFAULT);
+  }
+
+  @Override
+  public OptimismConfigOptions getOptimismConfigOptions() {
+    return JsonUtil.getObjectNode(configRoot, OPTIMISM_CONFIG_KEY)
+        .map(OptimismConfigOptions::new)
+        .orElse(OptimismConfigOptions.DEFAULT);
   }
 
   @Override
@@ -311,6 +324,88 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
   @Override
   public OptionalLong getExperimentalEipsTime() {
     return getOptionalLong("experimentaleipstime");
+  }
+
+  @Override
+  public OptionalLong getBedrockBlock() {
+    return getOptionalLong("bedrockblock");
+  }
+
+  @Override
+  public boolean isBedrockBlock(final long headBlock) {
+    OptionalLong bedrockBlock = getBedrockBlock();
+    if (!bedrockBlock.isPresent()) {
+      return false;
+    }
+    return bedrockBlock.getAsLong() <= headBlock;
+  }
+
+  @Override
+  public OptionalLong getRegolithTime() {
+    return getOptionalLong("regolithtime");
+  }
+
+  @Override
+  public boolean isRegolith(final long headTime) {
+    if (!isOptimism()) {
+      return false;
+    }
+    var regolithTime = getRegolithTime();
+    if (regolithTime.isPresent()) {
+      return regolithTime.getAsLong() <= headTime;
+    }
+    return false;
+  }
+
+  @Override
+  public OptionalLong getCanyonTime() {
+    return getOptionalLong("canyontime");
+  }
+
+  @Override
+  public boolean isCanyon(final long headTime) {
+    if (!isOptimism()) {
+      return false;
+    }
+    var canyonTime = getCanyonTime();
+    if (canyonTime.isPresent()) {
+      return canyonTime.getAsLong() <= headTime;
+    }
+    return false;
+  }
+
+  @Override
+  public OptionalLong getEcotoneTime() {
+    return getOptionalLong("ecotonetime");
+  }
+
+  @Override
+  public boolean isEcotone(long headTime) {
+    if (!isOptimism()) {
+      return false;
+    }
+    var ecotoneTime = getEcotoneTime();
+    if (ecotoneTime.isPresent()) {
+      return ecotoneTime.getAsLong() <= headTime;
+    }
+    return false;
+  }
+
+  @Override
+  public OptionalLong getInteropTime() {
+    return getOptionalLong("interoptime");
+  }
+
+  @Override
+  public boolean isInterop(long headTime) {
+    if (!isOptimism()) {
+      return false;
+    }
+    var ecotoneTime = getEcotoneTime();
+    if (ecotoneTime.isPresent()) {
+      return ecotoneTime.getAsLong() <= headTime;
+    }
+    return false;
   }
 
   @Override

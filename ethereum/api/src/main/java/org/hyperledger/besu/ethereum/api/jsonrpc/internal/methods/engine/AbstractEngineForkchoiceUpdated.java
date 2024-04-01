@@ -20,6 +20,7 @@ import static org.hyperledger.besu.ethereum.api.jsonrpc.internal.methods.Executi
 import static org.hyperledger.besu.ethereum.api.jsonrpc.internal.methods.ExecutionEngineJsonRpcMethod.EngineStatus.VALID;
 import static org.hyperledger.besu.ethereum.api.jsonrpc.internal.methods.engine.WithdrawalsValidatorProvider.getWithdrawalsValidator;
 
+import org.apache.tuweni.bytes.Bytes;
 import org.hyperledger.besu.consensus.merge.blockcreation.MergeMiningCoordinator;
 import org.hyperledger.besu.consensus.merge.blockcreation.MergeMiningCoordinator.ForkchoiceResult;
 import org.hyperledger.besu.consensus.merge.blockcreation.PayloadIdentifier;
@@ -37,6 +38,8 @@ import org.hyperledger.besu.ethereum.api.jsonrpc.internal.response.RpcErrorType;
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.EngineUpdateForkchoiceResult;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
 import org.hyperledger.besu.ethereum.core.Withdrawal;
+import org.hyperledger.besu.ethereum.core.encoding.EncodingContext;
+import org.hyperledger.besu.ethereum.core.encoding.TransactionDecoder;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
 import org.hyperledger.besu.ethereum.mainnet.ScheduledProtocolSpec;
 import org.hyperledger.besu.ethereum.mainnet.ValidationResult;
@@ -73,6 +76,15 @@ public abstract class AbstractEngineForkchoiceUpdated extends ExecutionEngineJso
   protected ValidationResult<RpcErrorType> validateParameter(
       final EngineForkchoiceUpdatedParameter forkchoiceUpdatedParameter,
       final Optional<EnginePayloadAttributesParameter> maybePayloadAttributes) {
+    // According to the spec
+    // https://github.com/ethereum-optimism/optimism/blob/develop/specs/exec-engine.md#extended-payloadattributesv2,
+    // gasLimit is needed when the engine is running in optimism mode.
+    if (mergeContext.get().isOptimism() && maybePayloadAttributes.isPresent()) {
+      if (null == maybePayloadAttributes.get().getGasLimit()) {
+        logForkchoiceUpdatedCall(INVALID, forkchoiceUpdatedParameter);
+        return ValidationResult.invalid(RpcErrorType.INVALID_PARAMS);
+      }
+    }
     return ValidationResult.valid();
   }
 
@@ -209,7 +221,20 @@ public abstract class AbstractEngineForkchoiceUpdated extends ExecutionEngineJso
                     payloadAttributes.getPrevRandao(),
                     payloadAttributes.getSuggestedFeeRecipient(),
                     finalWithdrawals,
-                    Optional.ofNullable(payloadAttributes.getParentBeaconBlockRoot())));
+                    Optional.ofNullable(payloadAttributes.getParentBeaconBlockRoot()),
+                    Optional.ofNullable(payloadAttributes.isNoTxPool()),
+                    Optional.ofNullable(
+                        payloadAttributes.getTransactions() == null
+                            ? null
+                            : payloadAttributes.getTransactions().stream()
+                            .map(Bytes::fromHexString)
+                            .map(
+                                in ->
+                                    TransactionDecoder.decodeOpaqueBytes(
+                                        in, EncodingContext.BLOCK_BODY))
+                            .collect(toList())),
+                    Optional.ofNullable(payloadAttributes.getGasLimit()))
+            );
 
     payloadId.ifPresent(
         pid ->

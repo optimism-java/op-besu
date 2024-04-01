@@ -14,6 +14,7 @@
  */
 package org.hyperledger.besu.ethereum.api.jsonrpc.internal.results;
 
+import org.apache.tuweni.bytes.DelegatingBytes;
 import org.hyperledger.besu.datatypes.AccessListEntry;
 import org.hyperledger.besu.datatypes.TransactionType;
 import org.hyperledger.besu.datatypes.VersionedHash;
@@ -39,6 +40,7 @@ import org.apache.tuweni.bytes.Bytes;
   "maxPriorityFeePerGas",
   "maxFeePerGas",
   "maxFeePerBlobGas",
+  "mint",
   "hash",
   "input",
   "nonce",
@@ -50,6 +52,7 @@ import org.apache.tuweni.bytes.Bytes;
   "v",
   "r",
   "s",
+  "sourceHash",
   "blobVersionedHashes"
 })
 public class TransactionCompleteResult implements TransactionResult {
@@ -76,6 +79,9 @@ public class TransactionCompleteResult implements TransactionResult {
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private final String maxFeePerBlobGas;
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private final String mint;
+
   private final String hash;
   private final String input;
   private final String nonce;
@@ -87,6 +93,9 @@ public class TransactionCompleteResult implements TransactionResult {
   private final String v;
   private final String r;
   private final String s;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private final String sourceHash;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private final List<VersionedHash> versionedHashes;
@@ -112,8 +121,9 @@ public class TransactionCompleteResult implements TransactionResult {
                 .getGasPrice()
                 .orElseGet(() -> transaction.getEffectiveGasPrice(tx.getBaseFee())));
     this.hash = transaction.getHash().toString();
+    this.mint = transaction.getMint().map(Wei::toShortHexString).orElse(null);
     this.input = transaction.getPayload().toString();
-    this.nonce = Quantity.create(transaction.getNonce());
+    this.nonce = Quantity.create(tx.getNonce());
     this.to = transaction.getTo().map(Bytes::toHexString).orElse(null);
     this.transactionIndex = Quantity.create(tx.getTransactionIndex().get());
     if (transactionType == TransactionType.FRONTIER) {
@@ -132,6 +142,7 @@ public class TransactionCompleteResult implements TransactionResult {
     this.value = Quantity.create(transaction.getValue());
     this.r = Quantity.create(transaction.getR());
     this.s = Quantity.create(transaction.getS());
+    this.sourceHash = transaction.getSourceHash().map(DelegatingBytes::toString).orElse(null);
     this.versionedHashes = transaction.getVersionedHashes().orElse(null);
   }
 
@@ -178,6 +189,11 @@ public class TransactionCompleteResult implements TransactionResult {
   @JsonGetter(value = "maxFeePerBlobGas")
   public String getMaxFeePerBlobGas() {
     return maxFeePerBlobGas;
+  }
+
+  @JsonGetter(value = "mint")
+  public String getMint() {
+    return mint;
   }
 
   @JsonGetter(value = "gasPrice")
@@ -240,6 +256,11 @@ public class TransactionCompleteResult implements TransactionResult {
   @JsonGetter(value = "s")
   public String getS() {
     return s;
+  }
+
+  @JsonGetter(value = "sourceHash")
+  public String getSourceHash() {
+    return sourceHash;
   }
 
   @JsonGetter(value = "blobVersionedHashes")

@@ -18,6 +18,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hyperledger.besu.ethereum.api.jsonrpc.internal.methods.ExecutionEngineJsonRpcMethod.EngineStatus.SYNCING;
 import static org.hyperledger.besu.ethereum.api.jsonrpc.internal.methods.ExecutionEngineJsonRpcMethod.EngineStatus.VALID;
 
+import org.apache.tuweni.bytes.Bytes;
 import org.hyperledger.besu.consensus.merge.blockcreation.MergeMiningCoordinator;
 import org.hyperledger.besu.consensus.merge.blockcreation.PayloadIdentifier;
 import org.hyperledger.besu.ethereum.ProtocolContext;
@@ -31,6 +32,7 @@ import org.hyperledger.besu.ethereum.api.jsonrpc.internal.response.JsonRpcRespon
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.response.JsonRpcSuccessResponse;
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.response.RpcErrorType;
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.results.EnginePreparePayloadResult;
+import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.Withdrawal;
 
 import java.util.List;
@@ -67,6 +69,9 @@ public class EnginePreparePayloadDebug extends ExecutionEngineJsonRpcMethod {
                     Optional.empty(),
                     Optional.empty(),
                     Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty(),
                     Optional.empty(),
                     Optional.empty()));
 
@@ -89,6 +94,10 @@ public class EnginePreparePayloadDebug extends ExecutionEngineJsonRpcMethod {
     final List<Withdrawal> withdrawals =
         param.getWithdrawals().stream().map(WithdrawalParameter::toWithdrawal).collect(toList());
 
+    final List<Transaction> transactions =
+            param.getTransactions().stream()
+                    .map(s -> Transaction.readFrom(Bytes.fromHexString(s)))
+                    .collect(toList());
     return param
         .getParentHash()
         .map(header -> protocolContext.getBlockchain().getBlockHeader(header))
@@ -101,6 +110,9 @@ public class EnginePreparePayloadDebug extends ExecutionEngineJsonRpcMethod {
                     param.getPrevRandao(),
                     param.getFeeRecipient(),
                     Optional.of(withdrawals),
-                    param.getParentBeaconBlockRoot()));
+                    param.getParentBeaconBlockRoot(),
+                    param.isNoTxPool(),
+                    Optional.of(transactions),
+                    param.getGasLimit()));
   }
 }
