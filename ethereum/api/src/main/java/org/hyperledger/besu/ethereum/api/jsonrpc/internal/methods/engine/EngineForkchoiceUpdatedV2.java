@@ -52,7 +52,9 @@ public class EngineForkchoiceUpdatedV2 extends AbstractEngineForkchoiceUpdated {
   @Override
   protected Optional<JsonRpcErrorResponse> isPayloadAttributesValid(
       final Object requestId, final EnginePayloadAttributesParameter payloadAttributes) {
-
+    if (this.mergeContext.get().isOptimism()) {
+      return Optional.empty();
+    }
     if (payloadAttributes.getParentBeaconBlockRoot() != null) {
       LOG.error(
           "Parent beacon block root hash present in payload attributes before Cancun hardfork");

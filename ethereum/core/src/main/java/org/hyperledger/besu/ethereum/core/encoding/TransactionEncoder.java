@@ -40,6 +40,8 @@ public class TransactionEncoder {
           EIP1559TransactionEncoder::encode,
           TransactionType.BLOB,
           BlobTransactionEncoder::encode,
+          TransactionType.OPTIMISM_DEPOSIT,
+          OptimismDepositTransactionEncoder::encode,
           TransactionType.SET_CODE,
           SetCodeTransactionEncoder::encode);
 

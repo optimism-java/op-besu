@@ -27,6 +27,7 @@ public class TransactionWithMetadata {
   private final Optional<Wei> baseFee;
   private final Optional<Hash> blockHash;
   private final Optional<Integer> transactionIndex;
+  private final Optional<Long> nonce;
 
   public TransactionWithMetadata(final Transaction transaction) {
     this.transaction = transaction;
@@ -34,19 +35,31 @@ public class TransactionWithMetadata {
     this.baseFee = Optional.empty();
     this.blockHash = Optional.empty();
     this.transactionIndex = Optional.empty();
+    this.nonce = Optional.empty();
   }
 
   public TransactionWithMetadata(
-      final Transaction transaction,
-      final long blockNumber,
-      final Optional<Wei> baseFee,
-      final Hash blockHash,
-      final int transactionIndex) {
+          final Transaction transaction,
+          final long blockNumber,
+          final Optional<Wei> baseFee,
+          final Hash blockHash,
+          final int transactionIndex) {
+    this(transaction, blockNumber, baseFee, blockHash, transactionIndex, Optional.empty());
+  }
+
+  public TransactionWithMetadata(
+          final Transaction transaction,
+          final long blockNumber,
+          final Optional<Wei> baseFee,
+          final Hash blockHash,
+          final int transactionIndex,
+          final Optional<Long> nonce) {
     this.transaction = transaction;
     this.blockNumber = Optional.of(blockNumber);
     this.baseFee = baseFee;
     this.blockHash = Optional.of(blockHash);
     this.transactionIndex = Optional.of(transactionIndex);
+    this.nonce = nonce;
   }
 
   public Transaction getTransaction() {
@@ -67,5 +80,9 @@ public class TransactionWithMetadata {
 
   public Optional<Integer> getTransactionIndex() {
     return transactionIndex;
+  }
+
+  public long getNonce() {
+    return nonce.orElse(transaction.getNonce());
   }
 }

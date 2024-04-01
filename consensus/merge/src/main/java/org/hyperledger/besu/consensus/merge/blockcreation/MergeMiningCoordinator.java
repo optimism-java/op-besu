@@ -23,6 +23,7 @@ import org.hyperledger.besu.ethereum.BlockProcessingResult;
 import org.hyperledger.besu.ethereum.blockcreation.MiningCoordinator;
 import org.hyperledger.besu.ethereum.core.Block;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
+import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.Withdrawal;
 import org.hyperledger.besu.ethereum.eth.manager.EthScheduler;
 
@@ -43,6 +44,9 @@ public interface MergeMiningCoordinator extends MiningCoordinator {
    * @param feeRecipient the fee recipient
    * @param withdrawals the optional list of withdrawals
    * @param parentBeaconBlockRoot optional root hash of the parent beacon block
+   * @param noTxPool optional flag to indicate that the transaction pool should not be used
+   * @param transactions the optional list of transactions
+   * @param gasLimit the optional gas limit
    * @return the payload identifier
    */
   PayloadIdentifier preparePayload(
@@ -51,7 +55,10 @@ public interface MergeMiningCoordinator extends MiningCoordinator {
       final Bytes32 prevRandao,
       final Address feeRecipient,
       final Optional<List<Withdrawal>> withdrawals,
-      final Optional<Bytes32> parentBeaconBlockRoot);
+      final Optional<Bytes32> parentBeaconBlockRoot,
+      final Optional<Boolean> noTxPool,
+      final Optional<List<Transaction>> transactions,
+      final Optional<Long> gasLimit);
 
   @Override
   default boolean isCompatibleWithEngineApi() {

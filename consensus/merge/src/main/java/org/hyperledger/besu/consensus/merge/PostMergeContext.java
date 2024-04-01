@@ -61,6 +61,8 @@ public class PostMergeContext implements MergeContext {
       new AtomicReference<>(Optional.empty());
   private boolean isPostMergeAtGenesis;
 
+  private boolean isOptimism;
+
   /** Instantiates a new Post merge context. */
   @VisibleForTesting
   PostMergeContext() {
@@ -300,5 +302,16 @@ public class PostMergeContext implements MergeContext {
   public PostMergeContext setPostMergeAtGenesis(final boolean isPostMergeAtGenesis) {
     this.isPostMergeAtGenesis = isPostMergeAtGenesis;
     return this;
+  }
+
+
+  public PostMergeContext setIsOptimism(boolean isOptimism) {
+    this.isOptimism = isOptimism;
+    return this;
+  }
+
+  @Override
+  public boolean isOptimism() {
+    return this.isOptimism;
   }
 }

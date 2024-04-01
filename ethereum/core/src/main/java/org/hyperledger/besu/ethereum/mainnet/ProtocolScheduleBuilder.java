@@ -319,6 +319,8 @@ public class ProtocolScheduleBuilder {
 
   private NavigableMap<Long, BuilderMapEntry> buildFlattenedMilestoneMap(
       final List<BuilderMapEntry> mileStones) {
+    //Stream<Optional<BuilderMapEntry>> milestones = createMilestones(specFactory);
+    //milestones.close();
     return mileStones.stream()
         .collect(
             Collectors.toMap(
@@ -338,6 +340,12 @@ public class ProtocolScheduleBuilder {
   }
 
   private List<BuilderMapEntry> createMilestones(final MainnetProtocolSpecFactory specFactory) {
+//    if (config.isOptimism()) {
+//      return Stream.of(
+//          blockNumberMilestone(config.getBedrockBlock(), specFactory.londonDefinition(config)),
+//          timestampMilestone(config.getRegolithTime(), specFactory.londonDefinition(config)),
+//          timestampMilestone(config.getCanyonTime(), specFactory.shanghaiDefinition(config)));
+//    }
     return Stream.of(
             blockNumberMilestone(
                 HardforkId.MainnetHardforkId.FRONTIER,

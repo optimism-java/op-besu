@@ -31,6 +31,7 @@ import org.hyperledger.besu.datatypes.BlobsWithCommitments;
 import org.hyperledger.besu.datatypes.Hash;
 import org.hyperledger.besu.datatypes.KZGCommitment;
 import org.hyperledger.besu.datatypes.KZGProof;
+import org.hyperledger.besu.datatypes.RollupGasData;
 import org.hyperledger.besu.datatypes.SetCodeAuthorization;
 import org.hyperledger.besu.datatypes.Sha256Hash;
 import org.hyperledger.besu.datatypes.TransactionType;
@@ -126,6 +127,12 @@ public class Transaction
   private final Optional<BlobsWithCommitments> blobsWithCommitments;
   private final Optional<List<SetCodeAuthorization>> maybeAuthorizationList;
 
+  private final Optional<Hash> sourceHash;
+
+  private final Optional<Wei> mint;
+
+  private final Optional<Boolean> isSystemTx;
+
   public static Builder builder() {
     return new Builder();
   }
@@ -162,6 +169,9 @@ public class Transaction
    *     otherwise it should contain an address.
    *     <p>The {@code chainId} must be greater than 0 to be applied to a specific chain; otherwise
    *     it will default to any chain.
+   * @param sourceHash Hash that uniquely identifies the source of the deposit.
+   * @param mint The ETH value to mint on L2.
+   * @param isSystemTx Field indicating if this transaction is exempt from the L2 gas limit.
    */
   private Transaction(
       final boolean forCopy,
@@ -181,7 +191,10 @@ public class Transaction
       final Optional<BigInteger> chainId,
       final Optional<List<VersionedHash>> versionedHashes,
       final Optional<BlobsWithCommitments> blobsWithCommitments,
-      final Optional<List<SetCodeAuthorization>> maybeAuthorizationList) {
+      final Optional<List<SetCodeAuthorization>> maybeAuthorizationList,
+      final Optional<Hash> sourceHash,
+      final Optional<Wei> mint,
+      final Optional<Boolean> isSystemTx) {
 
     if (!forCopy) {
       if (transactionType.requiresChainId()) {
@@ -242,6 +255,9 @@ public class Transaction
     this.versionedHashes = versionedHashes;
     this.blobsWithCommitments = blobsWithCommitments;
     this.maybeAuthorizationList = maybeAuthorizationList;
+    this.sourceHash = sourceHash;
+    this.mint = mint;
+    this.isSystemTx = isSystemTx;
   }
 
   /**
@@ -251,6 +267,9 @@ public class Transaction
    */
   @Override
   public long getNonce() {
+    if (TransactionType.OPTIMISM_DEPOSIT.equals(transactionType)) {
+      return 0L;
+    }
     return nonce;
   }
 
@@ -304,7 +323,9 @@ public class Transaction
     return maybeBaseFee
         .map(
             baseFee -> {
-              if (getType().supports1559FeeMarket()) {
+              if (getType().equals(TransactionType.OPTIMISM_DEPOSIT)) {
+                return Wei.ZERO;
+              } else if (getType().supports1559FeeMarket()) {
                 if (baseFee.greaterOrEqualThan(getMaxFeePerGas().get())) {
                   return Wei.ZERO;
                 }
@@ -426,7 +447,7 @@ public class Transaction
    */
   @Override
   public Address getSender() {
-    if (sender == null) {
+    if (sender == null || TransactionType.OPTIMISM_DEPOSIT.equals(getType())) {
       Optional<Address> cachedSender = Optional.ofNullable(senderCache.getIfPresent(getHash()));
       sender = cachedSender.orElseGet(this::computeSender);
     }
@@ -497,16 +518,25 @@ public class Transaction
 
   @Override
   public BigInteger getR() {
+    if (TransactionType.OPTIMISM_DEPOSIT.equals(getType())) {
+      return BigInteger.ZERO;
+    }
     return signature.getR();
   }
 
   @Override
   public BigInteger getS() {
+    if (TransactionType.OPTIMISM_DEPOSIT.equals(getType())) {
+      return BigInteger.ZERO;
+    }
     return signature.getS();
   }
 
   @Override
   public BigInteger getV() {
+    if (TransactionType.OPTIMISM_DEPOSIT.equals(getType())) {
+      return BigInteger.ZERO;
+    }
     if (transactionType != null && transactionType != TransactionType.FRONTIER) {
       // EIP-2718 typed transaction, use yParity:
       return null;
@@ -662,6 +692,9 @@ public class Transaction
    * @return the effective gas price.
    */
   public final Wei getEffectiveGasPrice(final Optional<Wei> baseFeePerGas) {
+    if (TransactionType.OPTIMISM_DEPOSIT.equals(getType())) {
+      return Wei.ZERO;
+    }
     return getEffectivePriorityFeePerGas(baseFeePerGas).addExact(baseFeePerGas.orElse(Wei.ZERO));
   }
 
@@ -688,6 +721,27 @@ public class Transaction
   @Override
   public int authorizationListSize() {
     return maybeAuthorizationList.map(List::size).orElse(0);
+  }
+
+  @Override
+  public Optional<Hash> getSourceHash() {
+    return sourceHash;
+  }
+
+  @Override
+  public Optional<Wei> getMint() {
+    return mint;
+  }
+
+  @Override
+  public Optional<Boolean> getIsSystemTx() {
+    return isSystemTx;
+  }
+
+  @Override
+  public RollupGasData getRollupGasData() {
+    return RollupGasData.fromPayload(
+        TransactionEncoder.encodeOpaqueBytes(this, EncodingContext.BLOCK_BODY));
   }
 
   /**
@@ -759,6 +813,8 @@ public class Transaction
                           new IllegalStateException(
                               "Developer error: the transaction should be guaranteed to have an access list here")),
                   chainId);
+          // Optimism deposit transaction sender will never be empty
+          case OPTIMISM_DEPOSIT -> Bytes.EMPTY;
           case SET_CODE ->
               setCodePreimage(
                   nonce,
@@ -1111,7 +1167,10 @@ public class Transaction
             chainId,
             detachedVersionedHashes,
             detachedBlobsWithCommitments,
-            maybeAuthorizationList);
+            maybeAuthorizationList,
+            sourceHash,
+            mint,
+            isSystemTx);
 
     // copy also the computed fields, to avoid to recompute them
     copiedTx.sender = this.sender;
@@ -1180,6 +1239,10 @@ public class Transaction
     protected List<VersionedHash> versionedHashes = null;
     private BlobsWithCommitments blobsWithCommitments;
     protected Optional<List<SetCodeAuthorization>> setCodeTransactionPayloads = Optional.empty();
+
+    protected Hash sourceHash;
+    protected Wei mint;
+    protected Boolean isSystemTx;
 
     public Builder copiedFrom(final Transaction toCopy) {
       this.transactionType = toCopy.transactionType;
@@ -1285,8 +1348,25 @@ public class Transaction
       return this;
     }
 
+    public Builder sourceHash(final Hash sourceHash) {
+      this.sourceHash = sourceHash;
+      return this;
+    }
+
+    public Builder mint(final Wei mint) {
+      this.mint = mint;
+      return this;
+    }
+
+    public Builder isSystemTx(final Boolean isSystemTx) {
+      this.isSystemTx = isSystemTx;
+      return this;
+    }
+
     public Builder guessType() {
-      if (versionedHashes != null && !versionedHashes.isEmpty()) {
+      if (sourceHash != null || transactionType == TransactionType.OPTIMISM_DEPOSIT) {
+        transactionType = TransactionType.OPTIMISM_DEPOSIT;
+      } else if (versionedHashes != null && !versionedHashes.isEmpty()) {
         transactionType = TransactionType.BLOB;
       } else if (maxPriorityFeePerGas != null || maxFeePerGas != null) {
         transactionType = TransactionType.EIP1559;
@@ -1324,7 +1404,10 @@ public class Transaction
           chainId,
           Optional.ofNullable(versionedHashes),
           Optional.ofNullable(blobsWithCommitments),
-          setCodeTransactionPayloads);
+          setCodeTransactionPayloads,
+          Optional.ofNullable(sourceHash),
+          Optional.ofNullable(mint),
+          Optional.ofNullable(isSystemTx));
     }
 
     public Transaction signAndBuild(final KeyPair keys) {

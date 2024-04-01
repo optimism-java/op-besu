@@ -14,6 +14,7 @@
  */
 package org.hyperledger.besu.controller;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.consensus.merge.MergeContext;
 import org.hyperledger.besu.consensus.merge.MergeProtocolSchedule;
 import org.hyperledger.besu.consensus.merge.PostMergeContext;
@@ -167,7 +168,8 @@ public class MergeBesuControllerBuilder extends BesuControllerBuilder {
         transactionPool,
         miningParameters,
         backwardSyncContext,
-        depositContractAddress);
+        depositContractAddress,
+        Optional.of(genesisConfigOptions));
   }
 
   @Override
@@ -188,6 +190,7 @@ public class MergeBesuControllerBuilder extends BesuControllerBuilder {
       final WorldStateArchive worldStateArchive,
       final ProtocolSchedule protocolSchedule) {
 
+    final GenesisConfigOptions genesisConfigOptions = configOptionsSupplier.get();
     final OptionalLong terminalBlockNumber = genesisConfigOptions.getTerminalBlockNumber();
     final Optional<Hash> terminalBlockHash = genesisConfigOptions.getTerminalBlockHash();
     final boolean isPostMergeAtGenesis =
@@ -203,6 +206,7 @@ public class MergeBesuControllerBuilder extends BesuControllerBuilder {
                     .getTerminalTotalDifficulty()
                     .map(Difficulty::of)
                     .orElse(Difficulty.ZERO))
+            .setIsOptimism(genesisConfigOptions.isOptimism())
             .setPostMergeAtGenesis(isPostMergeAtGenesis);
 
     blockchain

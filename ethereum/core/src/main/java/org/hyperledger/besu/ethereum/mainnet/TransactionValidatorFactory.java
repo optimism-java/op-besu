@@ -14,6 +14,7 @@
  */
 package org.hyperledger.besu.ethereum.mainnet;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.TransactionType;
 import org.hyperledger.besu.ethereum.GasLimitCalculator;
 import org.hyperledger.besu.ethereum.core.PermissionTransactionFilter;
@@ -80,6 +81,30 @@ public class TransactionValidatorFactory {
                     chainId,
                     acceptedTransactionTypes,
                     maxInitcodeSize));
+  }
+
+  public TransactionValidatorFactory(
+      final GasCalculator gasCalculator,
+      final GasLimitCalculator gasLimitCalculator,
+      final FeeMarket feeMarket,
+      final boolean checkSignatureMalleability,
+      final Optional<BigInteger> chainId,
+      final Set<TransactionType> acceptedTransactionTypes,
+      final int maxInitcodeSize,
+      final GenesisConfigOptions genesisOptions) {
+
+    this.transactionValidatorSupplier =
+        Suppliers.memoize(
+            () ->
+                new MainnetTransactionValidator(
+                    gasCalculator,
+                    gasLimitCalculator,
+                    feeMarket,
+                    checkSignatureMalleability,
+                    chainId,
+                    acceptedTransactionTypes,
+                    maxInitcodeSize,
+                    Optional.of(genesisOptions)));
   }
 
   public void setPermissionTransactionFilter(

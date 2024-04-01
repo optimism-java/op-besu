@@ -19,7 +19,9 @@ import static org.hyperledger.besu.plugin.data.TransactionSelectionResult.INVALI
 import static org.hyperledger.besu.plugin.data.TransactionSelectionResult.SELECTED;
 import static org.hyperledger.besu.plugin.data.TransactionSelectionResult.TX_EVALUATION_TOO_LONG;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.Address;
+import org.hyperledger.besu.datatypes.TransactionType;
 import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.GasLimitCalculator;
 import org.hyperledger.besu.ethereum.blockcreation.txselection.selectors.AbstractTransactionSelector;
@@ -45,6 +47,7 @@ import org.hyperledger.besu.ethereum.mainnet.blockhash.BlockHashProcessor;
 import org.hyperledger.besu.ethereum.mainnet.feemarket.FeeMarket;
 import org.hyperledger.besu.ethereum.processing.TransactionProcessingResult;
 import org.hyperledger.besu.ethereum.vm.CachingBlockHashLookup;
+import org.hyperledger.besu.evm.account.Account;
 import org.hyperledger.besu.evm.gascalculator.GasCalculator;
 import org.hyperledger.besu.evm.operation.BlockHashOperation.BlockHashLookup;
 import org.hyperledger.besu.evm.worldstate.WorldUpdater;
@@ -53,6 +56,7 @@ import org.hyperledger.besu.plugin.services.tracer.BlockAwareOperationTracer;
 import org.hyperledger.besu.plugin.services.txselection.PluginTransactionSelector;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -103,6 +107,8 @@ public class BlockTransactionSelector {
   private final long blockTxsSelectionMaxTime;
   private WorldUpdater blockWorldStateUpdater;
 
+  private final Optional<GenesisConfigOptions> genesisConfigOptions;
+
   public BlockTransactionSelector(
       final MiningParameters miningParameters,
       final MainnetTransactionProcessor transactionProcessor,
@@ -119,7 +125,8 @@ public class BlockTransactionSelector {
       final GasLimitCalculator gasLimitCalculator,
       final BlockHashProcessor blockHashProcessor,
       final PluginTransactionSelector pluginTransactionSelector,
-      final EthScheduler ethScheduler) {
+      final EthScheduler ethScheduler,
+      final Optional<GenesisConfigOptions> genesisConfigOptions) {
     this.transactionProcessor = transactionProcessor;
     this.blockchain = blockchain;
     this.worldState = worldState;
@@ -142,6 +149,7 @@ public class BlockTransactionSelector {
     this.pluginOperationTracer = pluginTransactionSelector.getOperationTracer();
     blockWorldStateUpdater = worldState.updater();
     blockTxsSelectionMaxTime = miningParameters.getBlockTxsSelectionMaxTime();
+    this.genesisConfigOptions = genesisConfigOptions;
   }
 
   private List<AbstractTransactionSelector> createTransactionSelectors(
@@ -221,6 +229,21 @@ public class BlockTransactionSelector {
   }
 
   /**
+   * Evaluates a list of pending transactions and updates the selection results accordingly. If a
+   * transaction is not selected during the evaluation, it is updated as not selected in the
+   * transaction selection results.
+   *
+   * @param transactions The list of pending transactions to be evaluated.
+   * @return The {@code TransactionSelectionResults} containing the results of the transaction
+   *     evaluations.
+   */
+  public TransactionSelectionResults evaluatePendingTransactions(
+      final List<PendingTransaction> transactions) {
+    transactions.forEach(this::evaluateTransaction);
+    return transactionSelectionResults;
+  }
+
+  /**
    * Passed into the PendingTransactions, and is called on each transaction until sufficient
    * transactions are found which fill a block worth of gas. This function will continue to be
    * called until the block under construction is suitably full (in terms of gasLimit) and the
@@ -243,16 +266,18 @@ public class BlockTransactionSelector {
     }
 
     final WorldUpdater txWorldStateUpdater = blockWorldStateUpdater.updater();
+    Account sender = txWorldStateUpdater.getOrCreate(pendingTransaction.getTransaction().getSender());
+    final long nonce = sender.getNonce();
+
     final TransactionProcessingResult processingResult =
         processTransaction(pendingTransaction, txWorldStateUpdater);
 
     var postProcessingSelectionResult = evaluatePostProcessing(evaluationContext, processingResult);
 
     if (postProcessingSelectionResult.selected()) {
-      return handleTransactionSelected(evaluationContext, processingResult, txWorldStateUpdater);
+      return handleTransactionSelected(nonce, evaluationContext, processingResult, txWorldStateUpdater);
     }
-    return handleTransactionNotSelected(
-        evaluationContext, postProcessingSelectionResult, txWorldStateUpdater);
+    return handleTransactionNotSelected(evaluationContext, postProcessingSelectionResult, txWorldStateUpdater);
   }
 
   private TransactionEvaluationContext createTransactionEvaluationContext(
@@ -284,7 +309,9 @@ public class BlockTransactionSelector {
    */
   private TransactionSelectionResult evaluatePreProcessing(
       final TransactionEvaluationContext evaluationContext) {
-
+    if (evaluationContext.getPendingTransaction().isMustSelect()) {
+      return TransactionSelectionResult.SELECTED;
+    }
     for (var selector : transactionSelectors) {
       TransactionSelectionResult result =
           selector.evaluateTransactionPreProcessing(evaluationContext, transactionSelectionResults);
@@ -355,6 +382,7 @@ public class BlockTransactionSelector {
    * @return The result of the transaction selection process.
    */
   private TransactionSelectionResult handleTransactionSelected(
+      final long nonce,
       final TransactionEvaluationContext evaluationContext,
       final TransactionProcessingResult processingResult,
       final WorldUpdater txWorldStateUpdater) {
@@ -377,9 +405,32 @@ public class BlockTransactionSelector {
       if (!tooLate) {
         txWorldStateUpdater.commit();
         blockWorldStateUpdater.commit();
-        final TransactionReceipt receipt =
-            transactionReceiptFactory.create(
-                transaction.getType(), processingResult, worldState, cumulativeGasUsed);
+        TransactionReceipt receipt;
+        if (!TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+          receipt =
+              transactionReceiptFactory.create(
+                  transaction.getType(), processingResult, worldState, cumulativeGasUsed);
+        } else {
+          GenesisConfigOptions options = genesisConfigOptions.orElseThrow();
+          Optional<Long> depositNonce =
+              options.isRegolith(blockSelectionContext.processableBlockHeader().getTimestamp())
+                  ? Optional.of(nonce)
+                  : Optional.empty();
+
+          Optional<Long> canyonDepositReceiptVer =
+              options.isCanyon(blockSelectionContext.processableBlockHeader().getTimestamp())
+                  ? Optional.of(1L)
+                  : Optional.empty();
+          receipt =
+              new TransactionReceipt(
+                  transaction.getType(),
+                  processingResult.isSuccessful() ? 1 : 0,
+                  cumulativeGasUsed,
+                  processingResult.getLogs(),
+                  Optional.empty(),
+                  depositNonce,
+                  canyonDepositReceiptVer);
+        }
 
         transactionSelectionResults.updateSelected(
             transaction, receipt, gasUsedByTransaction, blobGasUsed);

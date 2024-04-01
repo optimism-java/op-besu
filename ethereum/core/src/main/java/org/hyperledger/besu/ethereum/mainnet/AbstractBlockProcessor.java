@@ -17,6 +17,7 @@ package org.hyperledger.besu.ethereum.mainnet;
 import static org.hyperledger.besu.ethereum.mainnet.feemarket.ExcessBlobGasCalculator.calculateExcessBlobGasForParent;
 import static org.hyperledger.besu.evm.operation.BlockHashOperation.BlockHashLookup;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.datatypes.TransactionType;
 import org.hyperledger.besu.datatypes.Wei;
@@ -37,6 +38,7 @@ import org.hyperledger.besu.ethereum.trie.MerkleTrieException;
 import org.hyperledger.besu.ethereum.trie.diffbased.bonsai.worldview.BonsaiWorldState;
 import org.hyperledger.besu.ethereum.trie.diffbased.bonsai.worldview.BonsaiWorldStateUpdateAccumulator;
 import org.hyperledger.besu.ethereum.vm.CachingBlockHashLookup;
+import org.hyperledger.besu.evm.account.Account;
 import org.hyperledger.besu.evm.gascalculator.CancunGasCalculator;
 import org.hyperledger.besu.evm.operation.BlockHashOperation;
 import org.hyperledger.besu.evm.tracing.OperationTracer;
@@ -47,6 +49,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +64,15 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
         TransactionProcessingResult result,
         WorldState worldState,
         long gasUsed);
+  }
+
+  @FunctionalInterface
+  public interface OpTransactionReceiptFactory {
+    TransactionReceipt create(
+            TransactionType transactionType,
+            TransactionProcessingResult result,
+            WorldState worldState,
+            long gasUsed);
   }
 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractBlockProcessor.class);
@@ -78,6 +90,8 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
 
   protected final MiningBeneficiaryCalculator miningBeneficiaryCalculator;
 
+  private final Optional<GenesisConfigOptions> genesisOptions;
+
   protected AbstractBlockProcessor(
       final MainnetTransactionProcessor transactionProcessor,
       final TransactionReceiptFactory transactionReceiptFactory,
@@ -85,12 +99,31 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
       final MiningBeneficiaryCalculator miningBeneficiaryCalculator,
       final boolean skipZeroBlockRewards,
       final ProtocolSchedule protocolSchedule) {
+    this(
+        transactionProcessor,
+        transactionReceiptFactory,
+        blockReward,
+        miningBeneficiaryCalculator,
+        skipZeroBlockRewards,
+        protocolSchedule,
+        Optional.empty());
+  }
+
+  protected AbstractBlockProcessor(
+      final MainnetTransactionProcessor transactionProcessor,
+      final TransactionReceiptFactory transactionReceiptFactory,
+      final Wei blockReward,
+      final MiningBeneficiaryCalculator miningBeneficiaryCalculator,
+      final boolean skipZeroBlockRewards,
+      final ProtocolSchedule protocolSchedule,
+      final Optional<GenesisConfigOptions> genesisOptions) {
     this.transactionProcessor = transactionProcessor;
     this.transactionReceiptFactory = transactionReceiptFactory;
     this.blockReward = blockReward;
     this.miningBeneficiaryCalculator = miningBeneficiaryCalculator;
     this.skipZeroBlockRewards = skipZeroBlockRewards;
     this.protocolSchedule = protocolSchedule;
+    this.genesisOptions = genesisOptions;
   }
 
   @Override
@@ -110,6 +143,9 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
 
     protocolSpec.getBlockHashProcessor().processBlockHashes(blockchain, worldState, blockHeader);
     final BlockHashLookup blockHashLookup = new CachingBlockHashLookup(blockHeader, blockchain);
+
+    Create2DeployerFunction.ensureCreate2Deployer(
+        genesisOptions, blockHeader.getTimestamp(), worldState.updater());
 
     final Address miningBeneficiary = miningBeneficiaryCalculator.calculateBeneficiary(blockHeader);
 
@@ -142,6 +178,12 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
         return new BlockProcessingResult(Optional.empty(), "provided gas insufficient");
       }
       final WorldUpdater blockUpdater = worldState.updater();
+
+      OptionalLong nonce = OptionalLong.empty();
+      if (TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+        Account sender = blockUpdater.getOrCreate(transaction.getSender());
+        nonce = OptionalLong.of(sender.getNonce());
+      }
 
       TransactionProcessingResult transactionProcessingResult =
           getTransactionProcessingResult(
@@ -180,6 +222,31 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
       final TransactionReceipt transactionReceipt =
           transactionReceiptFactory.create(
               transaction.getType(), transactionProcessingResult, worldState, currentGasUsed);
+      receipts.add(transactionReceipt);
+      TransactionReceipt receipt;
+      if (!TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+        receipt =
+            transactionReceiptFactory.create(
+                transaction.getType(), transactionReceipt, worldState, currentGasUsed);
+      } else {
+        GenesisConfigOptions options = genesisOptions.orElseThrow();
+        Optional<Long> depositNonce =
+            options.isRegolith(blockHeader.getTimestamp()) && nonce.isPresent()
+                ? Optional.of(nonce.getAsLong())
+                : Optional.empty();
+
+        Optional<Long> canyonDepositReceiptVer =
+            options.isCanyon(blockHeader.getTimestamp()) ? Optional.of(1L) : Optional.empty();
+        receipt =
+            new TransactionReceipt(
+                transaction.getType(),
+                result.isSuccessful() ? 1 : 0,
+                currentGasUsed,
+                result.getLogs(),
+                Optional.empty(),
+                depositNonce,
+                canyonDepositReceiptVer);
+      }
       receipts.add(transactionReceipt);
     }
     if (blockHeader.getBlobGasUsed().isPresent()

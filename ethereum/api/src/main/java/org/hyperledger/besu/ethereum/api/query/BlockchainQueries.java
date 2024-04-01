@@ -20,6 +20,7 @@ import static org.hyperledger.besu.ethereum.mainnet.feemarket.ExcessBlobGasCalcu
 
 import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.datatypes.Hash;
+import org.hyperledger.besu.datatypes.TransactionType;
 import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.api.ApiConfiguration;
 import org.hyperledger.besu.ethereum.api.ImmutableApiConfiguration;
@@ -1118,7 +1119,16 @@ public class BlockchainQueries {
     final int count = txs.size();
     final List<TransactionWithMetadata> result = new ArrayList<>(count);
     for (int i = 0; i < count; i++) {
-      result.add(new TransactionWithMetadata(txs.get(i), blockNumber, baseFee, blockHash, i));
+      if (TransactionType.OPTIMISM_DEPOSIT.equals(txs.get(i).getType())) {
+        final List<TransactionReceipt> txReceipts =
+                blockchain.getTxReceipts(blockHash).orElseThrow();
+        final TransactionReceipt receipt = txReceipts.get(i);
+        result.add(
+                new TransactionWithMetadata(
+                        txs.get(i), blockNumber, baseFee, blockHash, i, receipt.getDepositNonce()));
+      } else {
+        result.add(new TransactionWithMetadata(txs.get(i), blockNumber, baseFee, blockHash, i));
+      }
     }
     return result;
   }

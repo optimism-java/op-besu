@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class PendingTransaction
     implements org.hyperledger.besu.datatypes.PendingTransaction {
   static final int NOT_INITIALIZED = -1;
+  static final int FRONTIER_AND_ACCESS_LIST_BASE_MEMORY_SIZE = 872;
   static final int FRONTIER_AND_ACCESS_LIST_SHALLOW_MEMORY_SIZE = 888;
   static final int EIP1559_AND_EIP4844_SHALLOW_MEMORY_SIZE = 1000;
   static final int OPTIONAL_TO_MEMORY_SIZE = 112;
@@ -46,10 +47,16 @@ public abstract class PendingTransaction
   static final int BLOB_SIZE = 131136;
   static final int BLOBS_WITH_COMMITMENTS_SIZE = 40;
   static final int PENDING_TRANSACTION_MEMORY_SIZE = 40;
+
+  static final int SOURCE_HASH_SIZE = 32;
+  static final int IS_SYSTEM_TX_SIZE = 1;
+  static final int MINT_SIZE = 32;
+
   private static final AtomicLong TRANSACTIONS_ADDED = new AtomicLong();
   private final Transaction transaction;
   private final long addedAt;
   private final long sequence; // Allows prioritization based on order transactions are added
+  private boolean mustSelect = false;
   private volatile byte score;
 
   private int memorySize = NOT_INITIALIZED;
@@ -118,6 +125,14 @@ public abstract class PendingTransaction
     return addedAt;
   }
 
+  public boolean isMustSelect() {
+    return mustSelect;
+  }
+
+  public void setMustSelect(final boolean mustSelect) {
+    this.mustSelect = mustSelect;
+  }
+
   public int memorySize() {
     if (memorySize == NOT_INITIALIZED) {
       memorySize = computeMemorySize();
@@ -147,6 +162,7 @@ public abstract class PendingTransaction
           case ACCESS_LIST -> computeAccessListMemorySize();
           case EIP1559 -> computeEIP1559MemorySize();
           case BLOB -> computeBlobMemorySize();
+          case OPTIMISM_DEPOSIT -> computeOptimismDepositMemorySize();
           case SET_CODE -> computeSetCodeMemorySize();
         }
         + PENDING_TRANSACTION_MEMORY_SIZE;
@@ -229,6 +245,18 @@ public abstract class PendingTransaction
               return totalSize;
             })
         .orElse(0);
+  }
+
+  /**
+   * correct memory size for OptimismDeposit transactions.
+   */
+  private int computeOptimismDepositMemorySize() {
+    return FRONTIER_AND_ACCESS_LIST_BASE_MEMORY_SIZE
+            + computePayloadMemorySize()
+            + computeToMemorySize()
+            + SOURCE_HASH_SIZE
+            + IS_SYSTEM_TX_SIZE
+            + MINT_SIZE;
   }
 
   public static List<Transaction> toTransactionList(

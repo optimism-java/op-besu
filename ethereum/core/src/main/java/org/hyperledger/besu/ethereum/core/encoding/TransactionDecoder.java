@@ -41,6 +41,8 @@ public class TransactionDecoder {
           EIP1559TransactionDecoder::decode,
           TransactionType.BLOB,
           BlobTransactionDecoder::decode,
+          TransactionType.OPTIMISM_DEPOSIT,
+          OptimismDepositTransactionDecoder::decode),
           TransactionType.SET_CODE,
           SetCodeTransactionDecoder::decode);
 

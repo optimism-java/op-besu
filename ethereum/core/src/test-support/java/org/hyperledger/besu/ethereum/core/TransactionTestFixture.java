@@ -18,6 +18,7 @@ import org.hyperledger.besu.crypto.KeyPair;
 import org.hyperledger.besu.datatypes.AccessListEntry;
 import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.datatypes.BlobsWithCommitments;
+import org.hyperledger.besu.datatypes.Hash;
 import org.hyperledger.besu.datatypes.TransactionType;
 import org.hyperledger.besu.datatypes.VersionedHash;
 import org.hyperledger.besu.datatypes.Wei;
@@ -91,6 +92,11 @@ public class TransactionTestFixture {
         } else if (versionedHashes.isPresent()) {
           builder.versionedHashes(versionedHashes.get());
         }
+        break;
+      case OPTIMISM_DEPOSIT:
+        builder.sourceHash(Hash.ZERO);
+        builder.isSystemTx(true);
+        builder.mint(Wei.of(BigInteger.ONE));
         break;
       case SET_CODE:
         break;

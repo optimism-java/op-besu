@@ -147,9 +147,20 @@ public class TransitionCoordinator extends TransitionUtils<MiningCoordinator>
       final Bytes32 prevRandao,
       final Address feeRecipient,
       final Optional<List<Withdrawal>> withdrawals,
-      final Optional<Bytes32> parentBeaconBlockRoot) {
+      final Optional<Bytes32> parentBeaconBlockRoot,
+      final Optional<Boolean> noTxPool,
+      final Optional<List<Transaction>> transactions,
+      final Optional<Long> gasLimit) {
     return mergeCoordinator.preparePayload(
-        parentHeader, timestamp, prevRandao, feeRecipient, withdrawals, parentBeaconBlockRoot);
+        parentHeader,
+        timestamp,
+        prevRandao,
+        feeRecipient,
+        withdrawals,
+        parentBeaconBlockRoot,
+        noTxPool,
+        transactions,
+        gasLimit);
   }
 
   @Override

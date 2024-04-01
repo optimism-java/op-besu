@@ -153,4 +153,14 @@ public class TransitionContext implements MergeContext {
   public boolean isPostMergeAtGenesis() {
     return postMergeContext.isPostMergeAtGenesis();
   }
+
+  @Override
+  public boolean isOptimism() {
+    return postMergeContext.isOptimism();
+  }
+
+  @Override
+  public void setOptimism(final boolean isOptimism) {
+    postMergeContext.setOptimism(isOptimism);
+  }
 }

@@ -16,6 +16,7 @@ package org.hyperledger.besu.ethereum.mainnet;
 
 import static org.hyperledger.besu.evm.account.Account.MAX_NONCE;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.crypto.SECPSignature;
 import org.hyperledger.besu.crypto.SignatureAlgorithmFactory;
 import org.hyperledger.besu.datatypes.Blob;
@@ -62,6 +63,8 @@ public class MainnetTransactionValidator implements TransactionValidator {
 
   private final int maxInitcodeSize;
 
+  private final Optional<GenesisConfigOptions> genesisOptions;
+
   public MainnetTransactionValidator(
       final GasCalculator gasCalculator,
       final GasLimitCalculator gasLimitCalculator,
@@ -77,20 +80,42 @@ public class MainnetTransactionValidator implements TransactionValidator {
     this.chainId = chainId;
     this.acceptedTransactionTypes = acceptedTransactionTypes;
     this.maxInitcodeSize = maxInitcodeSize;
+    this.genesisOptions = Optional.empty();
+  }
+
+  public MainnetTransactionValidator(
+      final GasCalculator gasCalculator,
+      final GasLimitCalculator gasLimitCalculator,
+      final FeeMarket feeMarket,
+      final boolean checkSignatureMalleability,
+      final Optional<BigInteger> chainId,
+      final Set<TransactionType> acceptedTransactionTypes,
+      final int maxInitcodeSize,
+      final Optional<GenesisConfigOptions> genesisOptions) {
+    this.gasCalculator = gasCalculator;
+    this.gasLimitCalculator = gasLimitCalculator;
+    this.feeMarket = feeMarket;
+    this.disallowSignatureMalleability = checkSignatureMalleability;
+    this.chainId = chainId;
+    this.acceptedTransactionTypes = acceptedTransactionTypes;
+    this.maxInitcodeSize = maxInitcodeSize;
+    this.genesisOptions = genesisOptions;
   }
 
   @Override
   public ValidationResult<TransactionInvalidReason> validate(
       final Transaction transaction,
+      final long blockTimestamp,
       final Optional<Wei> baseFee,
       final Optional<Wei> blobFee,
       final TransactionValidationParams transactionValidationParams) {
-    final ValidationResult<TransactionInvalidReason> signatureResult =
+    if (transaction.getType() != TransactionType.OPTIMISM_DEPOSIT) {
+      final ValidationResult<TransactionInvalidReason> signatureResult =
         validateTransactionSignature(transaction);
-    if (!signatureResult.isValid()) {
-      return signatureResult;
+      if (!signatureResult.isValid()) {
+        return signatureResult;
+      }
     }
-
     if (transaction.getType().supportsBlob()) {
       final ValidationResult<TransactionInvalidReason> blobTransactionResult =
           validateBlobTransaction(transaction);
@@ -114,6 +139,20 @@ public class MainnetTransactionValidator implements TransactionValidator {
           String.format(
               "Transaction type %s is invalid, accepted transaction types are %s",
               transactionType, acceptedTransactionTypes));
+    }
+
+    if (transaction.getType().equals(TransactionType.OPTIMISM_DEPOSIT)) {
+      //      genesisOptions.orElseThrow();
+      if (transaction.getIsSystemTx().orElse(false)) {
+        var regolithTime = genesisOptions.get().getRegolithTime();
+        if (genesisOptions.get().isOptimism() && regolithTime.orElseThrow() <= blockTimestamp) {
+          return ValidationResult.invalid(
+              TransactionInvalidReason.SYSTEM_TX_NOT_SUPPORT,
+              String.format(
+                  "system tx not supported: address = %s", transaction.getSender().toHexString()));
+        }
+      }
+      return ValidationResult.valid();
     }
 
     if (transaction.getNonce() == MAX_NONCE) {
@@ -214,6 +253,9 @@ public class MainnetTransactionValidator implements TransactionValidator {
       final Transaction transaction,
       final Account sender,
       final TransactionValidationParams validationParams) {
+    if (TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+      return ValidationResult.valid();
+    }
     Wei senderBalance = Account.DEFAULT_BALANCE;
     long senderNonce = Account.DEFAULT_NONCE;
     Hash codeHash = Hash.EMPTY;

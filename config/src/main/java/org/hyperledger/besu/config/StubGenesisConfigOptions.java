@@ -53,6 +53,11 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
   private OptionalLong pragueEOFTime = OptionalLong.empty();
   private OptionalLong futureEipsTime = OptionalLong.empty();
   private OptionalLong experimentalEipsTime = OptionalLong.empty();
+  private OptionalLong bedrockBlock = OptionalLong.empty();
+  private OptionalLong regolithTime = OptionalLong.empty();
+  private OptionalLong canyonTime = OptionalLong.empty();
+  private OptionalLong ecotoneTime = OptionalLong.empty();
+  private OptionalLong interopTime = OptionalLong.empty();
   private OptionalLong terminalBlockNumber = OptionalLong.empty();
   private Optional<Hash> terminalBlockHash = Optional.empty();
   private Optional<UInt256> terminalTotalDifficulty = Optional.empty();
@@ -117,6 +122,11 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
   }
 
   @Override
+  public boolean isOptimism() {
+    return false;
+  }
+
+  @Override
   public boolean isIbft2() {
     return false;
   }
@@ -164,6 +174,11 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
   @Override
   public OptionalLong getHomesteadBlockNumber() {
     return homesteadBlockNumber;
+  }
+
+  @Override
+  public OptimismConfigOptions getOptimismConfigOptions() {
+    return null;
   }
 
   @Override
@@ -264,6 +279,56 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
   @Override
   public OptionalLong getExperimentalEipsTime() {
     return experimentalEipsTime;
+  }
+
+  @Override
+  public OptionalLong getBedrockBlock() {
+    return bedrockBlock;
+  }
+
+  @Override
+  public boolean isBedrockBlock(long headBlock) {
+    return false;
+  }
+
+  @Override
+  public OptionalLong getRegolithTime() {
+    return regolithTime;
+  }
+
+  @Override
+  public boolean isRegolith(long headTime) {
+    return false;
+  }
+
+  @Override
+  public OptionalLong getCanyonTime() {
+    return canyonTime;
+  }
+
+  @Override
+  public boolean isCanyon(long headTime) {
+    return false;
+  }
+
+  @Override
+  public OptionalLong getEcotoneTime() {
+    return ecotoneTime;
+  }
+
+  @Override
+  public boolean isEcotone(long headTime) {
+    return false;
+  }
+
+  @Override
+  public OptionalLong getInteropTime() {
+    return interopTime;
+  }
+
+  @Override
+  public boolean isInterop(long headTime) {
+    return false;
   }
 
   @Override

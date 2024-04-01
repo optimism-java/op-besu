@@ -14,6 +14,7 @@
  */
 package org.hyperledger.besu.ethereum.mainnet;
 
+import org.hyperledger.besu.datatypes.TransactionType;
 import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.ProtocolContext;
 import org.hyperledger.besu.ethereum.core.Block;
@@ -61,6 +62,9 @@ public class BaseFeeBlockBodyValidator extends MainnetBlockBodyValidator {
             .getTransactionPriceCalculator();
 
     for (final Transaction transaction : transactions) {
+      if (transaction.getType().equals(TransactionType.OPTIMISM_DEPOSIT)) {
+        continue;
+      }
       final Optional<Wei> baseFee = block.getHeader().getBaseFee();
       final Wei price = transactionPriceCalculator.price(transaction, baseFee);
       if (price.compareTo(baseFee.orElseThrow()) < 0) {

@@ -174,4 +174,18 @@ public interface MergeContext extends ConsensusContext {
    * @return the boolean
    */
   boolean isPostMergeAtGenesis();
+
+  /**
+   * Is configured for optimism.
+   *
+   * @return the boolean
+   */
+  boolean isOptimism();
+
+  /**
+   * Sets is configured for optimism.
+   *
+   * @param isOptimism the boolean
+   */
+  default void setOptimism(final boolean isOptimism) {}
 }

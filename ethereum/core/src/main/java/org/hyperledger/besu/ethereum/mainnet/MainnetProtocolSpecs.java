@@ -213,7 +213,8 @@ public abstract class MainnetProtocolSpecs {
                 blockReward,
                 miningBeneficiaryCalculator,
                 skipZeroBlockRewards,
-                protocolSchedule) ->
+                protocolSchedule,
+             genesisConfigOptions) ->
                 new DaoBlockProcessor(
                     isParallelTxProcessingEnabled
                         ? new MainnetParallelBlockProcessor(
@@ -230,7 +231,8 @@ public abstract class MainnetProtocolSpecs {
                             blockReward,
                             miningBeneficiaryCalculator,
                             skipZeroBlockRewards,
-                            protocolSchedule)))
+                            protocolSchedule,
+                            genesisConfigOptions)))
         .name("DaoRecoveryInit");
   }
 

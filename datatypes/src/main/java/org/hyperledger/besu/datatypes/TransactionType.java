@@ -29,7 +29,9 @@ public enum TransactionType {
   /** Blob transaction type. */
   BLOB(0x03),
   /** Eip7702 transaction type. */
-  SET_CODE(0x04);
+  SET_CODE(0x04),
+  /** Optimism Deposit transaction type. */
+  OPTIMISM_DEPOSIT(0x7e);
 
   private static final Set<TransactionType> ACCESS_LIST_SUPPORTED_TRANSACTION_TYPES =
       Set.of(ACCESS_LIST, EIP1559, BLOB, SET_CODE);
@@ -86,7 +88,8 @@ public enum TransactionType {
               TransactionType.ACCESS_LIST,
               TransactionType.EIP1559,
               TransactionType.BLOB,
-              TransactionType.SET_CODE
+              TransactionType.OPTIMISM_DEPOSIT,
+                TransactionType.SET_CODE
             })
         .filter(transactionType -> transactionType.typeValue == serializedTypeValue)
         .findFirst()
@@ -120,7 +123,7 @@ public enum TransactionType {
    * @return the boolean
    */
   public boolean requiresChainId() {
-    return !this.equals(FRONTIER);
+    return !this.equals(FRONTIER) && !this.equals(OPTIMISM_DEPOSIT);
   }
 
   /**
