@@ -1,0 +1,163 @@
+title: "op-besu"  # Define the HTML page title
+footer: |  # define the footer with markdown
+  Fork-diff overview of [op-besu](https://github.com/optimism-java/op-besu), a fork of [besu](https://github.com/hyperledger/besu). and execution-engine of the [OP Stack](https://github.com/ethereum-optimism/optimism).
+base:
+  name: hyperledger/besu
+  url: https://github.com/hyperledger/besu
+  hash: 287f0c206e8ac668ffb5ec908128724b6338a294
+fork:
+  name: optimism-java/op-besu
+  url: https://github.com/optimism-java/op-besu
+  ref: refs/heads/release-23.10.x
+def:
+  title: "op-besu"
+  description: | # description in markdown
+    This is an overview of the changes in [op-besu](https://github.com/optimism-java/op-besu), a fork of [besu](https://github.com/hyperledger/besu), part of the OP Stack.
+    
+    Related [op-stack specifications](https://github.com/ethereum-optimism/optimism/tree/develop/specs):
+
+    - [L2 Execution Engine spec](https://github.com/ethereum-optimism/optimism/blob/develop/specs/exec-engine.md)
+    - [Deposit Transaction spec](https://github.com/ethereum-optimism/optimism/blob/develop/specs/deposits.md)
+
+  sub:
+    - title: "Core modifications"
+      sub:
+        - title: "Transition modifications"
+          sub:
+            - title: "Deposit transaction type"
+              description: |
+                The Bedrock upgrade introduces a Deposit transaction-type (0x7E) to enable both users and the rollup system itself to change the L2 state based on L1 events and system rules as [specified](https://github.com/ethereum-optimism/optimism/blob/develop/specs/deposits.md).
+              globs:
+                - "datatypes/src/main/java/org/hyperledger/besu/datatypes/Transaction.java"
+                - "datatypes/src/main/java/org/hyperledger/besu/datatypes/TransactionType.java"
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/encoding/OptimismDepositTransactionDecoder.java"
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/encoding/OptimismDepositTransactionEncoder.java"
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/encoding/TransactionDecoder.java"
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/encoding/TransactionEncoder.java"
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/Transaction.java"
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/TransactionReceipt.java"
+            - title: "L1 cost computation"
+              description: |
+                Transactions must pay an additional L1 cost based on the amount of rollup-data-gas they consume,
+                estimated based on gas-price-oracle information and encoded tx size."
+              globs:
+                - "datatypes/src/main/java/org/hyperledger/besu/datatypes/RollupGasData.java"
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/L1CostCalculator.java"
+            - title: "Transaction processing"
+              description: |
+                Deposit transactions have special processing rules: gas is pre-paid on L1,
+                and deposits with EVM-failure are included with rolled back changes (except mint).
+                For regular transactions, at the end of the transition, the 1559 burn and L1 cost are routed to vaults.
+              globs:
+                - "ethereum/eth/src/main/java/org/hyperledger/besu/ethereum/eth/transactions/layered/BaseFeePrioritizedTransactions.java"
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/MainnetTransactionProcessor.java"
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/AbstractBlockProcessor.java"
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/MainnetBlockProcessor.java"
+                - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/ClassicBlockProcessor.java"
+                - "evm/src/main/java/org/hyperledger/besu/evm/frame/MessageFrame.java"
+        - title: "Gaslimit"
+          description: |
+            The gaslimit is free to be set by the Engine API caller, instead of enforcing adjustments of the
+            gaslimit in increments of 1/1024 of the previous gaslimit.
+            The gaslimit is changed (and limited) through the `SystemConfig` contract.
+          globs:
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/feemarket/BaseFee.java"
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/feemarket/BaseFeeMarket.java"
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/feemarket/CancunFeeMarket.java"
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/feemarket/FeeMarket.java"
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/feemarket/LondonFeeMarket.java"
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/feemarket/ZeroBaseFeeMarket.java"
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/methods/EthFeeHistory.java"
+        - title: "Block Creation modifications"
+          description: |
+            The block creation code implements the changes to support the transaction-inclusion, 
+            tx-pool toggle and gaslimit parameters of the Engine API.
+          globs:
+            - "consensus/merge/src/main/java/org/hyperledger/besu/consensus/merge/blockcreation/MergeCoordinator.java"
+            - "consensus/merge/src/main/java/org/hyperledger/besu/consensus/merge/blockcreation/MergeMiningCoordinator.java"
+            - "consensus/merge/src/main/java/org/hyperledger/besu/consensus/merge/blockcreation/MergeBlockCreator.java"
+            - "consensus/merge/src/main/java/org/hyperledger/besu/consensus/merge/blockcreation/PayloadIdentifier.java"
+            - "consensus/merge/src/main/java/org/hyperledger/besu/consensus/merge/blockcreation/TransitionCoordinator.java"
+            - "consensus/merge/src/main/java/org/hyperledger/besu/consensus/merge/MergeContext.java"
+            - "consensus/merge/src/main/java/org/hyperledger/besu/consensus/merge/PostMergeContext.java"
+            - "consensus/merge/src/main/java/org/hyperledger/besu/consensus/merge/TransitionContext.java"
+            - "ethereum/eth/src/main/java/org/hyperledger/besu/ethereum/eth/transactions/TransactionPool.java"
+            - "ethereum/blockcreation/src/main/java/org/hyperledger/besu/ethereum/blockcreation/AbstractBlockCreator.java"
+            - "ethereum/blockcreation/src/main/java/org/hyperledger/besu/ethereum/blockcreation/txselection/BlockTransactionSelector.java"
+            - "ethereum/eth/src/main/java/org/hyperledger/besu/ethereum/eth/transactions/PendingTransaction.java"
+        - title: "Validation modifications"
+          description: |
+            The block validation and transaction validation modifications.
+          globs:
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/headervalidationrules/BaseFeeMarketBlockHeaderGasPriceValidationRule.java"
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/BaseFeeBlockBodyValidator.java"
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/BodyValidation.java"
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/MainnetTransactionValidator.java"
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/PermissionTransactionValidator.java"
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/TransactionValidator.java"
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/TransactionValidatorFactory.java"
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/transaction/TransactionInvalidReason.java"
+        - title: "Engine API modifications"
+          description: |
+            The Engine API is extended to insert transactions into the block and optionally exclude the tx-pool,
+            to reproduce the exact block of the sequencer from just the inputs, as derived from L1 by the rollup-node.
+            See [L2 execution engine specs](https://github.com/ethereum-optimism/optimism/blob/develop/specs/exec-engine.md).
+          globs:
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/methods/engine/AbstractEngineForkchoiceUpdated.java"
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/methods/engine/EnginePreparePayloadDebug.java"
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/methods/engine/EngineForkchoiceUpdatedV2.java"
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/methods/engine/EngineForkchoiceUpdatedV3.java"
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/parameters/EnginePayloadAttributesParameter.java"
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/parameters/EnginePreparePayloadParameter.java"
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/results/TransactionCompleteResult.java"
+            - "ethereum/api/src/main/java/org/hyperledger/besu/ethereum/api/jsonrpc/internal/results/TransactionReceiptResult.java"
+        - title: "Deploys Create2 Deployer Contract"
+          description: |
+            The Create2 Deployer contract is used to deploy contracts to the L2.
+            It is used by the sequencer to deploy the sequencer contract.
+          globs:
+            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/Create2DeployerFunction.java"
+    - title: "Chain Configuration"
+      sub:
+        - title: "Chain config"
+          description: |
+            The rollup functionality is enabled with the `optimism` field in the chain config.
+            The EIP-1559 parameters are configurable to adjust for faster more frequent and smaller blocks.
+            The parameters can be overriden for testing.
+          globs:
+            - "config/src/main/java/org/hyperledger/besu/config/JsonGenesisConfigOptions.java"
+            - "config/src/main/java/org/hyperledger/besu/config/GenesisConfigOptions.java"
+            - "config/src/main/java/org/hyperledger/besu/config/OptimismConfigOptions.java"
+    - title: "Node Configuration"
+      sub:
+        - title: "Controller modifications"
+          description: |
+            Changes to the node configuration and services.
+          globs:
+            - "besu/src/main/java/org/hyperledger/besu/controller/BesuController.java"
+            - "besu/src/main/java/org/hyperledger/besu/controller/MergeBesuControllerBuilder.java"
+    - title: "Spec Builder"
+      description: |
+        The Spec Builder is extended to support the new transaction type and the new EIP-1559 parameters for the `optimism`.
+      globs:
+        - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/ProtocolScheduleBuilder.java"
+        - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/ProtocolSpecBuilder.java"
+        - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/MainnetProtocolSpecs.java"
+        - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/ClassicProtocolSpecs.java"
+
+
+
+# files can be ignored globally, these will be listed in a separate grayed-out section,
+# and do not count towards the total line count.
+ignore:
+  - "*.sum"
+  - ".gitignore"
+  - ".github/**/*"
+  - ".github/actions/**/*.yml"
+  - ".circleci/**/*"
+  - ".circleci-nouse/**/*"
+  - "gradle/*"
+  - "**/*.yml"
+  - "fork.yaml"
+  - "Dockerfile"
+  - "README.md"

@@ -376,6 +376,7 @@ public class BlockDataGenerator {
       case EIP1559 -> eip1559Transaction(payload, to);
       case ACCESS_LIST -> accessListTransaction(payload, to);
       case BLOB -> blobTransaction(payload, to);
+      case OPTIMISM_DEPOSIT -> optimismDepositTransaction(payload, to);
         // no default, all types accounted for.
     };
   }
@@ -446,6 +447,20 @@ public class BlockDataGenerator {
         .value(Wei.wrap(bytes32()))
         .payload(payload)
         .chainId(BigInteger.ONE)
+        .signAndBuild(generateKeyPair());
+  }
+
+  private Transaction optimismDepositTransaction(final Bytes payload, final Address to) {
+    return Transaction.builder()
+        .type(TransactionType.OPTIMISM_DEPOSIT)
+        .gasLimit(positiveLong())
+        .to(to)
+        .value(Wei.wrap(bytes32()))
+        .payload(payload)
+        .isSystemTx(false)
+        .mint(Wei.of(BigInteger.ONE))
+        .sourceHash(Hash.ZERO)
+        .chainId(BigInteger.TEN)
         .signAndBuild(generateKeyPair());
   }
 

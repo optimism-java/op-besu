@@ -77,6 +77,8 @@ public class PostMergeContext implements MergeContext {
   // https://github.com/hyperledger/besu/pull/4703 is merged.
   private boolean isChainPruningEnabled = false;
 
+  private boolean isOptimism;
+
   /** Instantiates a new Post merge context. */
   @VisibleForTesting
   PostMergeContext() {
@@ -344,5 +346,16 @@ public class PostMergeContext implements MergeContext {
   public PostMergeContext setPostMergeAtGenesis(final boolean isPostMergeAtGenesis) {
     this.isPostMergeAtGenesis = isPostMergeAtGenesis;
     return this;
+  }
+
+
+  public PostMergeContext setIsOptimism(boolean isOptimism) {
+    this.isOptimism = isOptimism;
+    return this;
+  }
+
+  @Override
+  public boolean isOptimism() {
+    return this.isOptimism;
   }
 }

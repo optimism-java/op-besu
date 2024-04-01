@@ -278,7 +278,8 @@ public class MergeCoordinatorTest implements MergeGenesisConfigHelper {
                       protocolSchedule,
                       parentHeader,
                       Optional.empty(),
-                      ethScheduler));
+                      ethScheduler,
+                      Optional.empty()));
 
           doCallRealMethod()
               .doCallRealMethod()

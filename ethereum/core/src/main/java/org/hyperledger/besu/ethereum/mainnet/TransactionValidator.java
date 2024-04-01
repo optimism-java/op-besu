@@ -34,6 +34,7 @@ public interface TransactionValidator {
    */
   ValidationResult<TransactionInvalidReason> validate(
       Transaction transaction,
+      final long blockTimestamp,
       Optional<Wei> baseFee,
       Optional<Wei> blobBaseFee,
       TransactionValidationParams transactionValidationParams);

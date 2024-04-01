@@ -231,6 +231,9 @@ public class MessageFrame {
   private final Wei value;
   private final Wei apparentValue;
   private final Code code;
+  private final boolean isSystemTx;
+  private final boolean isDepositTx;
+  private final Optional<Wei> mint;
 
   private Optional<Bytes> revertReason;
 
@@ -267,6 +270,9 @@ public class MessageFrame {
       final Wei value,
       final Wei apparentValue,
       final Code code,
+      final boolean isSystemTx,
+      final boolean isDepositTx,
+      final Optional<Wei> mint,
       final boolean isStatic,
       final Consumer<MessageFrame> completer,
       final Map<String, Object> contextVariables,
@@ -293,6 +299,9 @@ public class MessageFrame {
     this.value = value;
     this.apparentValue = apparentValue;
     this.code = code;
+    this.isSystemTx = isSystemTx;
+    this.isDepositTx = isDepositTx;
+    this.mint = mint;
     this.isStatic = isStatic;
     this.completer = completer;
     this.contextVariables = contextVariables;
@@ -1084,6 +1093,33 @@ public class MessageFrame {
   }
 
   /**
+   * Is deposit tx boolean.
+   *
+   * @return the boolean
+   */
+  public boolean isDepositTx() {
+    return isDepositTx;
+  }
+
+  /**
+   * Is system tx boolean.
+   *
+   * @return the boolean
+   */
+  public boolean isSystemTx() {
+    return isSystemTx;
+  }
+
+  /**
+   * Gets mint.
+   *
+   * @return the mint
+   */
+  public Optional<Wei> getMint() {
+    return mint;
+  }
+
+  /**
    * Returns the current input data.
    *
    * @return the current input data
@@ -1390,6 +1426,9 @@ public class MessageFrame {
     private Address sender;
     private Wei value;
     private Wei apparentValue;
+    private boolean isSystemTx;
+    private boolean isDepositTx;
+    private Optional<Wei> mint;
     private Code code;
     private BlockValues blockValues;
     private int maxStackSize = DEFAULT_MAX_STACK_SIZE;
@@ -1556,6 +1595,40 @@ public class MessageFrame {
      */
     public Builder code(final Code code) {
       this.code = code;
+      return this;
+    }
+
+
+    /**
+     * Is system tx builder.
+     *
+     * @param isSystemTx the is system tx
+     * @return the builder
+     */
+    public Builder isSystemTx(final boolean isSystemTx) {
+      this.isSystemTx = isSystemTx;
+      return this;
+    }
+
+    /**
+     * Is deposit tx builder.
+     *
+     * @param isDepositTx the is deposit tx
+     * @return the builder
+     */
+    public Builder isDepositTx(final boolean isDepositTx) {
+      this.isDepositTx = isDepositTx;
+      return this;
+    }
+
+    /**
+     * Mint builder.
+     *
+     * @param mint the mint
+     * @return the builder
+     */
+    public Builder mint(final Optional<Wei> mint) {
+      this.mint = mint;
       return this;
     }
 
@@ -1750,6 +1823,9 @@ public class MessageFrame {
               value,
               apparentValue,
               code,
+              isSystemTx,
+              isDepositTx,
+              mint,
               newStatic,
               completer,
               contextVariables == null ? Map.of() : contextVariables,

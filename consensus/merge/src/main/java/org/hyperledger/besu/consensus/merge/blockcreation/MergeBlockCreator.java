@@ -14,6 +14,7 @@
  */
 package org.hyperledger.besu.consensus.merge.blockcreation;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.ethereum.ProtocolContext;
 import org.hyperledger.besu.ethereum.blockcreation.AbstractBlockCreator;
@@ -55,7 +56,8 @@ class MergeBlockCreator extends AbstractBlockCreator {
       final ProtocolSchedule protocolSchedule,
       final BlockHeader parentHeader,
       final Optional<Address> depositContractAddress,
-      final EthScheduler ethScheduler) {
+      final EthScheduler ethScheduler,
+      final Optional<GenesisConfigOptions> genesisConfigOptions) {
     super(
         miningParameters,
         __ -> miningParameters.getCoinbase().orElseThrow(),
@@ -66,6 +68,26 @@ class MergeBlockCreator extends AbstractBlockCreator {
         parentHeader,
         depositContractAddress,
         ethScheduler);
+  }
+
+  public BlockCreationResult createBlock(
+          final Optional<List<Transaction>> maybeTransactions,
+          final Bytes32 random,
+          final long timestamp,
+          final Optional<List<Withdrawal>> withdrawals,
+          final Optional<Bytes32> parentBeaconBlockRoot,
+          final Optional<Boolean> noTxFromPool,
+          final Optional<Long> gasLimit) {
+    return createBlock(
+            maybeTransactions,
+            Optional.of(Collections.emptyList()),
+            withdrawals,
+            Optional.of(random),
+            parentBeaconBlockRoot,
+            timestamp,
+            false,
+            noTxFromPool,
+            gasLimit);
   }
 
   /**
@@ -92,7 +114,9 @@ class MergeBlockCreator extends AbstractBlockCreator {
         Optional.of(random),
         parentBeaconBlockRoot,
         timestamp,
-        false);
+        false,
+        Optional.empty(),
+        Optional.empty());
   }
 
   @Override

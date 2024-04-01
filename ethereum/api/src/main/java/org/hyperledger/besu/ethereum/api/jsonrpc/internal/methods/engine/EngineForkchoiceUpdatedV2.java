@@ -51,6 +51,9 @@ public class EngineForkchoiceUpdatedV2 extends AbstractEngineForkchoiceUpdated {
   @Override
   protected Optional<JsonRpcErrorResponse> isPayloadAttributesValid(
       final Object requestId, final EnginePayloadAttributesParameter payloadAttributes) {
+    if (this.mergeContext.get().isOptimism()) {
+      return Optional.empty();
+    }
     if (payloadAttributes.getTimestamp() >= cancunTimestamp) {
       if (payloadAttributes.getParentBeaconBlockRoot() == null
           || payloadAttributes.getParentBeaconBlockRoot().isEmpty()) {

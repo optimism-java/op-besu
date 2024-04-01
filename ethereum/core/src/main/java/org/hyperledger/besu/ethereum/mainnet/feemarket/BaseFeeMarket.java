@@ -17,6 +17,8 @@ package org.hyperledger.besu.ethereum.mainnet.feemarket;
 import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
 
+import java.util.OptionalLong;
+
 public interface BaseFeeMarket extends FeeMarket {
 
   enum ValidationMode {
@@ -31,6 +33,10 @@ public interface BaseFeeMarket extends FeeMarket {
   }
 
   long getBasefeeMaxChangeDenominator();
+
+  default long getBasefeeMaxChangeDenominator(OptionalLong time) {
+    return getBasefeeMaxChangeDenominator();
+  }
 
   Wei getInitialBasefee();
 
@@ -52,6 +58,15 @@ public interface BaseFeeMarket extends FeeMarket {
       final Wei parentBaseFee,
       final long parentBlockGasUsed,
       final long targetGasUsed);
+
+  default Wei computeBaseFee(
+      final long blockNumber,
+      final Wei parentBaseFee,
+      final long parentBlockGasUsed,
+      final long targetGasUsed,
+      final OptionalLong headTime) {
+    return computeBaseFee(blockNumber, parentBaseFee, parentBlockGasUsed, targetGasUsed);
+  }
 
   ValidationMode baseFeeValidationMode(final long blockNumber);
 

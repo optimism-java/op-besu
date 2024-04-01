@@ -167,7 +167,8 @@ public class MergeBesuControllerBuilder extends BesuControllerBuilder {
         transactionPool,
         miningParameters,
         backwardSyncContext,
-        depositContractAddress);
+        depositContractAddress,
+        Optional.of(genesisConfigOptions));
   }
 
   @Override
@@ -199,6 +200,7 @@ public class MergeBesuControllerBuilder extends BesuControllerBuilder {
                     .map(Difficulty::of)
                     .orElse(Difficulty.ZERO))
             .setCheckpointPostMergeSync(syncConfig.isCheckpointPostMergeEnabled())
+            .setIsOptimism(genesisConfigOptions.isOptimism())
             .setPostMergeAtGenesis(isPostMergeAtGenesis);
 
     blockchain

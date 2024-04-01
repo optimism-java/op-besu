@@ -16,6 +16,7 @@ package org.hyperledger.besu.ethereum.blockcreation;
 
 import static org.hyperledger.besu.ethereum.mainnet.feemarket.ExcessBlobGasCalculator.calculateExcessBlobGasForParent;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.datatypes.BlobGas;
 import org.hyperledger.besu.datatypes.Hash;
@@ -40,9 +41,11 @@ import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.Withdrawal;
 import org.hyperledger.besu.ethereum.core.encoding.DepositDecoder;
 import org.hyperledger.besu.ethereum.eth.manager.EthScheduler;
+import org.hyperledger.besu.ethereum.eth.transactions.PendingTransaction;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPool;
 import org.hyperledger.besu.ethereum.mainnet.AbstractBlockProcessor;
 import org.hyperledger.besu.ethereum.mainnet.BodyValidation;
+import org.hyperledger.besu.ethereum.mainnet.Create2DeployerFunction;
 import org.hyperledger.besu.ethereum.mainnet.DepositsValidator;
 import org.hyperledger.besu.ethereum.mainnet.DifficultyCalculator;
 import org.hyperledger.besu.ethereum.mainnet.MainnetTransactionProcessor;
@@ -63,6 +66,7 @@ import org.hyperledger.besu.plugin.services.txselection.PluginTransactionSelecto
 import org.hyperledger.besu.plugin.services.txselection.PluginTransactionSelectorFactory;
 
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
@@ -94,6 +98,8 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
   protected final BlockHeader parentHeader;
   private final Optional<Address> depositContractAddress;
   private final EthScheduler ethScheduler;
+
+  private final Optional<GenesisConfigOptions> genesisConfigOptions;
   private final AtomicBoolean isCancelled = new AtomicBoolean(false);
 
   protected AbstractBlockCreator(
@@ -106,6 +112,30 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
       final BlockHeader parentHeader,
       final Optional<Address> depositContractAddress,
       final EthScheduler ethScheduler) {
+    this(
+        miningParameters,
+        miningBeneficiaryCalculator,
+        extraDataCalculator,
+        transactionPool,
+        protocolContext,
+        protocolSchedule,
+        parentHeader,
+        depositContractAddress,
+        ethScheduler,
+        Optional.empty());
+  }
+
+  protected AbstractBlockCreator(
+      final MiningParameters miningParameters,
+      final MiningBeneficiaryCalculator miningBeneficiaryCalculator,
+      final ExtraDataCalculator extraDataCalculator,
+      final TransactionPool transactionPool,
+      final ProtocolContext protocolContext,
+      final ProtocolSchedule protocolSchedule,
+      final BlockHeader parentHeader,
+      final Optional<Address> depositContractAddress,
+      final EthScheduler ethScheduler,
+      final Optional<GenesisConfigOptions> genesisConfigOptions) {
     this.miningParameters = miningParameters;
     this.miningBeneficiaryCalculator = miningBeneficiaryCalculator;
     this.extraDataCalculator = extraDataCalculator;
@@ -115,6 +145,7 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
     this.parentHeader = parentHeader;
     this.depositContractAddress = depositContractAddress;
     this.ethScheduler = ethScheduler;
+    this.genesisConfigOptions = genesisConfigOptions;
     blockHeaderFunctions = ScheduleBasedBlockHeaderFunctions.create(protocolSchedule);
   }
 
@@ -158,7 +189,9 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
         Optional.empty(),
         Optional.empty(),
         timestamp,
-        true);
+        true,
+        Optional.empty(),
+        Optional.empty());
   }
 
   protected BlockCreationResult createBlock(
@@ -168,7 +201,9 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
       final Optional<Bytes32> maybePrevRandao,
       final Optional<Bytes32> maybeParentBeaconBlockRoot,
       final long timestamp,
-      boolean rewardCoinbase) {
+      boolean rewardCoinbase,
+      final Optional<Boolean> noTxFromPool,
+      final Optional<Long> gasLimit) {
 
     try (final MutableWorldState disposableWorldState = duplicateWorldStateAtParent()) {
       final ProtocolSpec newProtocolSpec =
@@ -176,7 +211,7 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
 
       final ProcessableBlockHeader processableBlockHeader =
           createPendingBlockHeader(
-              timestamp, maybePrevRandao, maybeParentBeaconBlockRoot, newProtocolSpec);
+              timestamp, maybePrevRandao, maybeParentBeaconBlockRoot, gasLimit, newProtocolSpec);
       final Address miningBeneficiary =
           miningBeneficiaryCalculator.getMiningBeneficiary(processableBlockHeader.getNumber());
 
@@ -209,7 +244,8 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
               maybeTransactions,
               miningBeneficiary,
               newProtocolSpec,
-              pluginTransactionSelector);
+              pluginTransactionSelector,
+              noTxFromPool);
 
       transactionResults.logSelectionStats();
 
@@ -238,13 +274,13 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
 
       if (rewardCoinbase
           && !rewardBeneficiary(
-              disposableWorldState,
-              processableBlockHeader,
-              ommers,
-              miningBeneficiary,
-              newProtocolSpec.getBlockReward(),
-              newProtocolSpec.isSkipZeroBlockRewards(),
-              newProtocolSpec)) {
+          disposableWorldState,
+          processableBlockHeader,
+          ommers,
+          miningBeneficiary,
+          newProtocolSpec.getBlockReward(),
+          newProtocolSpec.isSkipZeroBlockRewards(),
+          newProtocolSpec)) {
         LOG.trace("Failed to apply mining reward, exiting.");
         throw new RuntimeException("Failed to apply mining reward.");
       }
@@ -308,7 +344,8 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
         .toList();
   }
 
-  record GasUsage(BlobGas excessBlobGas, BlobGas used) {}
+  record GasUsage(BlobGas excessBlobGas, BlobGas used) {
+  }
 
   private GasUsage computeExcessBlobGas(
       final TransactionSelectionResults transactionResults, final ProtocolSpec newProtocolSpec) {
@@ -336,7 +373,8 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
       final Optional<List<Transaction>> transactions,
       final Address miningBeneficiary,
       final ProtocolSpec protocolSpec,
-      final PluginTransactionSelector pluginTransactionSelector)
+      final PluginTransactionSelector pluginTransactionSelector,
+      final Optional<Boolean> noTxFromPool)
       throws RuntimeException {
     final MainnetTransactionProcessor transactionProcessor = protocolSpec.getTransactionProcessor();
 
@@ -364,10 +402,37 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
             protocolSpec.getGasCalculator(),
             protocolSpec.getGasLimitCalculator(),
             pluginTransactionSelector,
-            ethScheduler);
+            ethScheduler,
+            genesisConfigOptions);
+
+    Create2DeployerFunction.ensureCreate2Deployer(
+        genesisConfigOptions,
+        processableBlockHeader.getTimestamp(),
+        disposableWorldState.updater());
+    if (noTxFromPool.isEmpty()) {
+      if (transactions.isPresent()) {
+        return selector.evaluateTransactions(transactions.get());
+      } else {
+        return selector.buildTransactionListForBlock();
+      }
+    }
 
     if (transactions.isPresent()) {
-      return selector.evaluateTransactions(transactions.get());
+      List<PendingTransaction> pendingTransactions =
+          transactions.get().stream()
+              .map(
+                  transaction -> {
+                    PendingTransaction pendingTransaction =
+                        new PendingTransaction.Local.Priority(transaction);
+                    pendingTransaction.setMustSelect(true);
+                    return pendingTransaction;
+                  })
+              .toList();
+
+      selector.evaluatePendingTransactions(pendingTransactions);
+    }
+    if (noTxFromPool.get()) {
+      return selector.evaluateTransactions(Collections.emptyList());
     } else {
       return selector.buildTransactionListForBlock();
     }
@@ -397,15 +462,16 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
       final long timestamp,
       final Optional<Bytes32> maybePrevRandao,
       final Optional<Bytes32> maybeParentBeaconBlockRoot,
+      final Optional<Long> gasLimitOptional,
       final ProtocolSpec protocolSpec) {
     final long newBlockNumber = parentHeader.getNumber() + 1;
-    long gasLimit =
+    long gasLimit = gasLimitOptional.orElse(
         protocolSpec
             .getGasLimitCalculator()
             .nextGasLimit(
                 parentHeader.getGasLimit(),
                 miningParameters.getTargetGasLimit().orElse(parentHeader.getGasLimit()),
-                newBlockNumber);
+                newBlockNumber));
 
     final DifficultyCalculator difficultyCalculator = protocolSpec.getDifficultyCalculator();
     final BigInteger difficulty =

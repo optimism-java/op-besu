@@ -16,6 +16,7 @@ package org.hyperledger.besu.ethereum.api.jsonrpc.internal.parameters;
 
 import org.hyperledger.besu.datatypes.Address;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,19 +33,30 @@ public class EnginePayloadAttributesParameter {
   final List<WithdrawalParameter> withdrawals;
   private final Bytes32 parentBeaconBlockRoot;
 
+  // optimism payload attributes
+  private final Boolean noTxPool;
+  private final List<String> transactions;
+  private final Long gasLimit;
+
   @JsonCreator
   public EnginePayloadAttributesParameter(
       @JsonProperty("timestamp") final String timestamp,
       @JsonProperty("prevRandao") final String prevRandao,
       @JsonProperty("suggestedFeeRecipient") final String suggestedFeeRecipient,
       @JsonProperty("withdrawals") final List<WithdrawalParameter> withdrawals,
-      @JsonProperty("parentBeaconBlockRoot") final String parentBeaconBlockRoot) {
+      @JsonProperty("parentBeaconBlockRoot") final String parentBeaconBlockRoot,
+      @JsonProperty("noTxPool") final Boolean noTxPool,
+      @JsonProperty("transactions") final List<String> transactions,
+      @JsonProperty("gasLimit") final UnsignedLongParameter gasLimit) {
     this.timestamp = Long.decode(timestamp);
     this.prevRandao = Bytes32.fromHexString(prevRandao);
     this.suggestedFeeRecipient = Address.fromHexString(suggestedFeeRecipient);
     this.withdrawals = withdrawals;
     this.parentBeaconBlockRoot =
         parentBeaconBlockRoot == null ? null : Bytes32.fromHexString(parentBeaconBlockRoot);
+    this.noTxPool = noTxPool;
+    this.transactions = transactions;
+    this.gasLimit = gasLimit.getValue();
   }
 
   public Long getTimestamp() {
@@ -67,6 +79,18 @@ public class EnginePayloadAttributesParameter {
     return withdrawals;
   }
 
+  public Boolean isNoTxPool() {
+    return noTxPool;
+  }
+
+  public List<String> getTransactions() {
+    return transactions;
+  }
+
+  public Long getGasLimit() {
+    return gasLimit;
+  }
+
   public String serialize() {
     final JsonObject json =
         new JsonObject()
@@ -80,6 +104,15 @@ public class EnginePayloadAttributesParameter {
     }
     if (parentBeaconBlockRoot != null) {
       json.put("parentBeaconBlockRoot", parentBeaconBlockRoot.toHexString());
+    }
+    if (noTxPool != null) {
+      json.put("noTxPool", noTxPool);
+    }
+    if (transactions != null) {
+      json.put("transactions", transactions);
+    }
+    if (gasLimit != null) {
+      json.put("gasLimit", gasLimit);
     }
     return json.encode();
   }

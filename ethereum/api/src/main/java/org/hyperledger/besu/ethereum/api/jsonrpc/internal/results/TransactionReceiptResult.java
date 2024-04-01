@@ -37,6 +37,7 @@ import org.apache.tuweni.bytes.Bytes;
   "cumulativeGasUsed",
   "from",
   "gasUsed",
+  "depositNonce",
   "effectiveGasPrice",
   "logs",
   "logsBloom",
@@ -58,6 +59,7 @@ public abstract class TransactionReceiptResult {
   private final String cumulativeGasUsed;
   private final String from;
   private final String gasUsed;
+  private final String depositNonce;
   private final String effectiveGasPrice;
   private final List<TransactionReceiptLogResult> logs;
   private final String logsBloom;
@@ -81,6 +83,8 @@ public abstract class TransactionReceiptResult {
     this.cumulativeGasUsed = Quantity.create(receipt.getCumulativeGasUsed());
     this.from = txn.getSender().toString();
     this.gasUsed = Quantity.create(receiptWithMetadata.getGasUsed());
+    this.depositNonce =
+            this.receipt.getDepositNonce().map(Quantity::create).orElse(null);
     this.blobGasUsed = receiptWithMetadata.getBlobGasUsed().map(Quantity::create).orElse(null);
     this.blobGasPrice = receiptWithMetadata.getBlobGasPrice().map(Quantity::create).orElse(null);
     this.effectiveGasPrice =
@@ -133,6 +137,12 @@ public abstract class TransactionReceiptResult {
   @JsonGetter(value = "gasUsed")
   public String getGasUsed() {
     return gasUsed;
+  }
+
+  @JsonGetter(value = "depositNonce")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public String getDepositNonce() {
+    return depositNonce;
   }
 
   @JsonGetter(value = "blobGasUsed")
