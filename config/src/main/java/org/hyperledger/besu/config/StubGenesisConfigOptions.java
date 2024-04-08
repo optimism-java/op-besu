@@ -279,7 +279,7 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
   }
 
   @Override
-  public boolean isBedrockBlock(long headBlock) {
+  public boolean isBedrockBlock(final long headBlock) {
     return false;
   }
 
@@ -289,7 +289,7 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
   }
 
   @Override
-  public boolean isRegolith(long headTime) {
+  public boolean isRegolith(final long headTime) {
     return false;
   }
 
@@ -299,7 +299,7 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
   }
 
   @Override
-  public boolean isCanyon(long headTime) {
+  public boolean isCanyon(final long headTime) {
     return false;
   }
 
@@ -309,7 +309,7 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
   }
 
   @Override
-  public boolean isEcotone(long headTime) {
+  public boolean isEcotone(final long headTime) {
     return false;
   }
 
@@ -319,7 +319,7 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
   }
 
   @Override
-  public boolean isInterop(long headTime) {
+  public boolean isInterop(final long headTime) {
     return false;
   }
 
@@ -739,6 +739,62 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
     experimentalEipsTime = OptionalLong.of(timestamp);
     return this;
   }
+
+  /**
+   * Bedrock block stub genesis config options.
+   *
+   * @param blockNumber the block number
+   * @return the stub genesis config options
+   */
+  public StubGenesisConfigOptions bedrockBlock(final long blockNumber) {
+    bedrockBlock = OptionalLong.of(blockNumber);
+    return this;
+  }
+
+  /**
+   * Regolith time.
+   *
+   * @param timestamp the timestamp
+   * @return the stub genesis config options
+   */
+  public StubGenesisConfigOptions regolithTime(final long timestamp) {
+    regolithTime = OptionalLong.of(timestamp);
+    return this;
+  }
+
+  /**
+   * Canyon time.
+   *
+   * @param timestamp the timestamp
+   * @return the stub genesis config options
+   */
+  public StubGenesisConfigOptions canyonTime(final long timestamp) {
+    canyonTime = OptionalLong.of(timestamp);
+    return this;
+  }
+
+  /**
+   * Ecotone time.
+   *
+   * @param timestamp the timestamp
+   * @return the stub genesis config options
+   */
+  public StubGenesisConfigOptions ecotoneTime(final long timestamp) {
+    ecotoneTime = OptionalLong.of(timestamp);
+    return this;
+  }
+
+  /**
+   * Interop time.
+   *
+   * @param timestamp the timestamp
+   * @return the stub genesis config options
+   */
+  public StubGenesisConfigOptions interopTime(final long timestamp) {
+    interopTime = OptionalLong.of(timestamp);
+    return this;
+  }
+
 
   /**
    * Terminal total difficulty stub genesis config options.

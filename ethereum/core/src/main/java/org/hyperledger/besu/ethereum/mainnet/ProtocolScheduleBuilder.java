@@ -294,8 +294,6 @@ public class ProtocolScheduleBuilder {
 
   private NavigableMap<Long, BuilderMapEntry> buildMilestoneMap(
       final MainnetProtocolSpecFactory specFactory) {
-    Stream<Optional<BuilderMapEntry>> milestones = createMilestones(specFactory);
-    milestones.close();
     return createMilestones(specFactory)
         .flatMap(Optional::stream)
         .collect(
@@ -312,7 +310,8 @@ public class ProtocolScheduleBuilder {
       return Stream.of(
           blockNumberMilestone(config.getBedrockBlock(), specFactory.londonDefinition(config)),
           timestampMilestone(config.getRegolithTime(), specFactory.londonDefinition(config)),
-          timestampMilestone(config.getCanyonTime(), specFactory.shanghaiDefinition(config)));
+          timestampMilestone(config.getCanyonTime(), specFactory.shanghaiDefinition(config)),
+          timestampMilestone(config.getEcotoneTime(), specFactory.cancunDefinition(config)));
     }
     return Stream.of(
         blockNumberMilestone(OptionalLong.of(0), specFactory.frontierDefinition()),

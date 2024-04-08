@@ -126,7 +126,7 @@ public class TransactionCompleteResult implements TransactionResult {
     this.nonce = Quantity.create(tx.getNonce());
     this.to = transaction.getTo().map(Bytes::toHexString).orElse(null);
     this.transactionIndex = Quantity.create(tx.getTransactionIndex().get());
-    if (transactionType == TransactionType.FRONTIER) {
+    if (transactionType == TransactionType.FRONTIER || transactionType == TransactionType.OPTIMISM_DEPOSIT) {
       this.type = Quantity.create(0);
       this.yParity = null;
       this.v = Quantity.create(transaction.getV());

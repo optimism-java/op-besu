@@ -68,6 +68,7 @@ import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -349,6 +350,7 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
     } catch (final CancellationException | StorageException ex) {
       throw ex;
     } catch (final Exception ex) {
+      ex.printStackTrace();
       throw new IllegalStateException(
           "Block creation failed unexpectedly. Will restart on next block added to chain.", ex);
     }
@@ -497,7 +499,8 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
                         newBlockNumber,
                         parentHeader.getBaseFee().orElse(Wei.ZERO),
                         parentHeader.getGasUsed(),
-                        feeMarket.targetGasUsed(parentHeader)))
+                        feeMarket.targetGasUsed(parentHeader),
+                        OptionalLong.of(timestamp)))
             .orElse(null);
 
     final Bytes32 prevRandao = maybePrevRandao.orElse(null);
