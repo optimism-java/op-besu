@@ -56,8 +56,7 @@ class MergeBlockCreator extends AbstractBlockCreator {
       final ProtocolSchedule protocolSchedule,
       final BlockHeader parentHeader,
       final Optional<Address> depositContractAddress,
-      final EthScheduler ethScheduler,
-      final Optional<GenesisConfigOptions> genesisConfigOptions) {
+      final EthScheduler ethScheduler) {
     super(
         miningParameters,
         __ -> miningParameters.getCoinbase().orElseThrow(),
@@ -68,6 +67,29 @@ class MergeBlockCreator extends AbstractBlockCreator {
         parentHeader,
         depositContractAddress,
         ethScheduler);
+  }
+
+  public MergeBlockCreator(
+          final MiningParameters miningParameters,
+          final ExtraDataCalculator extraDataCalculator,
+          final TransactionPool transactionPool,
+          final ProtocolContext protocolContext,
+          final ProtocolSchedule protocolSchedule,
+          final BlockHeader parentHeader,
+          final Optional<Address> depositContractAddress,
+          final EthScheduler ethScheduler,
+          final Optional<GenesisConfigOptions> genesisConfigOptions) {
+    super(
+        miningParameters,
+        __ -> miningParameters.getCoinbase().orElseThrow(),
+        extraDataCalculator,
+        transactionPool,
+        protocolContext,
+        protocolSchedule,
+        parentHeader,
+        depositContractAddress,
+        ethScheduler,
+        genesisConfigOptions);
   }
 
   public BlockCreationResult createBlock(

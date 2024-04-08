@@ -34,7 +34,7 @@ public interface BaseFeeMarket extends FeeMarket {
 
   long getBasefeeMaxChangeDenominator();
 
-  default long getBasefeeMaxChangeDenominator(OptionalLong time) {
+  default long getBasefeeMaxChangeDenominator(final OptionalLong time) {
     return getBasefeeMaxChangeDenominator();
   }
 

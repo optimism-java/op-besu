@@ -32,6 +32,7 @@ import org.hyperledger.besu.ethereum.core.feemarket.CoinbaseFeePriceCalculator;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSpecBuilder.BlockValidatorBuilder;
 import org.hyperledger.besu.ethereum.mainnet.feemarket.BaseFeeMarket;
 import org.hyperledger.besu.ethereum.mainnet.feemarket.FeeMarket;
+import org.hyperledger.besu.ethereum.mainnet.feemarket.LondonFeeMarket;
 import org.hyperledger.besu.ethereum.privacy.PrivateTransactionProcessor;
 import org.hyperledger.besu.ethereum.privacy.PrivateTransactionValidator;
 import org.hyperledger.besu.ethereum.privacy.storage.PrivateMetadataUpdater;
@@ -219,7 +220,7 @@ public abstract class MainnetProtocolSpecs {
                 miningBeneficiaryCalculator,
                 skipZeroBlockRewards,
                 protocolSchedule,
-             genesisConfigOptions) ->
+                genesisConfigOptions) ->
                 new DaoBlockProcessor(
                     new MainnetBlockProcessor(
                         transactionProcessor,
@@ -444,7 +445,10 @@ public abstract class MainnetProtocolSpecs {
     final BaseFeeMarket londonFeeMarket =
         genesisConfigOptions.isZeroBaseFee()
             ? FeeMarket.zeroBaseFee(londonForkBlockNumber)
-            : FeeMarket.london(londonForkBlockNumber, genesisConfigOptions.getBaseFeePerGas());
+            : new LondonFeeMarket(
+                londonForkBlockNumber,
+                genesisConfigOptions.getBaseFeePerGas(),
+                Optional.of(genesisConfigOptions));
     return berlinDefinition(
             chainId,
             configContractSizeLimit,
@@ -468,7 +472,8 @@ public abstract class MainnetProtocolSpecs {
                     Set.of(
                         TransactionType.FRONTIER,
                         TransactionType.ACCESS_LIST,
-                        TransactionType.EIP1559),
+                        TransactionType.EIP1559,
+                        TransactionType.OPTIMISM_DEPOSIT),
                     Integer.MAX_VALUE))
         .transactionProcessorBuilder(
             (gasCalculator,
@@ -485,7 +490,9 @@ public abstract class MainnetProtocolSpecs {
                     false,
                     stackSizeLimit,
                     feeMarket,
-                    CoinbaseFeePriceCalculator.eip1559()))
+                    CoinbaseFeePriceCalculator.eip1559(),
+                    Optional.of(genesisConfigOptions),
+                    Optional.of(new L1CostCalculator())))
         .contractCreationProcessorBuilder(
             (gasCalculator, evm) ->
                 new ContractCreationProcessor(
@@ -508,6 +515,7 @@ public abstract class MainnetProtocolSpecs {
                 MainnetBlockHeaderValidator.createBaseFeeMarketOmmerValidator(
                     (BaseFeeMarket) feeMarket))
         .blockBodyValidatorBuilder(BaseFeeBlockBodyValidator::new)
+        .genesisConfigOptions(Optional.of(genesisConfigOptions))
         .name("London");
   }
 
@@ -614,7 +622,9 @@ public abstract class MainnetProtocolSpecs {
                     true,
                     stackSizeLimit,
                     feeMarket,
-                    CoinbaseFeePriceCalculator.eip1559()))
+                    CoinbaseFeePriceCalculator.eip1559(),
+                    Optional.of(genesisConfigOptions),
+                    Optional.of(new L1CostCalculator())))
         // Contract creation rules for EIP-3860 Limit and meter intitcode
         .transactionValidatorFactoryBuilder(
             (gasCalculator, gasLimitCalculator, feeMarket) ->
@@ -627,10 +637,12 @@ public abstract class MainnetProtocolSpecs {
                     Set.of(
                         TransactionType.FRONTIER,
                         TransactionType.ACCESS_LIST,
-                        TransactionType.EIP1559),
+                        TransactionType.EIP1559,
+                        TransactionType.OPTIMISM_DEPOSIT),
                     SHANGHAI_INIT_CODE_SIZE_LIMIT))
         .withdrawalsProcessor(new WithdrawalsProcessor())
         .withdrawalsValidator(new WithdrawalsValidator.AllowedWithdrawals())
+        .genesisConfigOptions(Optional.of(genesisConfigOptions))
         .name("Shanghai");
   }
 
@@ -685,7 +697,9 @@ public abstract class MainnetProtocolSpecs {
                     true,
                     stackSizeLimit,
                     feeMarket,
-                    CoinbaseFeePriceCalculator.eip1559()))
+                    CoinbaseFeePriceCalculator.eip1559(),
+                    Optional.of(genesisConfigOptions),
+                    Optional.of(new L1CostCalculator())))
         // change to check for max blob gas per block for EIP-4844
         .transactionValidatorFactoryBuilder(
             (gasCalculator, gasLimitCalculator, feeMarket) ->
@@ -699,6 +713,7 @@ public abstract class MainnetProtocolSpecs {
                         TransactionType.FRONTIER,
                         TransactionType.ACCESS_LIST,
                         TransactionType.EIP1559,
+                        TransactionType.OPTIMISM_DEPOSIT,
                         TransactionType.BLOB),
                     SHANGHAI_INIT_CODE_SIZE_LIMIT))
         .precompileContractRegistryBuilder(MainnetPrecompiledContractRegistries::cancun)

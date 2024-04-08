@@ -373,7 +373,7 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
   }
 
   @Override
-  public boolean isEcotone(long headTime) {
+  public boolean isEcotone(final long headTime) {
     if (!isOptimism()) {
       return false;
     }
@@ -390,7 +390,7 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
   }
 
   @Override
-  public boolean isInterop(long headTime) {
+  public boolean isInterop(final long headTime) {
     if (!isOptimism()) {
       return false;
     }
@@ -403,7 +403,10 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
 
   @Override
   public Optional<Wei> getBaseFeePerGas() {
-    return Optional.ofNullable(configOverrides.get("baseFeePerGas")).map(Wei::fromHexString);
+    return Optional.ofNullable(configOverrides.get("baseFeePerGas"))
+        .map(Wei::fromHexString)
+        .map(Optional::of)
+        .orElse(Optional.empty());
   }
 
   @Override
