@@ -305,7 +305,7 @@ public class PostMergeContext implements MergeContext {
   }
 
 
-  public PostMergeContext setIsOptimism(boolean isOptimism) {
+  public PostMergeContext setIsOptimism(final boolean isOptimism) {
     this.isOptimism = isOptimism;
     return this;
   }

@@ -447,7 +447,7 @@ public class Transaction
    */
   @Override
   public Address getSender() {
-    if (sender == null || TransactionType.OPTIMISM_DEPOSIT.equals(getType())) {
+    if (sender == null && !TransactionType.OPTIMISM_DEPOSIT.equals(getType())) {
       Optional<Address> cachedSender = Optional.ofNullable(senderCache.getIfPresent(getHash()));
       sender = cachedSender.orElseGet(this::computeSender);
     }
@@ -550,7 +550,7 @@ public class Transaction
 
   @Override
   public BigInteger getYParity() {
-    if (transactionType != null && transactionType != TransactionType.FRONTIER) {
+    if (transactionType != null && transactionType != TransactionType.FRONTIER && transactionType != TransactionType.OPTIMISM_DEPOSIT) {
       // EIP-2718 typed transaction, return yParity:
       return BigInteger.valueOf(signature.getRecId());
     } else {

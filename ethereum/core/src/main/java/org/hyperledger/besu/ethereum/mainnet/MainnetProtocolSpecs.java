@@ -41,6 +41,7 @@ import org.hyperledger.besu.ethereum.mainnet.blockhash.PragueBlockHashProcessor;
 import org.hyperledger.besu.ethereum.mainnet.feemarket.BaseFeeMarket;
 import org.hyperledger.besu.ethereum.mainnet.feemarket.FeeMarket;
 import org.hyperledger.besu.ethereum.mainnet.parallelization.MainnetParallelBlockProcessor;
+import org.hyperledger.besu.ethereum.mainnet.feemarket.LondonFeeMarket;
 import org.hyperledger.besu.ethereum.privacy.PrivateTransactionProcessor;
 import org.hyperledger.besu.ethereum.privacy.PrivateTransactionValidator;
 import org.hyperledger.besu.ethereum.privacy.storage.PrivateMetadataUpdater;
@@ -458,6 +459,11 @@ public abstract class MainnetProtocolSpecs {
     final BaseFeeMarket londonFeeMarket;
     if (genesisConfigOptions.isZeroBaseFee()) {
       londonFeeMarket = FeeMarket.zeroBaseFee(londonForkBlockNumber);
+    } else if (genesisConfigOptions.isOptimism()) {
+      londonFeeMarket = new LondonFeeMarket(
+          londonForkBlockNumber,
+          genesisConfigOptions.getBaseFeePerGas(),
+          Optional.of(genesisConfigOptions));
     } else if (genesisConfigOptions.isFixedBaseFee()) {
       londonFeeMarket =
           FeeMarket.fixedBaseFee(
@@ -489,7 +495,8 @@ public abstract class MainnetProtocolSpecs {
                     Set.of(
                         TransactionType.FRONTIER,
                         TransactionType.ACCESS_LIST,
-                        TransactionType.EIP1559),
+                        TransactionType.EIP1559,
+                        TransactionType.OPTIMISM_DEPOSIT),
                     Integer.MAX_VALUE))
         .transactionProcessorBuilder(
             (gasCalculator,
@@ -506,7 +513,9 @@ public abstract class MainnetProtocolSpecs {
                     false,
                     evmConfiguration.evmStackSize(),
                     feeMarket,
-                    CoinbaseFeePriceCalculator.eip1559()))
+                    CoinbaseFeePriceCalculator.eip1559(),
+                    Optional.of(genesisConfigOptions),
+                    Optional.of(new L1CostCalculator())))
         .contractCreationProcessorBuilder(
             evm ->
                 new ContractCreationProcessor(
@@ -528,6 +537,7 @@ public abstract class MainnetProtocolSpecs {
                 MainnetBlockHeaderValidator.createBaseFeeMarketOmmerValidator(
                     (BaseFeeMarket) feeMarket))
         .blockBodyValidatorBuilder(BaseFeeBlockBodyValidator::new)
+        .genesisConfigOptions(Optional.of(genesisConfigOptions))
         .name("London");
   }
 
@@ -638,7 +648,10 @@ public abstract class MainnetProtocolSpecs {
                     true,
                     evmConfiguration.evmStackSize(),
                     feeMarket,
-                    CoinbaseFeePriceCalculator.eip1559()))
+                    CoinbaseFeePriceCalculator.eip1559(),
+                    null,
+                    Optional.of(genesisConfigOptions),
+                    Optional.of(new L1CostCalculator())))
         // Contract creation rules for EIP-3860 Limit and meter intitcode
         .transactionValidatorFactoryBuilder(
             (evm, gasLimitCalculator, feeMarket) ->
@@ -651,10 +664,12 @@ public abstract class MainnetProtocolSpecs {
                     Set.of(
                         TransactionType.FRONTIER,
                         TransactionType.ACCESS_LIST,
-                        TransactionType.EIP1559),
+                        TransactionType.EIP1559,
+                        TransactionType.OPTIMISM_DEPOSIT),
                     evm.getEvmVersion().getMaxInitcodeSize()))
         .withdrawalsProcessor(new WithdrawalsProcessor())
         .withdrawalsValidator(new WithdrawalsValidator.AllowedWithdrawals())
+        .genesisConfigOptions(Optional.of(genesisConfigOptions))
         .name("Shanghai");
   }
 
@@ -717,7 +732,9 @@ public abstract class MainnetProtocolSpecs {
                     evmConfiguration.evmStackSize(),
                     feeMarket,
                     CoinbaseFeePriceCalculator.eip1559(),
-                    new AuthorityProcessor(chainId)))
+                    new AuthorityProcessor(chainId),
+                    Optional.of(genesisConfigOptions),
+                    Optional.of(new L1CostCalculator())))
         // change to check for max blob gas per block for EIP-4844
         .transactionValidatorFactoryBuilder(
             (evm, gasLimitCalculator, feeMarket) ->
@@ -731,6 +748,7 @@ public abstract class MainnetProtocolSpecs {
                         TransactionType.FRONTIER,
                         TransactionType.ACCESS_LIST,
                         TransactionType.EIP1559,
+                        TransactionType.OPTIMISM_DEPOSIT,
                         TransactionType.BLOB),
                     evm.getEvmVersion().getMaxInitcodeSize()))
         .precompileContractRegistryBuilder(MainnetPrecompiledContractRegistries::cancun)

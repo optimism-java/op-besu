@@ -266,8 +266,12 @@ public class BlockTransactionSelector {
     }
 
     final WorldUpdater txWorldStateUpdater = blockWorldStateUpdater.updater();
-    Account sender = txWorldStateUpdater.getOrCreate(pendingTransaction.getTransaction().getSender());
-    final long nonce = sender.getNonce();
+    long senderDepositNonce = -1;
+    if (pendingTransaction.getTransaction().getType().equals(TransactionType.OPTIMISM_DEPOSIT)) {
+      Account sender = txWorldStateUpdater.getOrCreate(pendingTransaction.getTransaction().getSender());
+      senderDepositNonce = sender.getNonce();
+    }
+
 
     final TransactionProcessingResult processingResult =
         processTransaction(pendingTransaction, txWorldStateUpdater);
@@ -275,7 +279,7 @@ public class BlockTransactionSelector {
     var postProcessingSelectionResult = evaluatePostProcessing(evaluationContext, processingResult);
 
     if (postProcessingSelectionResult.selected()) {
-      return handleTransactionSelected(nonce, evaluationContext, processingResult, txWorldStateUpdater);
+      return handleTransactionSelected(senderDepositNonce, evaluationContext, processingResult, txWorldStateUpdater);
     }
     return handleTransactionNotSelected(evaluationContext, postProcessingSelectionResult, txWorldStateUpdater);
   }

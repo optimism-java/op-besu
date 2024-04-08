@@ -114,7 +114,7 @@ public enum TransactionType {
    * @return the boolean
    */
   public boolean supports1559FeeMarket() {
-    return !LEGACY_FEE_MARKET_TRANSACTION_TYPES.contains(this);
+    return !LEGACY_FEE_MARKET_TRANSACTION_TYPES.contains(this) && !this.equals(OPTIMISM_DEPOSIT);
   }
 
   /**
