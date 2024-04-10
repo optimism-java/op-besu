@@ -346,14 +346,13 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     Optional<Bytes> revertReason = Optional.empty();
     Optional<Long> depositNonce = Optional.empty();
     Optional<Long> depositReceptVersion = Optional.empty();
-    if (transactionType.equals(TransactionType.OPTIMISM_DEPOSIT) && !input.isEndOfCurrentList()) {
-      var element = input.readBytes();
-      if (input.isEndOfCurrentList() && revertReasonAllowed) {
-        revertReason = Optional.of(element);
-      } else {
-        depositNonce = Optional.of(element).map(Bytes::toLong);
-        depositReceptVersion = Optional.of(input.readBytes()).map(Bytes::toLong);
-      }
+
+    var element = input.readBytes();
+    if (input.isEndOfCurrentList() && revertReasonAllowed) {
+      revertReason = Optional.of(element);
+    } else {
+      depositNonce = Optional.of(element).map(Bytes::toLong);
+      depositReceptVersion = Optional.of(input.readBytes()).map(Bytes::toLong);
     }
     if (revertReasonAllowed && revertReason.isEmpty()) {
       if (!input.isEndOfCurrentList()) {
