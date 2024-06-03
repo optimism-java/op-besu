@@ -102,7 +102,7 @@ class MainnetTransactionProcessorTest {
     when(transaction.getPayload()).thenReturn(Bytes.EMPTY);
     when(transaction.getSender()).thenReturn(senderAddress);
     when(transaction.getValue()).thenReturn(Wei.ZERO);
-    when(transactionValidatorFactory.get().validate(any(), any(), any(), any()))
+    when(transactionValidatorFactory.get().validate(any(), any(), any(), any(), any()))
         .thenReturn(ValidationResult.valid());
     when(transactionValidatorFactory.get().validateForSender(any(), any(), any()))
         .thenReturn(ValidationResult.valid());
@@ -165,7 +165,7 @@ class MainnetTransactionProcessorTest {
     when(transaction.getPayload()).thenReturn(Bytes.EMPTY);
     when(transaction.getSender()).thenReturn(senderAddress);
     when(transaction.getValue()).thenReturn(Wei.ZERO);
-    when(transactionValidatorFactory.get().validate(any(), any(), any(), any()))
+    when(transactionValidatorFactory.get().validate(any(), any(), any(), any(), any()))
         .thenReturn(ValidationResult.valid());
     when(transactionValidatorFactory.get().validateForSender(any(), any(), any()))
         .thenReturn(ValidationResult.valid());
@@ -251,7 +251,7 @@ class MainnetTransactionProcessorTest {
   private ArgumentCaptor<TransactionValidationParams> transactionValidationParamCaptor() {
     final ArgumentCaptor<TransactionValidationParams> txValidationParamCaptor =
         ArgumentCaptor.forClass(TransactionValidationParams.class);
-    when(transactionValidatorFactory.get().validate(any(), any(), any(), any()))
+    when(transactionValidatorFactory.get().validate(any(), any(), any(), any(), any()))
         .thenReturn(ValidationResult.valid());
     // returning invalid transaction to halt method execution
     when(transactionValidatorFactory
