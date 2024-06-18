@@ -31,3 +31,6 @@ site/
 **/src/*/generated
 jitpack.yml
 /ethereum/eth/src/test/resources/tx.csv.gz
+
+*.cache
+*.blob
