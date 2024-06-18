@@ -82,7 +82,7 @@ public class L1CostCalculator {
       final ProcessableBlockHeader blockHeader,
       final Transaction transaction,
       final WorldUpdater worldState) {
-    if (options.isOptimism()) {
+    if (!options.isOptimism()) {
       return Wei.ZERO;
     }
 
@@ -140,7 +140,7 @@ public class L1CostCalculator {
       final UInt256 l1FeeScalar,
       final boolean isRegolith) {
     var gas = calculateRollupDataGasCost(rollupGasData, isRegolith);
-    if (gas == 0) {
+    if (gas == 0L) {
       return Wei.ZERO;
     }
     UInt256 l1GasUsed =
