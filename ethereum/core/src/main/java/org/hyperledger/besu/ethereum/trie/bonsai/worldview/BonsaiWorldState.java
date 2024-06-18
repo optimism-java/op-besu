@@ -24,6 +24,7 @@ import static org.hyperledger.besu.ethereum.trie.bonsai.worldview.BonsaiWorldVie
 import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.datatypes.Hash;
 import org.hyperledger.besu.datatypes.StorageSlotKey;
+import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
 import org.hyperledger.besu.ethereum.trie.MerkleTrie;
@@ -232,6 +233,7 @@ public class BonsaiWorldState
         worldStateUpdater.getAccountsToUpdate().entrySet()) {
       final Bytes accountKey = accountUpdate.getKey();
       final BonsaiValue<BonsaiAccount> bonsaiValue = accountUpdate.getValue();
+      final BonsaiAccount priorAccount = bonsaiValue.getPrior();
       final BonsaiAccount updatedAccount = bonsaiValue.getUpdated();
       try {
         if (updatedAccount == null) {
@@ -239,14 +241,26 @@ public class BonsaiWorldState
           accountTrie.remove(addressHash);
           maybeStateUpdater.ifPresent(
               bonsaiUpdater -> bonsaiUpdater.removeAccountInfoState(addressHash));
-        } else {
-          final Hash addressHash = updatedAccount.getAddressHash();
-          final Bytes accountValue = updatedAccount.serializeAccount();
-          maybeStateUpdater.ifPresent(
-              bonsaiUpdater ->
-                  bonsaiUpdater.putAccountInfoState(hashAndSavePreImage(accountKey), accountValue));
-          accountTrie.put(addressHash, accountValue);
+          continue;
         }
+        if (priorAccount == null) {
+          final long nonce = updatedAccount.getNonce();
+          final Wei balance = updatedAccount.getBalance();
+          final Hash codeHash = updatedAccount.getCodeHash();
+          final Hash storageRoot = updatedAccount.getStorageRoot();
+          if (nonce == 0L && balance.isZero() && codeHash.equals(Hash.EMPTY)
+              && storageRoot.equals(Hash.EMPTY_TRIE_HASH)) {
+            continue;
+          }
+        }
+
+        final Hash addressHash = updatedAccount.getAddressHash();
+        final Bytes accountValue = updatedAccount.serializeAccount();
+        maybeStateUpdater.ifPresent(
+            bonsaiUpdater ->
+                bonsaiUpdater.putAccountInfoState(hashAndSavePreImage(accountKey), accountValue));
+        accountTrie.put(addressHash, accountValue);
+
       } catch (MerkleTrieException e) {
         // need to throw to trigger the heal
         throw new MerkleTrieException(
@@ -301,7 +315,7 @@ public class BonsaiWorldState
       final BonsaiAccount accountOriginal = accountValue.getPrior();
       final Hash storageRoot =
           (accountOriginal == null
-                  || worldStateUpdater.getStorageToClear().contains(updatedAddress))
+              || worldStateUpdater.getStorageToClear().contains(updatedAddress))
               ? Hash.EMPTY_TRIE_HASH
               : accountOriginal.getStorageRoot();
       final StoredMerklePatriciaTrie<Bytes, Bytes> storageTrie =
