@@ -144,8 +144,7 @@ public class MainnetTransactionValidator implements TransactionValidator {
     if (transaction.getType().equals(TransactionType.OPTIMISM_DEPOSIT)) {
       //      genesisOptions.orElseThrow();
       if (transaction.getIsSystemTx().orElse(false)) {
-        var regolithTime = genesisOptions.get().getRegolithTime();
-        if (genesisOptions.get().isOptimism() && regolithTime.orElseThrow() <= blockTimestamp) {
+        if (genesisOptions.get().isRegolith(blockTimestamp)) {
           return ValidationResult.invalid(
               TransactionInvalidReason.SYSTEM_TX_NOT_SUPPORT,
               String.format(
