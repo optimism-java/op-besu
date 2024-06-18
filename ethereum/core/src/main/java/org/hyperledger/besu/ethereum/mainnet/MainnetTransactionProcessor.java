@@ -398,23 +398,16 @@ public class MainnetTransactionProcessor {
           previousBalance,
           sender.getBalance());
       }
-      genesisConfigOptions.ifPresent(
-          options -> {
-            if (!options.isOptimism()
-                || !options.isRegolith(blockHeader.getTimestamp())
-                || TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
-              return;
-            }
-            final Wei l1Cost =
-                l1CostCalculator
-                    .map(
-                        l1CostCalculator ->
-                            l1CostCalculator.l1Cost(
-                                genesisConfigOptions.get(), blockHeader, transaction, worldState))
-                    .orElse(Wei.ZERO);
-            sender.decrementBalance(l1Cost);
-          }
-      );
+      var l1CostGasFee = genesisConfigOptions.map(options -> {
+        if (TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+          return Wei.ZERO;
+        }
+        if (l1CostCalculator.isEmpty()) {
+          return Wei.ZERO;
+        }
+        return l1CostCalculator.get().l1Cost(options, blockHeader, transaction, worldState);
+      }).orElse(Wei.ZERO);
+      sender.decrementBalance(l1CostGasFee);
 
       final List<AccessListEntry> accessListEntries = transaction.getAccessList().orElse(List.of());
       // we need to keep a separate hash set of addresses in case they specify no storage.
@@ -580,20 +573,18 @@ public class MainnetTransactionProcessor {
           gasCalculator.getSelfDestructRefundAmount() * initialFrame.getSelfDestructs().size();
       final long baseRefundGas = initialFrame.getGasRefund() + selfDestructRefund;
       final long refundedGas = refunded(transaction, initialFrame, baseRefundGas);
-      final Wei refundedWei = transactionGasPrice.multiply(refundedGas);
-      final Wei balancePriorToRefund = sender.getBalance();
-      sender.incrementBalance(refundedWei);
-      LOG.atTrace()
-          .setMessage("refunded sender {}  {} wei ({} -> {})")
-          .addArgument(senderAddress)
-          .addArgument(refundedWei)
-          .addArgument(balancePriorToRefund)
-          .addArgument(sender.getBalance())
-          .log();
       final long gasUsedByTransaction = transaction.getGasLimit() - initialFrame.getRemainingGas();
 
       // Skip coinbase payments for deposit tx in Regolith
       if (initialFrame.isDepositTx() && isRegolith) {
+        operationTracer.traceEndTransaction(
+            worldUpdater,
+            transaction,
+            initialFrame.getState() == MessageFrame.State.COMPLETED_SUCCESS,
+            initialFrame.getOutputData(),
+            initialFrame.getLogs(),
+            gasUsedByTransaction,
+            0L);
         if (initialFrame.getState() == MessageFrame.State.COMPLETED_SUCCESS) {
           return TransactionProcessingResult.successful(
               initialFrame.getLogs(),
@@ -606,6 +597,17 @@ public class MainnetTransactionProcessor {
               gasUsedByTransaction, refundedGas, validationResult, initialFrame.getRevertReason());
         }
       }
+
+      final Wei refundedWei = transactionGasPrice.multiply(refundedGas);
+      final Wei balancePriorToRefund = sender.getBalance();
+      sender.incrementBalance(refundedWei);
+      LOG.atTrace()
+          .setMessage("refunded sender {}  {} wei ({} -> {})")
+          .addArgument(senderAddress)
+          .addArgument(refundedWei)
+          .addArgument(balancePriorToRefund)
+          .addArgument(sender.getBalance())
+          .log();
 
       // update the coinbase
       final long usedGas = transaction.getGasLimit() - refundedGas;
@@ -659,20 +661,23 @@ public class MainnetTransactionProcessor {
             if (!options.isBedrockBlock(blockHeader.getNumber())) {
               return;
             }
+            if (initialFrame.isDepositTx()) {
+              return;
+            }
             MutableAccount opBaseFeeRecipient =
                 evmWorldUpdater.getOrCreate(
                     Address.fromHexString("0x4200000000000000000000000000000000000019"));
             opBaseFeeRecipient.incrementBalance(
                 blockHeader.getBaseFee().get().multiply(gasUsedByTransaction));
 
-            l1CostCalculator.ifPresent(
-                costCal -> {
-                  final Wei l1Cost = costCal.l1Cost(options, blockHeader, transaction, worldState);
-                  MutableAccount opL1FeeRecipient =
-                      evmWorldUpdater.getOrCreate(
-                          Address.fromHexString("0x420000000000000000000000000000000000001A"));
-                  opL1FeeRecipient.incrementBalance(l1Cost);
-                });
+            if (l1CostCalculator.isEmpty()) {
+              return;
+            }
+            var l1Cost = l1CostCalculator.get().l1Cost(options, blockHeader, transaction, worldState);
+            MutableAccount opL1FeeRecipient =
+                evmWorldUpdater.getOrCreate(Address.fromHexString("0x420000000000000000000000000000000000001A"));
+            opL1FeeRecipient.incrementBalance(l1Cost);
+
           });
 
       if (initialFrame.getState() == MessageFrame.State.COMPLETED_SUCCESS) {
