@@ -95,6 +95,9 @@ public class Address extends DelegatingBytes {
   /** The constant BLS12_MAP_FP2_TO_G2. */
   public static final Address BLS12_MAP_FP2_TO_G2 = Address.precompiled(0x13);
 
+  /** The constant P256_VERIFY. */
+  public static final Address P256_VERIFY = Address.precompiled(0x100);
+
   /** The constant ZERO. */
   public static final Address ZERO = Address.fromHexString("0x0");
 
