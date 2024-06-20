@@ -155,9 +155,6 @@ public class MergeBesuControllerBuilder extends BesuControllerBuilder {
 
     this.syncState.set(syncState);
 
-    final Optional<Address> depositContractAddress =
-        genesisConfigOptions.getDepositContractAddress();
-
     return new MergeCoordinator(
         protocolContext,
         protocolSchedule,
@@ -165,7 +162,6 @@ public class MergeBesuControllerBuilder extends BesuControllerBuilder {
         transactionPool,
         miningParameters,
         backwardSyncContext,
-        depositContractAddress,
         Optional.of(genesisConfigOptions));
   }
 
@@ -185,7 +181,6 @@ public class MergeBesuControllerBuilder extends BesuControllerBuilder {
       final WorldStateArchive worldStateArchive,
       final ProtocolSchedule protocolSchedule) {
 
-    final GenesisConfigOptions genesisConfigOptions = configOptionsSupplier.get();
     final OptionalLong terminalBlockNumber = genesisConfigOptions.getTerminalBlockNumber();
     final Optional<Hash> terminalBlockHash = genesisConfigOptions.getTerminalBlockHash();
     final boolean isPostMergeAtGenesis =

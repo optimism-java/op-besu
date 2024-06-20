@@ -192,9 +192,7 @@ public class BonsaiWorldState extends DiffBasedWorldState {
           final long nonce = updatedAccount.getNonce();
           final Wei balance = updatedAccount.getBalance();
           final Hash codeHash = updatedAccount.getCodeHash();
-          final Hash storageRoot = updatedAccount.getStorageRoot();
-          if (nonce == 0L && balance.isZero() && codeHash.equals(Hash.EMPTY)
-              && storageRoot.equals(Hash.EMPTY_TRIE_HASH)) {
+          if (nonce == 0L && balance.isZero() && codeHash.equals(Hash.EMPTY) && updatedAccount.isStorageEmpty()) {
             continue;
           }
         }

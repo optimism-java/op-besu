@@ -543,6 +543,7 @@ public class MainnetTransactionProcessor {
             initialFrame.getOutputData(),
             initialFrame.getLogs(),
             gasUsedByTransaction,
+            initialFrame.getSelfDestructs(),
             0L);
         if (initialFrame.getState() == MessageFrame.State.COMPLETED_SUCCESS) {
           return TransactionProcessingResult.successful(

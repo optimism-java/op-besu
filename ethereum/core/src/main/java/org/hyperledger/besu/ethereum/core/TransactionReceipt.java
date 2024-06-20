@@ -86,24 +86,24 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
         Optional.empty());
   }
 
-  private TransactionReceipt(
-      final TransactionType transactionType,
-      final Hash stateRoot,
-      final long cumulativeGasUsed,
-      final List<Log> logs,
-      final LogsBloomFilter bloomFilter,
-      final Optional<Bytes> revertReason) {
-    this(
-        transactionType,
-        stateRoot,
-        NONEXISTENT,
-        cumulativeGasUsed,
-        logs,
-        bloomFilter,
-        revertReason,
-        Optional.empty(),
-        Optional.empty());
-  }
+//  private TransactionReceipt(
+//      final TransactionType transactionType,
+//      final Hash stateRoot,
+//      final long cumulativeGasUsed,
+//      final List<Log> logs,
+//      final LogsBloomFilter bloomFilter,
+//      final Optional<Bytes> revertReason) {
+//    this(
+//        transactionType,
+//        stateRoot,
+//        NONEXISTENT,
+//        cumulativeGasUsed,
+//        logs,
+//        bloomFilter,
+//        revertReason,
+//        Optional.empty(),
+//        Optional.empty());
+//  }
 
   /**
    * Creates an instance of a status-encoded transaction receipt.
@@ -230,38 +230,6 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     }
   }
 
-  /**
-   * Write an RLP representation for block chain storage.
-   * Will Always include deposit nonce and deposit receipt version.
-   * @param rlpOutput The RLP output to write to
-   */
-  public void writeToForChainStorage(final RLPOutput rlpOutput, final boolean withRevertReason) {
-    if (!transactionType.equals(TransactionType.FRONTIER)) {
-      rlpOutput.writeIntScalar(transactionType.getSerializedType());
-    }
-
-    rlpOutput.startList();
-
-    // Determine whether it's a state root-encoded transaction receipt
-    // or is a status code-encoded transaction receipt.
-    if (stateRoot != null) {
-      rlpOutput.writeBytes(stateRoot);
-    } else {
-      rlpOutput.writeLongScalar(status);
-    }
-    rlpOutput.writeLongScalar(cumulativeGasUsed);
-    rlpOutput.writeBytes(bloomFilter);
-    rlpOutput.writeList(logs, Log::writeTo);
-
-    depositNonce.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
-    depositReceiptVersion.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
-
-    if (withRevertReason && revertReason.isPresent()) {
-      rlpOutput.writeBytes(revertReason.get());
-    }
-    rlpOutput.endList();
-  }
-
   public void writeToForReceiptTrie(
       final RLPOutput rlpOutput, final boolean withRevertReason, final boolean compacted) {
     if (!transactionType.equals(TransactionType.FRONTIER)) {
@@ -280,20 +248,38 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     rlpOutput.writeLongScalar(cumulativeGasUsed);
     // TODO
 
-    //    rlpOutput.writeBytes(bloomFilter);
-    //    rlpOutput.writeList(logs, Log::writeTo);
-    //
-    //    if (transactionType.equals(TransactionType.OPTIMISM_DEPOSIT)) {
-    //      if (depositReceiptVersion.isPresent()) {
-    //        depositNonce.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
-    //        depositReceiptVersion.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
-    //      }
-    //    }
+//    Optional<Bytes> revertReason = Optional.empty();
+//    Optional<Long> depositNonce = Optional.empty();
+//    Optional<Long> depositReceptVersion = Optional.empty();
+//
+//    var element = input.readBytes();
+//    if (input.isEndOfCurrentList() && revertReasonAllowed) {
+//      revertReason = Optional.of(element);
+//    } else {
+//      depositNonce = Optional.of(element).map(Bytes::toLong);
+//      depositReceptVersion = Optional.of(input.readBytes()).map(Bytes::toLong);
+//    }
+//    if (revertReasonAllowed && revertReason.isEmpty()) {
+//      if (!input.isEndOfCurrentList()) {
+//        revertReason = Optional.of(input.readBytes());
+//      }
+//    } else if (!revertReasonAllowed && !input.isEndOfCurrentList()) {
+//      throw new RLPException("Unexpected value at end of TransactionReceipt");
+//    }
+
 
     if (!compacted) {
       rlpOutput.writeBytes(bloomFilter);
     }
     rlpOutput.writeList(logs, (log, logOutput) -> log.writeTo(logOutput, compacted));
+
+    if (transactionType.equals(TransactionType.OPTIMISM_DEPOSIT)) {
+      if (depositReceiptVersion.isPresent()) {
+        depositNonce.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
+        depositReceiptVersion.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
+      }
+    }
+
     if (withRevertReason && revertReason.isPresent()) {
       rlpOutput.writeBytes(revertReason.get());
     }
@@ -340,8 +326,6 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
       // The logs below will populate the bloom filter upon construction.
       bloomFilter = LogsBloomFilter.readFrom(input);
     }
-    // TODO consider validating that the logs and bloom filter match.
-    final LogsBloomFilter bloomFilter = LogsBloomFilter.readFrom(input);
     final List<Log> logs = input.readList(Log::readFrom);
     Optional<Bytes> revertReason = Optional.empty();
     Optional<Long> depositNonce = Optional.empty();

@@ -223,7 +223,7 @@ public class Address extends DelegatingBytes {
    */
   public static Address precompiled(final int value) {
     // Keep it simple while we don't need precompiled above 127.
-    checkArgument(value < Byte.MAX_VALUE);
+//    checkArgument(value < Byte.MAX_VALUE);
     final byte[] address = new byte[SIZE];
     address[SIZE - 1] = (byte) value;
     return new Address(Bytes.wrap(address));
