@@ -30,7 +30,6 @@ import org.hyperledger.besu.ethereum.core.BlockBody;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
 import org.hyperledger.besu.ethereum.core.BlockHeaderBuilder;
 import org.hyperledger.besu.ethereum.core.BlockHeaderFunctions;
-import org.hyperledger.besu.ethereum.core.Deposit;
 import org.hyperledger.besu.ethereum.core.Difficulty;
 import org.hyperledger.besu.ethereum.core.MiningParameters;
 import org.hyperledger.besu.ethereum.core.MutableWorldState;
@@ -39,14 +38,12 @@ import org.hyperledger.besu.ethereum.core.Request;
 import org.hyperledger.besu.ethereum.core.SealableBlockHeader;
 import org.hyperledger.besu.ethereum.core.Transaction;
 import org.hyperledger.besu.ethereum.core.Withdrawal;
-import org.hyperledger.besu.ethereum.core.encoding.DepositDecoder;
 import org.hyperledger.besu.ethereum.eth.manager.EthScheduler;
 import org.hyperledger.besu.ethereum.eth.transactions.PendingTransaction;
 import org.hyperledger.besu.ethereum.eth.transactions.TransactionPool;
 import org.hyperledger.besu.ethereum.mainnet.AbstractBlockProcessor;
 import org.hyperledger.besu.ethereum.mainnet.BodyValidation;
 import org.hyperledger.besu.ethereum.mainnet.Create2DeployerFunction;
-import org.hyperledger.besu.ethereum.mainnet.DepositsValidator;
 import org.hyperledger.besu.ethereum.mainnet.DifficultyCalculator;
 import org.hyperledger.besu.ethereum.mainnet.MainnetTransactionProcessor;
 import org.hyperledger.besu.ethereum.mainnet.ProtocolSchedule;
@@ -97,7 +94,6 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
   protected final ProtocolSchedule protocolSchedule;
   protected final BlockHeaderFunctions blockHeaderFunctions;
   protected final BlockHeader parentHeader;
-  private final Optional<Address> depositContractAddress;
   private final EthScheduler ethScheduler;
 
   private final Optional<GenesisConfigOptions> genesisConfigOptions;
@@ -111,7 +107,6 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
       final ProtocolContext protocolContext,
       final ProtocolSchedule protocolSchedule,
       final BlockHeader parentHeader,
-      final Optional<Address> depositContractAddress,
       final EthScheduler ethScheduler) {
     this(
         miningParameters,
@@ -121,7 +116,6 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
         protocolContext,
         protocolSchedule,
         parentHeader,
-        depositContractAddress,
         ethScheduler,
         Optional.empty());
   }
@@ -134,7 +128,6 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
       final ProtocolContext protocolContext,
       final ProtocolSchedule protocolSchedule,
       final BlockHeader parentHeader,
-      final Optional<Address> depositContractAddress,
       final EthScheduler ethScheduler,
       final Optional<GenesisConfigOptions> genesisConfigOptions) {
     this.miningParameters = miningParameters;
@@ -144,7 +137,6 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
     this.protocolContext = protocolContext;
     this.protocolSchedule = protocolSchedule;
     this.parentHeader = parentHeader;
-    this.depositContractAddress = depositContractAddress;
     this.ethScheduler = ethScheduler;
     this.genesisConfigOptions = genesisConfigOptions;
     blockHeaderFunctions = ScheduleBasedBlockHeaderFunctions.create(protocolSchedule);
@@ -212,7 +204,9 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
         Optional.empty(),
         Optional.empty(),
         timestamp,
-        true);
+        true,
+        Optional.empty(),
+        Optional.empty());
   }
 
   protected BlockCreationResult createBlock(

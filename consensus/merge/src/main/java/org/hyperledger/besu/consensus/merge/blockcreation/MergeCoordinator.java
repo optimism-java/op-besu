@@ -114,7 +114,6 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
    * @param transactionPool the pending transactions
    * @param miningParams the mining params
    * @param backwardSyncContext the backward sync context
-   * @param depositContractAddress the address of the deposit contract
    */
   public MergeCoordinator(
       final ProtocolContext protocolContext,
@@ -123,7 +122,6 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
       final TransactionPool transactionPool,
       final MiningParameters miningParams,
       final BackwardSyncContext backwardSyncContext,
-      final Optional<Address> depositContractAddress,
       final Optional<GenesisConfigOptions> genesisConfigOptions) {
     this.protocolContext = protocolContext;
     this.protocolSchedule = protocolSchedule;
@@ -151,7 +149,6 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
               protocolContext,
               protocolSchedule,
               parentHeader,
-              depositContractAddress,
               ethScheduler,
               genesisConfigOptions);
         };

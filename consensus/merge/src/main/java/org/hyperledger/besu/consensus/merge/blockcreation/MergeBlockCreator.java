@@ -55,7 +55,6 @@ class MergeBlockCreator extends AbstractBlockCreator {
       final ProtocolContext protocolContext,
       final ProtocolSchedule protocolSchedule,
       final BlockHeader parentHeader,
-      final Optional<Address> depositContractAddress,
       final EthScheduler ethScheduler) {
     super(
         miningParameters,
@@ -65,7 +64,6 @@ class MergeBlockCreator extends AbstractBlockCreator {
         protocolContext,
         protocolSchedule,
         parentHeader,
-        depositContractAddress,
         ethScheduler);
   }
 
@@ -76,7 +74,6 @@ class MergeBlockCreator extends AbstractBlockCreator {
           final ProtocolContext protocolContext,
           final ProtocolSchedule protocolSchedule,
           final BlockHeader parentHeader,
-          final Optional<Address> depositContractAddress,
           final EthScheduler ethScheduler,
           final Optional<GenesisConfigOptions> genesisConfigOptions) {
     super(
@@ -87,7 +84,6 @@ class MergeBlockCreator extends AbstractBlockCreator {
         protocolContext,
         protocolSchedule,
         parentHeader,
-        depositContractAddress,
         ethScheduler,
         genesisConfigOptions);
   }
