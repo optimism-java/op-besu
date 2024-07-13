@@ -140,6 +140,31 @@ public interface MainnetPrecompiledContracts {
   }
 
   /**
+   * Fjord precompile contract registry.
+   *
+   * @param gasCalculator the gas calculator
+   * @return the precompile contract registry
+   */
+  static PrecompileContractRegistry fjord(final GasCalculator gasCalculator) {
+    PrecompileContractRegistry precompileContractRegistry = new PrecompileContractRegistry();
+    populateForFjord(precompileContractRegistry, gasCalculator);
+    return precompileContractRegistry;
+  }
+
+  /**
+   * Populate registry for Fjord.
+   *
+   * @param registry the registry
+   * @param gasCalculator the gas calculator
+   */
+  static void populateForFjord(
+      final PrecompileContractRegistry registry, final GasCalculator gasCalculator) {
+    populateForCancun(registry, gasCalculator);
+    registry.put(Address.P256_VERIFY, new P256VerifyPrecompiledContract());
+
+  }
+
+  /**
    * Prague precompile contract registry.
    *
    * @param gasCalculator the gas calculator
@@ -171,31 +196,6 @@ public interface MainnetPrecompiledContracts {
     registry.put(Address.BLS12_PAIRING, new BLS12PairingPrecompiledContract());
     registry.put(Address.BLS12_MAP_FP_TO_G1, new BLS12MapFpToG1PrecompiledContract());
     registry.put(Address.BLS12_MAP_FP2_TO_G2, new BLS12MapFp2ToG2PrecompiledContract());
-  }
-
-  /**
-   * Fjord precompile contract registry.
-   *
-   * @param gasCalculator the gas calculator
-   * @return the precompile contract registry
-   */
-  static PrecompileContractRegistry fjord(final GasCalculator gasCalculator) {
-    PrecompileContractRegistry precompileContractRegistry = new PrecompileContractRegistry();
-    populateForFjord(precompileContractRegistry, gasCalculator);
-    return precompileContractRegistry;
-  }
-
-  /**
-   * Populate registry for Fjord.
-   *
-   * @param registry the registry
-   * @param gasCalculator the gas calculator
-   */
-  static void populateForFjord(
-      final PrecompileContractRegistry registry, final GasCalculator gasCalculator) {
-    populateForCancun(registry, gasCalculator);
-    registry.put(Address.P256_VERIFY, new P256VerifyPrecompiledContract());
-
   }
 
   /**

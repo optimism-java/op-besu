@@ -353,6 +353,21 @@ public interface GenesisConfigOptions {
   boolean isEcotone(long headTime);
 
   /**
+   * Gets fjord time.
+   *
+   * @return the fjord time
+   */
+  OptionalLong getFjordTime();
+
+  /**
+   * Returns whether a fork scheduled at fjord timestamp is active at the given head timestamp.
+   *
+   * @param headTime the current head time
+   * @return the boolean
+   */
+  boolean isFjord(long headTime);
+
+  /**
    * Gets interop time.
    *
    * @return the interop time

@@ -45,7 +45,8 @@ public class Create2DeployerFunction {
       final Optional<GenesisConfigOptions> configOptions,
       final long timestamp,
       final WorldUpdater updater) {
-    if (configOptions.isEmpty() || !configOptions.get().isCanyon(timestamp)) {
+    if (configOptions.isEmpty()
+        || !configOptions.get().isEcotone(timestamp)) {
       return;
     }
     final MutableAccount contract =

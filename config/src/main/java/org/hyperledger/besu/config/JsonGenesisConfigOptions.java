@@ -399,6 +399,23 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
   }
 
   @Override
+  public OptionalLong getFjordTime() {
+    return getOptionalLong("fjordtime");
+  }
+
+  @Override
+  public boolean isFjord(final long headTime) {
+    if (!isOptimism()) {
+      return false;
+    }
+    var fjordTime = getFjordTime();
+    if (fjordTime.isPresent()) {
+      return fjordTime.getAsLong() <= headTime;
+    }
+    return false;
+  }
+
+  @Override
   public OptionalLong getInteropTime() {
     return getOptionalLong("interoptime");
   }
@@ -721,8 +738,14 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
 
   @Override
   public List<Long> getForkBlockTimestamps() {
-    Stream<OptionalLong> forkBlockTimestamps =
-        Stream.of(
+    Stream<OptionalLong> forkBlockTimestamps;
+    if (this.isOptimism()) {
+      forkBlockTimestamps = Stream.of(
+          getFjordTime(),
+          getCanyonTime(),
+          getEcotoneTime());
+    } else {
+      forkBlockTimestamps = Stream.of(
             getShanghaiTime(),
             getCancunTime(),
             getCancunEOFTime(),
@@ -730,6 +753,7 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
             getPragueEOFTime(),
             getFutureEipsTime(),
             getExperimentalEipsTime());
+    }
     // when adding forks add an entry to ${REPO_ROOT}/config/src/test/resources/all_forks.json
 
     return forkBlockTimestamps

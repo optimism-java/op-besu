@@ -53,6 +53,8 @@ public enum EvmSpecVersion {
   CANCUN(MainnetHardforkId.CANCUN, 0x6000, 0xc000, 0),
   /** Cancun evm spec version. */
   CANCUN_EOF(MainnetHardforkId.CANCUN_EOF, 0x6000, 0xc000, 1),
+//  /** Fjord evm spec version. */
+//  FJORD(0, true, "Fjord", "Finalized"),
   /** Prague evm spec version. */
   PRAGUE(MainnetHardforkId.PRAGUE, 0x6000, 0xc000, 0),
   /** PragueEOF evm spec version. */

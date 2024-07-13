@@ -213,6 +213,17 @@ public class MainnetProtocolSpecFactory {
         metricsSystem);
   }
 
+  public ProtocolSpecBuilder fjordDefinition(final GenesisConfigOptions genesisConfigOptions) {
+    return MainnetProtocolSpecs.fjordDefinition(
+        chainId,
+        contractSizeLimit,
+        evmStackSize,
+        isRevertReasonEnabled,
+        genesisConfigOptions,
+        evmConfiguration,
+        miningParameters);
+  }
+
   public ProtocolSpecBuilder pragueDefinition(final GenesisConfigOptions genesisConfigOptions) {
     return MainnetProtocolSpecs.pragueDefinition(
         chainId,

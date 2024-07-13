@@ -26,10 +26,22 @@ import org.hyperledger.besu.evm.worldstate.WorldUpdater;
 
 import org.apache.tuweni.units.bigints.UInt256;
 import org.web3j.utils.Numeric;
+
+import java.math.BigInteger;
 import java.util.Arrays;
 
 /** L1 Cost calculator. */
 public class L1CostCalculator {
+
+  private static final UInt256 SIXTEEN = UInt256.valueOf(16L);
+
+  private static final BigInteger L1_COST_INTERCEPT = BigInteger.valueOf(-42_585_600L);
+  private static final UInt256 L1_COST_FAST_LZ_COEF = UInt256.valueOf(836_500L);
+
+  private static final UInt256 MIN_TX_SIZE = UInt256.valueOf(100L);
+  private static final UInt256 MIN_TX_SIZE_SCALED = UInt256.valueOf(1_000_000L).multiply(MIN_TX_SIZE);
+  private static final UInt256 ECOTONE_DIVISOR = UInt256.valueOf(1_000_000L * 16L);
+  private static final UInt256 FJORD_DIVISOR = UInt256.valueOf(1_000_000_000_000L);
 
   private static final int BASE_FEE_SCALAR_SLOT_OFFSET = 12;
 //  private static final int BLOB_BASE_FEE_SCALAR_SLOT_OFFSET = 8;
@@ -106,13 +118,16 @@ public class L1CostCalculator {
               Arrays.equals(emptyScalars, l1FeeScalarBytes)) {
 
         return l1CostInBedrock(options, blockHeader, transaction, worldState);
-      } else {
-        var l1BaseFee = systemConfig.getStorageValue(l1BaseFeeSlot);
-        var offset = SCALAR_SECTION_START;
-        var l1BaseFeeScalar = UInt256.valueOf(Numeric.toBigInt(Arrays.copyOfRange(l1FeeScalars, offset, offset + 4)));
-        var l1BlobBaseFeeScalar = UInt256.valueOf(Numeric.toBigInt(Arrays.copyOfRange(l1FeeScalars, offset + 4, offset + 8)));
-        return l1CostInEcotone(transaction.getRollupGasData(), l1BaseFee, l1BlobBaseFee, l1BaseFeeScalar, l1BlobBaseFeeScalar);
       }
+
+      var l1BaseFee = systemConfig.getStorageValue(l1BaseFeeSlot);
+      var offset = SCALAR_SECTION_START;
+      var l1BaseFeeScalar = UInt256.valueOf(Numeric.toBigInt(Arrays.copyOfRange(l1FeeScalars, offset, offset + 4)));
+      var l1BlobBaseFeeScalar = UInt256.valueOf(Numeric.toBigInt(Arrays.copyOfRange(l1FeeScalars, offset + 4, offset + 8)));
+      if (options.isFjord(blockHeader.getTimestamp())) {
+        return l1CostFjord(transaction.getRollupGasData(), l1BaseFee, l1BlobBaseFee, l1BaseFeeScalar, l1BlobBaseFeeScalar);
+      }
+      return l1CostInEcotone(transaction.getRollupGasData(), l1BaseFee, l1BlobBaseFee, l1BaseFeeScalar, l1BlobBaseFeeScalar);
     }
   }
 
@@ -172,15 +187,43 @@ public class L1CostCalculator {
     // Function is actually computed as follows for better precision under integer arithmetic:
     //
     //   calldataGas*(l1BaseFee*16*l1BaseFeeScalar + l1BlobBaseFee*l1BlobBaseFeeScalar)/16e6
-    var calldataCostPerByte = l1BaseFee.multiply(UInt256.valueOf(16)).multiply(l1BaseFeeScalar);
+    var calldataCostPerByte = l1BaseFee.multiply(SIXTEEN).multiply(l1BaseFeeScalar);
     var blobCostPerByte = l1BlobBaseFee.multiply(l1BlobBaseFeeScalar);
 
     // fee = (calldataCostPerByte + blobCostPerByte) * calldataGasUsed / (16e6)
     var fee = calldataCostPerByte
             .add(blobCostPerByte)
         .multiply(calldataGasUsed)
-        .divide(UInt256.valueOf(1_000_000L).multiply(UInt256.valueOf(16)));
+        .divide(ECOTONE_DIVISOR);
     return Wei.of(fee);
+  }
+
+  static Wei l1CostFjord(final RollupGasData costData,
+                         final UInt256 l1BaseFee,
+                         final UInt256 l1BlobBaseFee,
+                         final UInt256 l1BaseFeeScalar,
+                         final UInt256 l1BlobBaseFeeScalar) {
+    // Fjord L1 cost function:
+    //l1FeeScaled = baseFeeScalar*l1BaseFee*16 + blobFeeScalar*l1BlobBaseFee
+    //estimatedSize = max(minTransactionSize, intercept + fastlzCoef*fastlzSize)
+    //l1Cost = estimatedSize * l1FeeScaled / 1e12
+
+    var scaledL1BaseFee = l1BaseFeeScalar.multiply(l1BaseFee);
+    var calldataCostPerByte = scaledL1BaseFee.multiply(SIXTEEN);
+    var blobCostPerByte = l1BlobBaseFeeScalar.multiply(l1BlobBaseFee);
+    var l1FeeScaled = calldataCostPerByte.add(blobCostPerByte);
+
+    var fastLzSize = UInt256.valueOf(costData.getFastLzSize());
+    var estimatedSize = UInt256.valueOf(L1_COST_INTERCEPT
+        .add(L1_COST_FAST_LZ_COEF.multiply(fastLzSize).toBigInteger()));
+
+    if (estimatedSize.compareTo(MIN_TX_SIZE_SCALED) < 0) {
+      estimatedSize = MIN_TX_SIZE_SCALED;
+    }
+
+    var l1CostScaled = estimatedSize.multiply(l1FeeScaled);
+    var l1Cost = l1CostScaled.divide(FJORD_DIVISOR);
+    return Wei.of(l1Cost);
   }
 
   /**

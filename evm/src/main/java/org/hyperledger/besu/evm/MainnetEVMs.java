@@ -968,6 +968,75 @@ public class MainnetEVMs {
   }
 
   /**
+   * Fjord evm.
+   *
+   * @param evmConfiguration the evm configuration
+   * @return the evm
+   */
+  public static EVM fjord(final EvmConfiguration evmConfiguration) {
+    return fjord(DEV_NET_CHAIN_ID, evmConfiguration);
+  }
+
+  /**
+   * Fjord evm.
+   *
+   * @param chainId the chain id
+   * @param evmConfiguration the evm configuration
+   * @return the evm
+   */
+  public static EVM fjord(final BigInteger chainId, final EvmConfiguration evmConfiguration) {
+    return fjord(new CancunGasCalculator(), chainId, evmConfiguration);
+  }
+
+  /**
+   * Fjord evm.
+   *
+   * @param gasCalculator the gas calculator
+   * @param chainId the chain id
+   * @param evmConfiguration the evm configuration
+   * @return the evm
+   */
+  public static EVM fjord(
+      final GasCalculator gasCalculator,
+      final BigInteger chainId,
+      final EvmConfiguration evmConfiguration) {
+    return new EVM(
+        fjordOperations(gasCalculator, chainId),
+        gasCalculator,
+        evmConfiguration,
+        EvmSpecVersion.FJORD);
+  }
+
+  /**
+   * Operation registry for cancun's operations.
+   *
+   * @param gasCalculator the gas calculator
+   * @param chainId the chain id
+   * @return the operation registry
+   */
+  public static OperationRegistry fjordOperations(
+      final GasCalculator gasCalculator, final BigInteger chainId) {
+    OperationRegistry operationRegistry = new OperationRegistry();
+    registerFjordOperations(operationRegistry, gasCalculator, chainId);
+    return operationRegistry;
+  }
+
+  /**
+   * Register fjord operations.
+   *
+   * @param registry the registry
+   * @param gasCalculator the gas calculator
+   * @param chainID the chain id
+   */
+  public static void registerFjordOperations(
+      final OperationRegistry registry,
+      final GasCalculator gasCalculator,
+      final BigInteger chainID) {
+    registerCancunOperations(registry, gasCalculator, chainID);
+  }
+
+
+  /**
    * Prague evm.
    *
    * @param evmConfiguration the evm configuration

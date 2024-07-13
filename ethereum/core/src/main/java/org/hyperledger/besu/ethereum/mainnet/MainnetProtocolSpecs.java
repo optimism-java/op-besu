@@ -39,6 +39,7 @@ import org.hyperledger.besu.ethereum.mainnet.blockhash.CancunBlockHashProcessor;
 import org.hyperledger.besu.ethereum.mainnet.blockhash.FrontierBlockHashProcessor;
 import org.hyperledger.besu.ethereum.mainnet.blockhash.PragueBlockHashProcessor;
 import org.hyperledger.besu.ethereum.mainnet.feemarket.BaseFeeMarket;
+import org.hyperledger.besu.ethereum.mainnet.feemarket.CancunFeeMarket;
 import org.hyperledger.besu.ethereum.mainnet.feemarket.FeeMarket;
 import org.hyperledger.besu.ethereum.mainnet.parallelization.MainnetParallelBlockProcessor;
 import org.hyperledger.besu.ethereum.mainnet.feemarket.LondonFeeMarket;
@@ -51,6 +52,7 @@ import org.hyperledger.besu.evm.account.MutableAccount;
 import org.hyperledger.besu.evm.contractvalidation.EOFValidationCodeRule;
 import org.hyperledger.besu.evm.contractvalidation.MaxCodeSizeRule;
 import org.hyperledger.besu.evm.contractvalidation.PrefixCodeRule;
+import org.hyperledger.besu.evm.frame.MessageFrame;
 import org.hyperledger.besu.evm.gascalculator.BerlinGasCalculator;
 import org.hyperledger.besu.evm.gascalculator.ByzantiumGasCalculator;
 import org.hyperledger.besu.evm.gascalculator.CancunGasCalculator;
@@ -79,6 +81,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.IntStream;
 
@@ -685,6 +688,9 @@ public abstract class MainnetProtocolSpecs {
     final BaseFeeMarket cancunFeeMarket;
     if (genesisConfigOptions.isZeroBaseFee()) {
       cancunFeeMarket = FeeMarket.zeroBaseFee(londonForkBlockNumber);
+    } else if (genesisConfigOptions.isOptimism()) {
+      cancunFeeMarket =
+          new CancunFeeMarket(londonForkBlockNumber, genesisConfigOptions.getBaseFeePerGas(), Optional.of(genesisConfigOptions));
     } else if (genesisConfigOptions.isFixedBaseFee()) {
       cancunFeeMarket =
           FeeMarket.fixedBaseFee(
@@ -776,6 +782,93 @@ public abstract class MainnetProtocolSpecs {
             isParallelTxProcessingEnabled,
             metricsSystem);
     return addEOF(chainId, evmConfiguration, protocolSpecBuilder).name("CancunEOF");
+  }
+
+  static ProtocolSpecBuilder fjordDefinition(
+      final Optional<BigInteger> chainId,
+      final boolean enableRevertReason,
+      final GenesisConfigOptions genesisConfigOptions,
+      final EvmConfiguration evmConfiguration,
+      final MiningParameters miningParameters,
+      final boolean isParallelTxProcessingEnabled,
+      final MetricsSystem metricsSystem) {
+
+    final long londonForkBlockNumber = genesisConfigOptions.getLondonBlockNumber().orElse(0L);
+    final BaseFeeMarket cancunFeeMarket;
+    if (genesisConfigOptions.isZeroBaseFee()) {
+      cancunFeeMarket = FeeMarket.zeroBaseFee(londonForkBlockNumber);
+    } else if (genesisConfigOptions.isOptimism()) {
+      cancunFeeMarket =
+          new CancunFeeMarket(londonForkBlockNumber, genesisConfigOptions.getBaseFeePerGas(), Optional.of(genesisConfigOptions));
+    } else if (genesisConfigOptions.isFixedBaseFee()) {
+      cancunFeeMarket =
+          FeeMarket.fixedBaseFee(
+              londonForkBlockNumber, miningParameters.getMinTransactionGasPrice());
+    } else {
+      cancunFeeMarket =
+          FeeMarket.cancun(londonForkBlockNumber, genesisConfigOptions.getBaseFeePerGas());
+    }
+
+    return shanghaiDefinition(
+        chainId,
+        enableRevertReason,
+        genesisConfigOptions,
+        evmConfiguration,
+        miningParameters,
+        isParallelTxProcessingEnabled,
+        metricsSystem)
+        .feeMarket(cancunFeeMarket)
+        // gas calculator for EIP-4844 blob gas
+        .gasCalculator(CancunGasCalculator::new)
+        // gas limit with EIP-4844 max blob gas per block
+        .gasLimitCalculatorBuilder(
+            feeMarket ->
+                new CancunTargetingGasLimitCalculator(
+                    londonForkBlockNumber, (BaseFeeMarket) feeMarket))
+        // EVM changes to support EIP-1153: TSTORE and EIP-5656: MCOPY
+        .evmBuilder(
+            (gasCalculator, jdCacheConfig) ->
+                MainnetEVMs.fjord(
+                    gasCalculator, chainId.orElse(BigInteger.ZERO), evmConfiguration))
+        // use Cancun fee market
+        .transactionProcessorBuilder(
+            (gasCalculator,
+             feeMarket,
+             transactionValidator,
+             contractCreationProcessor,
+             messageCallProcessor) ->
+                new MainnetTransactionProcessor(
+                    gasCalculator,
+                    transactionValidator,
+                    contractCreationProcessor,
+                    messageCallProcessor,
+                    true,
+                    true,
+                    evmConfiguration.evmStackSize(),
+                    feeMarket,
+                    CoinbaseFeePriceCalculator.eip1559(),
+                    new AuthorityProcessor(chainId),
+                    Optional.of(genesisConfigOptions),
+                    Optional.of(new L1CostCalculator())))
+        // change to check for max blob gas per block for EIP-4844
+        .transactionValidatorFactoryBuilder(
+            (gasCalculator, gasLimitCalculator, feeMarket) ->
+                new TransactionValidatorFactory(
+                    gasCalculator,
+                    gasLimitCalculator,
+                    feeMarket,
+                    true,
+                    chainId,
+                    Set.of(
+                        TransactionType.FRONTIER,
+                        TransactionType.ACCESS_LIST,
+                        TransactionType.EIP1559,
+                        TransactionType.OPTIMISM_DEPOSIT),
+                    SHANGHAI_INIT_CODE_SIZE_LIMIT))
+        .precompileContractRegistryBuilder(MainnetPrecompiledContractRegistries::fjord)
+        .blockHeaderValidatorBuilder(MainnetBlockHeaderValidator::cancunBlockHeaderValidator)
+        .blockHashProcessor(new CancunBlockHashProcessor())
+        .name("Fjord");
   }
 
   static ProtocolSpecBuilder pragueDefinition(

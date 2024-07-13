@@ -44,7 +44,7 @@ public enum NetworkName {
   /** Optimims Mainnet network name. */
   OP_MAINNET("/optimism_mainnet.json", BigInteger.valueOf(10L)),
   /** Optimism sepolia network name. */
-  OP_SEPOLIA("/optimism_sepolia.json", BigInteger.valueOf(11155420L));
+  OP_SEPOLIA("/optimism-sepolia.json", BigInteger.valueOf(11155420L));
 
   private final String genesisFile;
   private final BigInteger networkId;
