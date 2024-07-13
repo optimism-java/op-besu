@@ -14,12 +14,14 @@
  */
 package org.hyperledger.besu.ethereum.mainnet.feemarket;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.BlobGas;
 import org.hyperledger.besu.datatypes.Wei;
 
 import java.math.BigInteger;
 import java.util.Optional;
 
+import org.hyperledger.besu.ethereum.core.feemarket.TransactionPriceCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,13 @@ public class CancunFeeMarket extends LondonFeeMarket {
   public CancunFeeMarket(
       final long londonForkBlockNumber, final Optional<Wei> baseFeePerGasOverride) {
     super(londonForkBlockNumber, baseFeePerGasOverride);
+  }
+
+  public CancunFeeMarket(
+      final long londonForkBlockNumber,
+      final Optional<Wei> baseFeePerGasOverride,
+      final Optional<GenesisConfigOptions> genesisConfigOptions) {
+    super(londonForkBlockNumber, baseFeePerGasOverride, genesisConfigOptions);
   }
 
   @Override

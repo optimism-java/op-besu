@@ -96,7 +96,7 @@ public class Address extends DelegatingBytes {
   public static final Address BLS12_MAP_FP2_TO_G2 = Address.precompiled(0x13);
 
   /** The constant P256_VERIFY. */
-  public static final Address P256_VERIFY = Address.precompiled(0x100);
+  public static final Address P256_VERIFY = Address.precompiled(0x0100);
 
   /** The constant ZERO. */
   public static final Address ZERO = Address.fromHexString("0x0");
@@ -225,8 +225,16 @@ public class Address extends DelegatingBytes {
     // Keep it simple while we don't need precompiled above 127.
 //    checkArgument(value < Byte.MAX_VALUE);
     final byte[] address = new byte[SIZE];
-    address[SIZE - 1] = (byte) value;
-    return new Address(Bytes.wrap(address));
+    if (value < 256) {
+      address[SIZE - 1] = (byte) value;
+      return new Address(Bytes.wrap(address));
+    } else if (value == 0x100) {
+      Bytes bytes = Bytes.ofUnsignedInt(value);
+      System.arraycopy(bytes.toArray(), 0, address, SIZE - bytes.size(), bytes.size());
+      return new Address(Bytes.wrap(address));
+    } else {
+      throw new IllegalArgumentException();
+    }
   }
 
   /**

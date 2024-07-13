@@ -273,11 +273,10 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     }
     rlpOutput.writeList(logs, (log, logOutput) -> log.writeTo(logOutput, compacted));
 
-    if (transactionType.equals(TransactionType.OPTIMISM_DEPOSIT)) {
-      if (depositReceiptVersion.isPresent()) {
-        depositNonce.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
-        depositReceiptVersion.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
-      }
+    if (transactionType.equals(TransactionType.OPTIMISM_DEPOSIT)
+        && depositReceiptVersion.isPresent()) {
+      depositNonce.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
+      depositReceiptVersion.ifPresentOrElse(rlpOutput::writeLongScalar, rlpOutput::writeNull);
     }
 
     if (withRevertReason && revertReason.isPresent()) {
@@ -326,24 +325,29 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
       // The logs below will populate the bloom filter upon construction.
       bloomFilter = LogsBloomFilter.readFrom(input);
     }
-    final List<Log> logs = input.readList(Log::readFrom);
+
+    // TODO consider validating that the logs and bloom filter match.
+    final boolean compacted = !hasLogs;
+    final List<Log> logs = input.readList(logInput -> Log.readFrom(logInput, compacted));
+    if (compacted) {
+      bloomFilter = LogsBloomFilter.builder().insertLogs(logs).build();
+    }
+
     Optional<Bytes> revertReason = Optional.empty();
     Optional<Long> depositNonce = Optional.empty();
     Optional<Long> depositReceptVersion = Optional.empty();
 
-    var element = input.readBytes();
-    if (input.isEndOfCurrentList() && revertReasonAllowed) {
-      revertReason = Optional.of(element);
-    } else {
-      depositNonce = Optional.of(element).map(Bytes::toLong);
-      depositReceptVersion = Optional.of(input.readBytes()).map(Bytes::toLong);
-    }
-    if (revertReasonAllowed && revertReason.isEmpty()) {
-      if (!input.isEndOfCurrentList()) {
-        revertReason = Optional.of(input.readBytes());
+    if (!input.isEndOfCurrentList()) {
+      var element = input.readBytes();
+      if (!input.isEndOfCurrentList() && transactionType == TransactionType.OPTIMISM_DEPOSIT) {
+        depositNonce = Optional.of(element).map(Bytes::toLong);
+        depositReceptVersion = Optional.of(input.readBytes()).map(Bytes::toLong);
+      } else {
+        if (!revertReasonAllowed || !input.isEndOfCurrentList()) {
+          throw new RLPException("Unexpected value at end of TransactionReceipt");
+        }
+        revertReason = Optional.of(element);
       }
-    } else if (!revertReasonAllowed && !input.isEndOfCurrentList()) {
-      throw new RLPException("Unexpected value at end of TransactionReceipt");
     }
 
     // Status code-encoded transaction receipts have a single

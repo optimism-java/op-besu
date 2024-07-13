@@ -311,7 +311,8 @@ public class ProtocolScheduleBuilder {
           blockNumberMilestone(config.getBedrockBlock(), specFactory.londonDefinition(config)),
           timestampMilestone(config.getRegolithTime(), specFactory.londonDefinition(config)),
           timestampMilestone(config.getCanyonTime(), specFactory.shanghaiDefinition(config)),
-          timestampMilestone(config.getEcotoneTime(), specFactory.cancunDefinition(config)));
+          timestampMilestone(config.getEcotoneTime(), specFactory.cancunDefinition(config)),
+          timestampMilestone(config.getFjordTime(), specFactory.fjordDefinition(config)));
     }
     return Stream.of(
         blockNumberMilestone(OptionalLong.of(0), specFactory.frontierDefinition()),

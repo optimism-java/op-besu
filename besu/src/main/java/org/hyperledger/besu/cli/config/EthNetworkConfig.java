@@ -26,6 +26,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
  */
 public record EthNetworkConfig(
     GenesisConfigFile genesisConfigFile,
+    Map<String, String> genesisConfigOverrides,
     BigInteger networkId,
     List<EnodeURL> bootNodes,
     String dnsDiscoveryUrl) {
@@ -79,6 +81,7 @@ public record EthNetworkConfig(
             .orElse(Collections.emptyList());
     return new EthNetworkConfig(
         genesisConfigFile,
+        null,
         networkName.getNetworkId(),
         bootNodes,
         genesisConfigOptions.getDiscoveryOptions().getDiscoveryDnsUrl().orElse(null));
@@ -110,6 +113,7 @@ public record EthNetworkConfig(
     private GenesisConfigFile genesisConfigFile;
     private BigInteger networkId;
     private List<EnodeURL> bootNodes;
+    private Map<String, String> genesisConfigOverrides;
 
     /**
      * Instantiates a new Builder.
@@ -131,6 +135,11 @@ public record EthNetworkConfig(
      */
     public Builder setGenesisConfigFile(final GenesisConfigFile genesisConfigFile) {
       this.genesisConfigFile = genesisConfigFile;
+      return this;
+    }
+
+    public Builder setGenesisConfigOverrides(final Map<String, String> genesisConfigOverrides) {
+      this.genesisConfigOverrides = genesisConfigOverrides;
       return this;
     }
 
@@ -173,7 +182,7 @@ public record EthNetworkConfig(
      * @return the eth network config
      */
     public EthNetworkConfig build() {
-      return new EthNetworkConfig(genesisConfigFile, networkId, bootNodes, dnsDiscoveryUrl);
+      return new EthNetworkConfig(genesisConfigFile, genesisConfigOverrides, networkId, bootNodes, dnsDiscoveryUrl);
     }
   }
 }

@@ -1515,6 +1515,7 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
     }
 
     if (genesisConfigOptionsSupplier.get().getCancunTime().isPresent()
+        || genesisConfigOptionsSupplier.get().getCanyonTime().isPresent()
         || genesisConfigOptionsSupplier.get().getPragueTime().isPresent()
         || genesisConfigOptionsSupplier.get().getPragueEOFTime().isPresent()) {
       if (kzgTrustedSetupFile != null) {
@@ -2413,6 +2414,7 @@ public class BesuCommand implements DefaultCommandValues, Runnable {
     }
 
     builder.setGenesisConfigFile(genesisConfigFileSupplier.get());
+    builder.setGenesisConfigOverrides(genesisConfigOverrides);
 
     if (networkId != null) {
       builder.setNetworkId(networkId);

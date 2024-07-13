@@ -38,7 +38,7 @@ public interface WithdrawalsValidator {
 
     @Override
     public boolean validateWithdrawals(final Optional<List<Withdrawal>> withdrawals) {
-      final boolean isValid = withdrawals.isEmpty();
+      final boolean isValid = withdrawals.isEmpty() || withdrawals.get().isEmpty();
       if (!isValid) {
         LOG.warn(
             "withdrawals must be null when Withdrawals are prohibited but were: {}", withdrawals);

@@ -323,7 +323,7 @@ public class BesuController implements java.io.Closeable {
      */
     public BesuControllerBuilder fromEthNetworkConfig(
         final EthNetworkConfig ethNetworkConfig, final SyncMode syncMode) {
-      return fromGenesisFile(ethNetworkConfig.genesisConfigFile(), syncMode)
+      return fromGenesisFile(ethNetworkConfig.genesisConfigFile(), ethNetworkConfig.genesisConfigOverrides(), syncMode)
           .networkId(ethNetworkConfig.networkId());
     }
 
@@ -336,6 +336,19 @@ public class BesuController implements java.io.Closeable {
      */
     public BesuControllerBuilder fromGenesisFile(
         final GenesisConfigFile genesisConfigFile, final SyncMode syncMode) {
+      return  fromGenesisFile(genesisConfigFile, null, syncMode);
+    }
+
+    /**
+     * From genesis config besu controller builder.
+     *
+     * @param genesisConfigFile the genesis config file
+     * @param overrides the genesis config overrides
+     * @param syncMode the sync mode
+     * @return the besu controller builder
+     */
+    public BesuControllerBuilder fromGenesisFile(
+        final GenesisConfigFile genesisConfigFile, final Map<String, String> overrides, final SyncMode syncMode) {
       final BesuControllerBuilder builder;
       final var configOptions = genesisConfigFile.getConfigOptions();
 
@@ -370,7 +383,8 @@ public class BesuController implements java.io.Closeable {
           // series of classes removed after we successfully transition to PoS
           // https://github.com/hyperledger/besu/issues/2897
           return new TransitionBesuControllerBuilder(builder, new MergeBesuControllerBuilder())
-              .genesisConfigFile(genesisConfigFile);
+              .genesisConfigFile(genesisConfigFile)
+              .genesisConfigOptions(genesisConfigFile.getConfigOptions(overrides));
         }
 
       } else return builder.genesisConfigFile(genesisConfigFile);

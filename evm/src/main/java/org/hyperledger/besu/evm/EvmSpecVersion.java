@@ -48,6 +48,8 @@ public enum EvmSpecVersion {
   SHANGHAI(0, true, "Shanghai", "Finalized"),
   /** Cancun evm spec version. */
   CANCUN(0, true, "Cancun", "Finalized"),
+  /** Fjord evm spec version. */
+  FJORD(0, true, "Fjord", "Finalized"),
   /** Prague evm spec version. */
   PRAGUE(0, false, "Prague", "In Development"),
   /** PragueEOF evm spec version. */

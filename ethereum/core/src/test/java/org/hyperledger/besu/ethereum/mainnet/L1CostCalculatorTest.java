@@ -7,9 +7,12 @@ import org.hyperledger.besu.datatypes.Wei;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class L1CostCalculatorTest {
   private static UInt256 baseFee;
@@ -23,26 +26,7 @@ class L1CostCalculatorTest {
   private static Wei bedrockFee;
   private static Wei regolithFee;
   private static Wei ecotoneFee;
-
-//  private static Wei ecotoneGas;
-//  private static Wei regolithGas;
-//  private static Wei bedrockGas;
   private static RollupGasData emptyRollData;
-
-  //
-  //	blobBaseFee       = big.NewInt(10 * 1e6)
-  //	baseFeeScalar     = big.NewInt(2)
-  //	blobBaseFeeScalar = big.NewInt(3)
-  //
-  //	// below are the expected cost func outcomes for the above parameter settings on the emptyTx
-  //	// which is defined in transaction_test.go
-  //	bedrockFee  = big.NewInt(11326000000000)
-  //	regolithFee = big.NewInt(3710000000000)
-  //	ecotoneFee  = big.NewInt(960900) // (480/16)*(2*16*1000 + 3*10) == 960900
-  //
-  //	bedrockGas  = big.NewInt(1618)
-  //	regolithGas = big.NewInt(530) // 530  = 1618 - (16*68)
-  //	ecotoneGas  = big.NewInt(480)
 
   @BeforeAll
   static void setUp() {
@@ -57,10 +41,6 @@ class L1CostCalculatorTest {
     bedrockFee = Wei.of(UInt256.valueOf(11326000000000L));
     regolithFee = Wei.of(UInt256.valueOf(3710000000000L));
     ecotoneFee = Wei.of(UInt256.valueOf(960900));
-
-//    bedrockGas = Wei.of(UInt256.valueOf(1618L));
-//    regolithGas = Wei.of(UInt256.valueOf(530));
-//    ecotoneGas = Wei.of(UInt256.valueOf(480));
 
     byte[] bytes = new byte[30];
     Arrays.fill(bytes, (byte) 1);
@@ -84,4 +64,70 @@ class L1CostCalculatorTest {
         L1CostCalculator.l1CostInEcotone(emptyRollData, baseFee, blobBaseFee, baseFeeScalar, blobBaseFeeScalar);
     assertEquals(ecotoneFee, ecotoneGasUsed);
   }
+
+  @Test
+  void l1CostInFjord() {
+    var funcBaseFee = UInt256.valueOf(1_000_000_000L);
+    var funcBlobBaseFee = UInt256.valueOf(10_000_000L);
+    var funcFeeScalar = UInt256.valueOf(2L);
+    var funcBlobBaseFeeScalar = UInt256.valueOf(3L);
+
+    List<Long> fastLzsize = List.of(100L, 150L, 170L);
+    for (Long size : fastLzsize) {
+      Wei wei = L1CostCalculator.l1CostFjord(
+          new RollupGasData(0, 0, size),
+          funcBaseFee,
+          funcBlobBaseFee,
+          funcFeeScalar,
+          funcBlobBaseFeeScalar
+      );
+      assertEquals(Wei.of(UInt256.valueOf(3203000L)), wei);
+    }
+
+    fastLzsize = List.of(171L, 175L, 200L);
+    for (Long size : fastLzsize) {
+      Wei wei = L1CostCalculator.l1CostFjord(
+          new RollupGasData(0, 0, size),
+          funcBaseFee,
+          funcBlobBaseFee,
+          funcFeeScalar,
+          funcBlobBaseFeeScalar
+      );
+      assertTrue(UInt256.valueOf(3203000L).compareTo(wei.toUInt256()) < 0);
+    }
+  }
+    @Test
+    void l1CostInFjord2() {
+      var funcBaseFee = UInt256.valueOf(2000000L);
+      var funcBlobBaseFee = UInt256.valueOf(3000000L);
+      var funcFeeScalar = UInt256.valueOf(20L);
+      var funcBlobBaseFeeScalar = UInt256.valueOf(15L);
+
+      Wei wei = L1CostCalculator.l1CostFjord(
+          new RollupGasData(0, 0, 235),
+          funcBaseFee,
+          funcBlobBaseFee,
+          funcFeeScalar,
+          funcBlobBaseFeeScalar
+      );
+      assertEquals(UInt256.valueOf(105484L), wei.toUInt256());
+    }
+
+  @Test
+  void l1CostInFjord3() {
+    var funcBaseFee = UInt256.valueOf(1000000000L);
+    var funcBlobBaseFee = UInt256.valueOf(10000000L);
+    var funcFeeScalar = UInt256.valueOf(2L);
+    var funcBlobBaseFeeScalar = UInt256.valueOf(3L);
+
+    Wei wei = L1CostCalculator.l1CostFjord(
+        new RollupGasData(0, 30, 31),
+        funcBaseFee,
+        funcBlobBaseFee,
+        funcFeeScalar,
+        funcBlobBaseFeeScalar
+    );
+    assertEquals(UInt256.valueOf(3203000L), wei.toUInt256());
+  }
+
 }

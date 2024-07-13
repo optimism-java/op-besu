@@ -1,15 +1,12 @@
 package org.hyperledger.besu.evm.precompile;
 
 import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.bytes.Bytes32;
 import org.hyperledger.besu.crypto.SECP256R1;
 import org.hyperledger.besu.crypto.SECPPublicKey;
 import org.hyperledger.besu.crypto.SECPSignature;
 import org.hyperledger.besu.evm.frame.MessageFrame;
 
-import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.Optional;
 
 public class P256VerifyPrecompiledContract implements PrecompiledContract {
 

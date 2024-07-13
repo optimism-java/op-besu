@@ -251,9 +251,6 @@ public class MainnetTransactionValidator implements TransactionValidator {
       final Transaction transaction,
       final Account sender,
       final TransactionValidationParams validationParams) {
-    if (TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
-      return ValidationResult.valid();
-    }
     Wei senderBalance = Account.DEFAULT_BALANCE;
     long senderNonce = Account.DEFAULT_NONCE;
     Hash codeHash = Hash.EMPTY;
@@ -272,6 +269,10 @@ public class MainnetTransactionValidator implements TransactionValidator {
           String.format(
               "transaction up-front cost %s exceeds transaction sender account balance %s",
               upfrontCost.toQuantityHexString(), senderBalance.toQuantityHexString()));
+    }
+
+    if (TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+      return ValidationResult.valid();
     }
 
     if (Long.compareUnsigned(transaction.getNonce(), senderNonce) < 0) {

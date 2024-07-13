@@ -659,6 +659,9 @@ public class Transaction
    * @return max fee per gas in wei
    */
   public Wei getMaxGasPrice() {
+    if (TransactionType.OPTIMISM_DEPOSIT.equals(getType())) {
+      return Wei.ZERO;
+    }
     return maxFeePerGas.orElseGet(
         () ->
             gasPrice.orElseThrow(

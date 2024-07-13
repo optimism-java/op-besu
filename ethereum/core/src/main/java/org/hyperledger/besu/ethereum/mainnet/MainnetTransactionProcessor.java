@@ -297,11 +297,10 @@ public class MainnetTransactionProcessor {
           .getMint()
           .ifPresent(
               mint -> {
-                WorldUpdater mintUpdater = worldState.updater();
                 final MutableAccount sender =
-                    mintUpdater.getOrCreateSenderAccount(transaction.getSender());
+                    worldState.getOrCreateSenderAccount(transaction.getSender());
                 sender.incrementBalance(transaction.getMint().orElse(Wei.ZERO));
-                mintUpdater.commit();
+                worldState.commit();
               });
 
       final var transactionValidator = transactionValidatorFactory.get();
@@ -329,6 +328,9 @@ public class MainnetTransactionProcessor {
           transactionValidator.validateForSender(transaction, sender, transactionValidationParams);
       if (!validationResult.isValid()) {
         LOG.debug("Invalid transaction: {}", validationResult.getErrorMessage());
+        if (transaction.getType().equals(TransactionType.OPTIMISM_DEPOSIT)) {
+          return opDepositTxFailed(worldState, blockHeader, transaction, validationResult.getErrorMessage());
+        }
         return TransactionProcessingResult.invalid(validationResult);
       }
 
@@ -545,6 +547,11 @@ public class MainnetTransactionProcessor {
             gasUsedByTransaction,
             initialFrame.getSelfDestructs(),
             0L);
+        initialFrame.getSelfDestructs().forEach(worldState::deleteAccount);
+        if (clearEmptyAccounts) {
+          worldState.clearAccountsThatAreEmpty();
+        }
+
         if (initialFrame.getState() == MessageFrame.State.COMPLETED_SUCCESS) {
           return TransactionProcessingResult.successful(
               initialFrame.getLogs(),
@@ -672,22 +679,6 @@ public class MainnetTransactionProcessor {
       // need to throw to trigger the heal
       throw re;
     } catch (final RuntimeException re) {
-      if (TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
-        worldState.revert();
-        worldState.getAccount(transaction.getSender()).incrementNonce();
-        var gasUsed = transaction.getGasLimit();
-        if (transaction.getIsSystemTx().get()
-            && genesisConfigOptions.get().isRegolith(blockHeader.getTimestamp())) {
-          gasUsed = 0L;
-        }
-        final String msg = String.format("failed deposit: %s", re);
-        return TransactionProcessingResult.failed(
-            gasUsed,
-            0L,
-            ValidationResult.valid(),
-            Optional.of(Bytes.wrap(msg.getBytes(StandardCharsets.UTF_8))));
-      }
-
       operationTracer.traceEndTransaction(
           worldState.updater(),
           transaction,
@@ -697,6 +688,9 @@ public class MainnetTransactionProcessor {
           0,
           EMPTY_ADDRESS_SET,
           0L);
+      if (TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+        return opDepositTxFailed(worldState, blockHeader, transaction, re.getMessage());
+      }
 
       LOG.error("Critical Exception Processing Transaction", re);
       return TransactionProcessingResult.invalid(
@@ -704,6 +698,30 @@ public class MainnetTransactionProcessor {
               TransactionInvalidReason.INTERNAL_ERROR,
               "Internal Error in Besu - " + re + "\n" + printableStackTraceFromThrowable(re)));
     }
+  }
+
+  private TransactionProcessingResult opDepositTxFailed(
+      final WorldUpdater worldState,
+      final ProcessableBlockHeader blockHeader,
+      final Transaction transaction,
+      final String reason) {
+    worldState.revert();
+    worldState.getOrCreate(transaction.getSender()).incrementNonce();
+    if (clearEmptyAccounts) {
+      worldState.clearAccountsThatAreEmpty();
+    }
+    worldState.commit();
+    var gasUsed = transaction.getGasLimit();
+    if (transaction.getIsSystemTx().get()
+        && genesisConfigOptions.get().isRegolith(blockHeader.getTimestamp())) {
+      gasUsed = 0L;
+    }
+    final String msg = String.format("failed deposit: %s", reason);
+    return TransactionProcessingResult.failed(
+        gasUsed,
+        0L,
+        ValidationResult.valid(),
+        Optional.of(Bytes.wrap(msg.getBytes(StandardCharsets.UTF_8))));
   }
 
   public void process(final MessageFrame frame, final OperationTracer operationTracer) {
