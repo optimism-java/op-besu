@@ -20,6 +20,7 @@ import org.hyperledger.besu.evm.account.MutableAccount;
 import org.hyperledger.besu.evm.worldstate.WorldUpdater;
 
 import java.util.Optional;
+import java.util.OptionalLong;
 
 import org.apache.tuweni.bytes.Bytes;
 
@@ -45,8 +46,11 @@ public class Create2DeployerFunction {
       final Optional<GenesisConfigOptions> configOptions,
       final long timestamp,
       final WorldUpdater updater) {
-    if (configOptions.isEmpty()
-        || !configOptions.get().isEcotone(timestamp)) {
+    if (configOptions.isEmpty()) {
+      return;
+    }
+    OptionalLong canyonTime = configOptions.get().getCanyonTime();
+    if (canyonTime.isEmpty() || timestamp != canyonTime.getAsLong()) {
       return;
     }
     final MutableAccount contract =
