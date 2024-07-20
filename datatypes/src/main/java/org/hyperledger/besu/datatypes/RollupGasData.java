@@ -134,7 +134,7 @@ public class RollupGasData {
         var loopCount = 0;
         var value = e;
         for (value = value - q; loopCount < value; loopCount++) {
-            if (ib[p + loopCount] != ib[q + loopCount]) {
+            if ((ib[p + loopCount] & 0xFF) != (ib[q + loopCount] & 0xFF)) {
                 value = 0;
             }
         }
@@ -146,7 +146,7 @@ public class RollupGasData {
 
         a += 0x21 * (b / 0x20);
         b %= 0x20;
-        if (r != 0) {
+        if (b != 0) {
             a += b + 1;
         }
         return a;
