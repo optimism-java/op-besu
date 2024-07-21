@@ -1,0 +1,14 @@
+name: restore_gradle_cache
+description: "Restore the gradle cache"
+runs:
+  using: composite
+  steps:
+    - name: restore_cache
+      uses: actions/cache@v3.3.2
+      with:
+        key: deps-{{ checksum "gradle/versions.gradle" }}-{{ .Branch }}-{{ .Revision }}
+        path: UPDATE_ME
+        restore-keys: |-
+          deps-{{ checksum "gradle/versions.gradle" }}-{{ .Branch }}-{{ .Revision }}
+          deps-{{ checksum "gradle/versions.gradle" }}
+          deps-

@@ -4,11 +4,11 @@ footer: |  # define the footer with markdown
 base:
   name: hyperledger/besu
   url: https://github.com/hyperledger/besu
-  hash: 287f0c206e8ac668ffb5ec908128724b6338a294
+  hash: 86b9c38015590923c3c24d0599a17385c55c7332
 fork:
   name: optimism-java/op-besu
   url: https://github.com/optimism-java/op-besu
-  ref: refs/heads/release-23.10.x
+  ref: refs/heads/op-stack
 def:
   title: "op-besu"
   description: | # description in markdown
@@ -152,12 +152,10 @@ def:
 ignore:
   - "*.sum"
   - ".gitignore"
-  - ".github/**/*"
-  - ".github/actions/**/*.yml"
   - ".circleci/**/*"
-  - ".circleci-nouse/**/*"
   - "gradle/*"
   - "**/*.yml"
   - "fork.yaml"
-  - "Dockerfile"
   - "README.md"
+  - "evm/src/test/resources/org/hyperledger/besu/evm/precompile/p256Verify.json"
+  - "config/src/main/resources/optimism-sepolia.json"

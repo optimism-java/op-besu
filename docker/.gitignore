@@ -1,4 +1,7 @@
 besu-*.tar.gz
+op-besu-*.tar.gz
 besu/*
+op-besu/*
 besu-*
+op-besu-*
 reports/*
