@@ -1457,6 +1457,7 @@ public class LayersTest extends BaseTransactionPoolTest {
                     case EIP1559 -> createEIP1559PendingTransaction(sender, n);
                     case BLOB -> createBlobPendingTransaction(sender, n);
                     case SET_CODE -> throw new UnsupportedOperationException();
+                    case OPTIMISM_DEPOSIT -> null;
                   });
     }
 

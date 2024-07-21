@@ -1274,7 +1274,8 @@ public abstract class AbstractBlockTransactionSelectorTest {
             GasLimitCalculator.constant(),
             protocolSchedule.getByBlockHeader(blockHeader).getBlockHashProcessor(),
             transactionSelectionService.createPluginTransactionSelector(),
-            ethScheduler);
+            ethScheduler,
+            Optional.empty());
 
     return selector;
   }
