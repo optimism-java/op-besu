@@ -454,7 +454,8 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
 
     var forkchoiceRes = (EngineUpdateForkchoiceResult) resp.getResult();
 
-    verify(mergeCoordinator, never()).preparePayload(any(), any(), any(), any(), any(), any(), any(), any(), any());
+    verify(mergeCoordinator, never())
+        .preparePayload(any(), any(), any(), any(), any(), any(), any(), any(), any());
 
     assertThat(forkchoiceRes.getPayloadStatus().getStatus()).isEqualTo(VALID);
     assertThat(forkchoiceRes.getPayloadStatus().getError()).isNull();
@@ -625,7 +626,10 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             Bytes32.fromHexStringLenient("0xDEADBEEF").toHexString(),
             Address.ECREC.toString(),
             withdrawalParameters,
-            null, null, null, new UnsignedLongParameter(0L));
+            null,
+            null,
+            null,
+            new UnsignedLongParameter(0L));
 
     final Optional<List<Withdrawal>> withdrawals =
         Optional.of(

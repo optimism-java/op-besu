@@ -249,7 +249,8 @@ public abstract class BesuControllerBuilder implements MiningParameterOverrides 
    * @param genesisConfigOptions the genesis config options
    * @return the besu controller builder
    */
-  public BesuControllerBuilder genesisConfigOptions(final GenesisConfigOptions genesisConfigOptions) {
+  public BesuControllerBuilder genesisConfigOptions(
+      final GenesisConfigOptions genesisConfigOptions) {
     this.genesisConfigOptions = genesisConfigOptions;
     return this;
   }

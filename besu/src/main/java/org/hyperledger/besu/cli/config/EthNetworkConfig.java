@@ -182,7 +182,8 @@ public record EthNetworkConfig(
      * @return the eth network config
      */
     public EthNetworkConfig build() {
-      return new EthNetworkConfig(genesisConfigFile, genesisConfigOverrides, networkId, bootNodes, dnsDiscoveryUrl);
+      return new EthNetworkConfig(
+          genesisConfigFile, genesisConfigOverrides, networkId, bootNodes, dnsDiscoveryUrl);
     }
   }
 }

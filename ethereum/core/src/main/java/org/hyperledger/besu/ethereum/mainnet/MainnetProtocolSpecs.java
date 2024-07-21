@@ -218,7 +218,7 @@ public abstract class MainnetProtocolSpecs {
                 miningBeneficiaryCalculator,
                 skipZeroBlockRewards,
                 protocolSchedule,
-             genesisConfigOptions) ->
+                genesisConfigOptions) ->
                 new DaoBlockProcessor(
                     isParallelTxProcessingEnabled
                         ? new MainnetParallelBlockProcessor(
@@ -852,9 +852,9 @@ public abstract class MainnetProtocolSpecs {
                     Optional.of(new L1CostCalculator())))
         // change to check for max blob gas per block for EIP-4844
         .transactionValidatorFactoryBuilder(
-            (gasCalculator, gasLimitCalculator, feeMarket) ->
+            (evm, gasLimitCalculator, feeMarket) ->
                 new TransactionValidatorFactory(
-                    gasCalculator,
+                    evm.getGasCalculator(),
                     gasLimitCalculator,
                     feeMarket,
                     true,
@@ -864,7 +864,7 @@ public abstract class MainnetProtocolSpecs {
                         TransactionType.ACCESS_LIST,
                         TransactionType.EIP1559,
                         TransactionType.OPTIMISM_DEPOSIT),
-                    SHANGHAI_INIT_CODE_SIZE_LIMIT))
+                    evm.getEvmVersion().getMaxInitcodeSize()))
         .precompileContractRegistryBuilder(MainnetPrecompiledContractRegistries::fjord)
         .blockHeaderValidatorBuilder(MainnetBlockHeaderValidator::cancunBlockHeaderValidator)
         .blockHashProcessor(new CancunBlockHashProcessor())

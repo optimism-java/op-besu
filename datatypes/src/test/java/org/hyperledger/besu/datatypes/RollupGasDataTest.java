@@ -1,15 +1,27 @@
+/*
+ * Copyright contributors to Hyperledger Besu.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.hyperledger.besu.datatypes;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.Arrays;
 
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 class RollupGasDataTest {
-
-
 
   @Test
   void testFlzCompressLength() {
@@ -29,21 +41,22 @@ class RollupGasDataTest {
     flzSize = RollupGasData.flzCompressLength(emptyTx);
     assertEquals(31, flzSize);
 
-    byte[] contractCallTx = Hex.decode("02f901550a758302df1483be21b88304743f94f8" +
-        "0e51afb613d764fa61751affd3313c190a86bb870151bd62fd12adb8" +
-        "e41ef24f3f0000000000000000000000000000000000000000000000" +
-        "00000000000000006e000000000000000000000000af88d065e77c8c" +
-        "c2239327c5edb3a432268e5831000000000000000000000000000000" +
-        "000000000000000000000000000003c1e50000000000000000000000" +
-        "00000000000000000000000000000000000000000000000000000000" +
-        "000000000000000000000000000000000000000000000000a0000000" +
-        "00000000000000000000000000000000000000000000000000000000" +
-        "148c89ed219d02f1a5be012c689b4f5b731827bebe00000000000000" +
-        "0000000000c001a033fd89cb37c31b2cba46b6466e040c61fc9b2a36" +
-        "75a7f5f493ebd5ad77c497f8a07cdf65680e238392693019b4092f61" +
-        "0222e71b7cec06449cb922b93b6a12744e");
+    byte[] contractCallTx =
+        Hex.decode(
+            "02f901550a758302df1483be21b88304743f94f8"
+                + "0e51afb613d764fa61751affd3313c190a86bb870151bd62fd12adb8"
+                + "e41ef24f3f0000000000000000000000000000000000000000000000"
+                + "00000000000000006e000000000000000000000000af88d065e77c8c"
+                + "c2239327c5edb3a432268e5831000000000000000000000000000000"
+                + "000000000000000000000000000003c1e50000000000000000000000"
+                + "00000000000000000000000000000000000000000000000000000000"
+                + "000000000000000000000000000000000000000000000000a0000000"
+                + "00000000000000000000000000000000000000000000000000000000"
+                + "148c89ed219d02f1a5be012c689b4f5b731827bebe00000000000000"
+                + "0000000000c001a033fd89cb37c31b2cba46b6466e040c61fc9b2a36"
+                + "75a7f5f493ebd5ad77c497f8a07cdf65680e238392693019b4092f61"
+                + "0222e71b7cec06449cb922b93b6a12744e");
     flzSize = RollupGasData.flzCompressLength(contractCallTx);
     assertEquals(202, flzSize);
   }
-
 }

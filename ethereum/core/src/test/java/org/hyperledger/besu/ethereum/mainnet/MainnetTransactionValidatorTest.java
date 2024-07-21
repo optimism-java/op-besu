@@ -144,7 +144,11 @@ public class MainnetTransactionValidatorTest {
             gasCalculator, GasLimitCalculator.constant(), false, Optional.empty());
     assertThat(
             validator.validate(
-                basicTransaction, 0L, Optional.empty(), Optional.empty(), transactionValidationParams))
+                basicTransaction,
+                0L,
+                Optional.empty(),
+                Optional.empty(),
+                transactionValidationParams))
         .isEqualTo(
             ValidationResult.invalid(
                 TransactionInvalidReason.REPLAY_PROTECTED_SIGNATURES_NOT_SUPPORTED));
@@ -160,7 +164,11 @@ public class MainnetTransactionValidatorTest {
             Optional.of(BigInteger.valueOf(2)));
     assertThat(
             validator.validate(
-                basicTransaction, 0L, Optional.empty(), Optional.empty(), transactionValidationParams))
+                basicTransaction,
+                0L,
+                Optional.empty(),
+                Optional.empty(),
+                transactionValidationParams))
         .isEqualTo(ValidationResult.invalid(TransactionInvalidReason.WRONG_CHAIN_ID));
   }
 
@@ -403,7 +411,11 @@ public class MainnetTransactionValidatorTest {
 
     assertThat(
             eip1559Validator.validate(
-                transaction, 0L, Optional.of(Wei.ONE), Optional.empty(), transactionValidationParams))
+                transaction,
+                0L,
+                Optional.of(Wei.ONE),
+                Optional.empty(),
+                transactionValidationParams))
         .isEqualTo(ValidationResult.valid());
   }
 
@@ -427,7 +439,8 @@ public class MainnetTransactionValidatorTest {
             .createTransaction(senderKeys);
     final Optional<Wei> basefee = Optional.of(Wei.of(150000L));
     assertThat(
-            validator.validate(transaction, 0L, basefee, Optional.empty(), transactionValidationParams))
+            validator.validate(
+                transaction, 0L, basefee, Optional.empty(), transactionValidationParams))
         .isEqualTo(ValidationResult.invalid(GAS_PRICE_BELOW_CURRENT_BASE_FEE));
   }
 
@@ -479,7 +492,8 @@ public class MainnetTransactionValidatorTest {
     when(gasCalculator.transactionIntrinsicGasCost(any(), anyBoolean())).thenReturn(50L);
 
     assertThat(
-            validator.validate(transaction, 0L, basefee, Optional.empty(), transactionValidationParams))
+            validator.validate(
+                transaction, 0L, basefee, Optional.empty(), transactionValidationParams))
         .isEqualTo(ValidationResult.valid());
   }
 

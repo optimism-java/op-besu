@@ -1,12 +1,27 @@
+/*
+ * Copyright contributors to Hyperledger Besu.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.hyperledger.besu.evm.precompile;
 
-import org.apache.tuweni.bytes.Bytes;
 import org.hyperledger.besu.crypto.SECP256R1;
 import org.hyperledger.besu.crypto.SECPPublicKey;
 import org.hyperledger.besu.crypto.SECPSignature;
 import org.hyperledger.besu.evm.frame.MessageFrame;
 
 import java.util.Arrays;
+
+import org.apache.tuweni.bytes.Bytes;
 
 public class P256VerifyPrecompiledContract implements PrecompiledContract {
 
@@ -34,7 +49,8 @@ public class P256VerifyPrecompiledContract implements PrecompiledContract {
   }
 
   @Override
-  public PrecompileContractResult computePrecompile(final Bytes input, final MessageFrame messageFrame) {
+  public PrecompileContractResult computePrecompile(
+      final Bytes input, final MessageFrame messageFrame) {
     if (input.size() != 160) {
       return PrecompileContractResult.success(Bytes.EMPTY);
     }
@@ -54,7 +70,8 @@ public class P256VerifyPrecompiledContract implements PrecompiledContract {
     return PrecompileContractResult.success(Bytes.EMPTY);
   }
 
-  private static Bytes extractParameterBytes(final Bytes input, final int offset, final int length) {
+  private static Bytes extractParameterBytes(
+      final Bytes input, final int offset, final int length) {
     if (offset > input.size() || length == 0) {
       return Bytes.EMPTY;
     }

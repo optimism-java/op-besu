@@ -321,7 +321,10 @@ public class BesuController implements java.io.Closeable {
      */
     public BesuControllerBuilder fromEthNetworkConfig(
         final EthNetworkConfig ethNetworkConfig, final SyncMode syncMode) {
-      return fromGenesisFile(ethNetworkConfig.genesisConfigFile(), ethNetworkConfig.genesisConfigOverrides(), syncMode)
+      return fromGenesisFile(
+              ethNetworkConfig.genesisConfigFile(),
+              ethNetworkConfig.genesisConfigOverrides(),
+              syncMode)
           .networkId(ethNetworkConfig.networkId());
     }
 
@@ -334,7 +337,7 @@ public class BesuController implements java.io.Closeable {
      */
     public BesuControllerBuilder fromGenesisFile(
         final GenesisConfigFile genesisConfigFile, final SyncMode syncMode) {
-      return  fromGenesisFile(genesisConfigFile, null, syncMode);
+      return fromGenesisFile(genesisConfigFile, null, syncMode);
     }
 
     /**
@@ -346,7 +349,9 @@ public class BesuController implements java.io.Closeable {
      * @return the besu controller builder
      */
     public BesuControllerBuilder fromGenesisFile(
-        final GenesisConfigFile genesisConfigFile, final Map<String, String> overrides, final SyncMode syncMode) {
+        final GenesisConfigFile genesisConfigFile,
+        final Map<String, String> overrides,
+        final SyncMode syncMode) {
       final BesuControllerBuilder builder;
       final var configOptions = genesisConfigFile.getConfigOptions();
 
@@ -367,7 +372,7 @@ public class BesuController implements java.io.Closeable {
         builder = new CliqueBesuControllerBuilder();
       } else if (configOptions.isOptimism()) {
         builder = new MainnetBesuControllerBuilder();
-      }else {
+      } else {
         throw new IllegalArgumentException("Unknown consensus mechanism defined");
       }
 

@@ -46,7 +46,8 @@ public class PermissionTransactionValidator implements TransactionValidator {
       final Optional<Wei> baseFee,
       final Optional<Wei> blobBaseFee,
       final TransactionValidationParams transactionValidationParams) {
-    return delegate.validate(transaction, blockTimestamp, baseFee, blobBaseFee, transactionValidationParams);
+    return delegate.validate(
+        transaction, blockTimestamp, baseFee, blobBaseFee, transactionValidationParams);
   }
 
   @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright Hyperledger Besu Contributors.
+ * Copyright contributors to Hyperledger Besu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -15,7 +15,6 @@
 package org.hyperledger.besu.consensus.merge.blockcreation;
 
 import org.hyperledger.besu.config.GenesisConfigOptions;
-import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.ethereum.ProtocolContext;
 import org.hyperledger.besu.ethereum.blockcreation.AbstractBlockCreator;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
@@ -68,14 +67,14 @@ class MergeBlockCreator extends AbstractBlockCreator {
   }
 
   public MergeBlockCreator(
-          final MiningParameters miningParameters,
-          final ExtraDataCalculator extraDataCalculator,
-          final TransactionPool transactionPool,
-          final ProtocolContext protocolContext,
-          final ProtocolSchedule protocolSchedule,
-          final BlockHeader parentHeader,
-          final EthScheduler ethScheduler,
-          final Optional<GenesisConfigOptions> genesisConfigOptions) {
+      final MiningParameters miningParameters,
+      final ExtraDataCalculator extraDataCalculator,
+      final TransactionPool transactionPool,
+      final ProtocolContext protocolContext,
+      final ProtocolSchedule protocolSchedule,
+      final BlockHeader parentHeader,
+      final EthScheduler ethScheduler,
+      final Optional<GenesisConfigOptions> genesisConfigOptions) {
     super(
         miningParameters,
         __ -> miningParameters.getCoinbase().orElseThrow(),
@@ -89,23 +88,23 @@ class MergeBlockCreator extends AbstractBlockCreator {
   }
 
   public BlockCreationResult createBlock(
-          final Optional<List<Transaction>> maybeTransactions,
-          final Bytes32 random,
-          final long timestamp,
-          final Optional<List<Withdrawal>> withdrawals,
-          final Optional<Bytes32> parentBeaconBlockRoot,
-          final Optional<Boolean> noTxFromPool,
-          final Optional<Long> gasLimit) {
+      final Optional<List<Transaction>> maybeTransactions,
+      final Bytes32 random,
+      final long timestamp,
+      final Optional<List<Withdrawal>> withdrawals,
+      final Optional<Bytes32> parentBeaconBlockRoot,
+      final Optional<Boolean> noTxFromPool,
+      final Optional<Long> gasLimit) {
     return createBlock(
-            maybeTransactions,
-            Optional.of(Collections.emptyList()),
-            withdrawals,
-            Optional.of(random),
-            parentBeaconBlockRoot,
-            timestamp,
-            false,
-            noTxFromPool,
-            gasLimit);
+        maybeTransactions,
+        Optional.of(Collections.emptyList()),
+        withdrawals,
+        Optional.of(random),
+        parentBeaconBlockRoot,
+        timestamp,
+        false,
+        noTxFromPool,
+        gasLimit);
   }
 
   /**

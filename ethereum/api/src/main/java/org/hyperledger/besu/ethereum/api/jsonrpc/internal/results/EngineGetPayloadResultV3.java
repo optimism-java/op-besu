@@ -27,7 +27,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.apache.tuweni.bytes.Bytes32;
 
-@JsonPropertyOrder({"parentBeaconBlockRoot","executionPayload", "blockValue", "blobsBundle", "shouldOverrideBuilder"})
+@JsonPropertyOrder({
+  "parentBeaconBlockRoot",
+  "executionPayload",
+  "blockValue",
+  "blobsBundle",
+  "shouldOverrideBuilder"
+})
 public class EngineGetPayloadResultV3 {
   protected final PayloadResult executionPayload;
   private final String blockValue;

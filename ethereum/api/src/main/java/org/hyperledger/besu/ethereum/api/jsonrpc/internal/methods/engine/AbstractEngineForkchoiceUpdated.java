@@ -21,7 +21,6 @@ import static org.hyperledger.besu.ethereum.api.jsonrpc.internal.methods.Executi
 import static org.hyperledger.besu.ethereum.api.jsonrpc.internal.methods.ExecutionEngineJsonRpcMethod.EngineStatus.VALID;
 import static org.hyperledger.besu.ethereum.api.jsonrpc.internal.methods.engine.WithdrawalsValidatorProvider.getWithdrawalsValidator;
 
-import org.apache.tuweni.bytes.Bytes;
 import org.hyperledger.besu.consensus.merge.blockcreation.MergeMiningCoordinator;
 import org.hyperledger.besu.consensus.merge.blockcreation.MergeMiningCoordinator.ForkchoiceResult;
 import org.hyperledger.besu.consensus.merge.blockcreation.PayloadIdentifier;
@@ -52,6 +51,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
+import org.apache.tuweni.bytes.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.spi.LoggingEventBuilder;
@@ -242,14 +242,13 @@ public abstract class AbstractEngineForkchoiceUpdated extends ExecutionEngineJso
                         payloadAttributes.getTransactions() == null
                             ? null
                             : payloadAttributes.getTransactions().stream()
-                            .map(Bytes::fromHexString)
-                            .map(
-                                in ->
-                                    TransactionDecoder.decodeOpaqueBytes(
-                                        in, EncodingContext.BLOCK_BODY))
-                            .collect(toList())),
-                    Optional.ofNullable(payloadAttributes.getGasLimit()))
-            );
+                                .map(Bytes::fromHexString)
+                                .map(
+                                    in ->
+                                        TransactionDecoder.decodeOpaqueBytes(
+                                            in, EncodingContext.BLOCK_BODY))
+                                .collect(toList())),
+                    Optional.ofNullable(payloadAttributes.getGasLimit())));
 
     payloadId.ifPresent(
         pid ->

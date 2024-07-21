@@ -98,13 +98,27 @@ public class EnginePayloadAttributesParameterTest {
 
   private EnginePayloadAttributesParameter parameterWithdrawalsOmitted() {
     return new EnginePayloadAttributesParameter(
-        TIMESTAMP, PREV_RANDAO, SUGGESTED_FEE_RECIPIENT_ADDRESS, null, null, null, null, new UnsignedLongParameter(0L));
+        TIMESTAMP,
+        PREV_RANDAO,
+        SUGGESTED_FEE_RECIPIENT_ADDRESS,
+        null,
+        null,
+        null,
+        null,
+        new UnsignedLongParameter(0L));
   }
 
   private EnginePayloadAttributesParameter parameterWithdrawalsPresent() {
     final List<WithdrawalParameter> withdrawals = List.of(WITHDRAWAL_PARAM_1, WITHDRAWAL_PARAM_2);
     return new EnginePayloadAttributesParameter(
-        TIMESTAMP, PREV_RANDAO, SUGGESTED_FEE_RECIPIENT_ADDRESS, withdrawals, null, null, null, new UnsignedLongParameter(0L));
+        TIMESTAMP,
+        PREV_RANDAO,
+        SUGGESTED_FEE_RECIPIENT_ADDRESS,
+        withdrawals,
+        null,
+        null,
+        null,
+        new UnsignedLongParameter(0L));
   }
 
   // TODO: add a parent beacon block root test here

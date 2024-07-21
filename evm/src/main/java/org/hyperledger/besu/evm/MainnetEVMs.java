@@ -1035,7 +1035,6 @@ public class MainnetEVMs {
     registerCancunOperations(registry, gasCalculator, chainID);
   }
 
-
   /**
    * Prague evm.
    *

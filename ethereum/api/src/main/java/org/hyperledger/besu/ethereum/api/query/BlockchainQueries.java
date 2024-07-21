@@ -1121,11 +1121,11 @@ public class BlockchainQueries {
     for (int i = 0; i < count; i++) {
       if (TransactionType.OPTIMISM_DEPOSIT.equals(txs.get(i).getType())) {
         final List<TransactionReceipt> txReceipts =
-                blockchain.getTxReceipts(blockHash).orElseThrow();
+            blockchain.getTxReceipts(blockHash).orElseThrow();
         final TransactionReceipt receipt = txReceipts.get(i);
         result.add(
-                new TransactionWithMetadata(
-                        txs.get(i), blockNumber, baseFee, blockHash, i, receipt.getDepositNonce()));
+            new TransactionWithMetadata(
+                txs.get(i), blockNumber, baseFee, blockHash, i, receipt.getDepositNonce()));
       } else {
         result.add(new TransactionWithMetadata(txs.get(i), blockNumber, baseFee, blockHash, i));
       }

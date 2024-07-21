@@ -22,10 +22,10 @@ import org.hyperledger.besu.ethereum.core.feemarket.FeeMarketException;
 import org.hyperledger.besu.ethereum.mainnet.DetachedBlockHeaderValidationRule;
 import org.hyperledger.besu.ethereum.mainnet.feemarket.BaseFeeMarket;
 
+import java.util.OptionalLong;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.OptionalLong;
 
 public class BaseFeeMarketBlockHeaderGasPriceValidationRule
     implements DetachedBlockHeaderValidationRule {

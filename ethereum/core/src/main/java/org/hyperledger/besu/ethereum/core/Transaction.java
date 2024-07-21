@@ -550,7 +550,9 @@ public class Transaction
 
   @Override
   public BigInteger getYParity() {
-    if (transactionType != null && transactionType != TransactionType.FRONTIER && transactionType != TransactionType.OPTIMISM_DEPOSIT) {
+    if (transactionType != null
+        && transactionType != TransactionType.FRONTIER
+        && transactionType != TransactionType.OPTIMISM_DEPOSIT) {
       // EIP-2718 typed transaction, return yParity:
       return BigInteger.valueOf(signature.getRecId());
     } else {
@@ -816,7 +818,7 @@ public class Transaction
                           new IllegalStateException(
                               "Developer error: the transaction should be guaranteed to have an access list here")),
                   chainId);
-          // Optimism deposit transaction sender will never be empty
+            // Optimism deposit transaction sender will never be empty
           case OPTIMISM_DEPOSIT -> Bytes.EMPTY;
           case SET_CODE ->
               setCodePreimage(

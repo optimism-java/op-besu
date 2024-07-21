@@ -1,6 +1,5 @@
 /*
  * Copyright ConsenSys AG.
- * Copyright OptimismJ.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -24,61 +23,62 @@ import com.google.common.collect.ImmutableMap;
 /** the Optimism config options. */
 public class OptimismConfigOptions {
 
-    /** The constant DEFAULT. */
-    public static final OptimismConfigOptions DEFAULT =
-            new OptimismConfigOptions(JsonUtil.createEmptyObjectNode());
+  /** The constant DEFAULT. */
+  public static final OptimismConfigOptions DEFAULT =
+      new OptimismConfigOptions(JsonUtil.createEmptyObjectNode());
 
-    private final ObjectNode optimismConfigRoot;
+  private final ObjectNode optimismConfigRoot;
 
-    /**
-     * Instantiates a new Optimism config options.
-     *
-     * @param optimismConfigRoot the Optimism config root
-     */
-    OptimismConfigOptions(final ObjectNode optimismConfigRoot) {
-        this.optimismConfigRoot = optimismConfigRoot;
-    }
+  /**
+   * Instantiates a new Optimism config options.
+   *
+   * @param optimismConfigRoot the Optimism config root
+   */
+  OptimismConfigOptions(final ObjectNode optimismConfigRoot) {
+    this.optimismConfigRoot = optimismConfigRoot;
+  }
 
-    /**
-     * Gets EIP1559 elasticity.
-     *
-     * @return the EIP1559 elasticity
-     */
-    public OptionalLong getEIP1559Elasticity() {
-        OptionalLong eip1559elasticity = JsonUtil.getLong(optimismConfigRoot, "eip1559elasticity");
-        return eip1559elasticity.isEmpty() ? OptionalLong.of(6L) : eip1559elasticity;
-    }
+  /**
+   * Gets EIP1559 elasticity.
+   *
+   * @return the EIP1559 elasticity
+   */
+  public OptionalLong getEIP1559Elasticity() {
+    OptionalLong eip1559elasticity = JsonUtil.getLong(optimismConfigRoot, "eip1559elasticity");
+    return eip1559elasticity.isEmpty() ? OptionalLong.of(6L) : eip1559elasticity;
+  }
 
-    /**
-     * Gets EIP1559 denominator.
-     *
-     * @return the EIP1559 denominator
-     */
-    public OptionalLong getEIP1559Denominator() {
-        OptionalLong eip1559Denominator = JsonUtil.getLong(optimismConfigRoot, "eip1559denominator");
-        return eip1559Denominator.isEmpty() ? OptionalLong.of(50L) : eip1559Denominator;
-    }
+  /**
+   * Gets EIP1559 denominator.
+   *
+   * @return the EIP1559 denominator
+   */
+  public OptionalLong getEIP1559Denominator() {
+    OptionalLong eip1559Denominator = JsonUtil.getLong(optimismConfigRoot, "eip1559denominator");
+    return eip1559Denominator.isEmpty() ? OptionalLong.of(50L) : eip1559Denominator;
+  }
 
-    /**
-     * Gets EIP1559 denominatorCanyon.
-     *
-     * @return the EIP1559 denominatorCanyon
-     */
-    public OptionalLong getEIP1559DenominatorCanyon() {
-        OptionalLong eip1559DenominatorCanyon = JsonUtil.getLong(optimismConfigRoot, "eip1559denominatorcanyon");
-        return eip1559DenominatorCanyon.isEmpty() ? OptionalLong.of(250L) : eip1559DenominatorCanyon;
-    }
+  /**
+   * Gets EIP1559 denominatorCanyon.
+   *
+   * @return the EIP1559 denominatorCanyon
+   */
+  public OptionalLong getEIP1559DenominatorCanyon() {
+    OptionalLong eip1559DenominatorCanyon =
+        JsonUtil.getLong(optimismConfigRoot, "eip1559denominatorcanyon");
+    return eip1559DenominatorCanyon.isEmpty() ? OptionalLong.of(250L) : eip1559DenominatorCanyon;
+  }
 
-    /**
-     * As map.
-     *
-     * @return the map
-     */
-    Map<String, Object> asMap() {
-        final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
-        getEIP1559Elasticity().ifPresent(l -> builder.put("eip1559Elasticity", l));
-        getEIP1559Denominator().ifPresent(l -> builder.put("eip1559Denominator", l));
-        getEIP1559DenominatorCanyon().ifPresent(l -> builder.put("eip1559DenominatorCanyon", l));
-        return builder.build();
-    }
+  /**
+   * As map.
+   *
+   * @return the map
+   */
+  Map<String, Object> asMap() {
+    final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
+    getEIP1559Elasticity().ifPresent(l -> builder.put("eip1559Elasticity", l));
+    getEIP1559Denominator().ifPresent(l -> builder.put("eip1559Denominator", l));
+    getEIP1559DenominatorCanyon().ifPresent(l -> builder.put("eip1559DenominatorCanyon", l));
+    return builder.build();
+  }
 }

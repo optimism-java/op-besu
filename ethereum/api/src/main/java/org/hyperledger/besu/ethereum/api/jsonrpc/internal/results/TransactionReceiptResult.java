@@ -83,8 +83,7 @@ public abstract class TransactionReceiptResult {
     this.cumulativeGasUsed = Quantity.create(receipt.getCumulativeGasUsed());
     this.from = txn.getSender().toString();
     this.gasUsed = Quantity.create(receiptWithMetadata.getGasUsed());
-    this.depositNonce =
-            this.receipt.getDepositNonce().map(Quantity::create).orElse(null);
+    this.depositNonce = this.receipt.getDepositNonce().map(Quantity::create).orElse(null);
     this.blobGasUsed = receiptWithMetadata.getBlobGasUsed().map(Quantity::create).orElse(null);
     this.blobGasPrice = receiptWithMetadata.getBlobGasPrice().map(Quantity::create).orElse(null);
     this.effectiveGasPrice =

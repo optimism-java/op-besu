@@ -39,21 +39,21 @@ public class TransactionWithMetadata {
   }
 
   public TransactionWithMetadata(
-          final Transaction transaction,
-          final long blockNumber,
-          final Optional<Wei> baseFee,
-          final Hash blockHash,
-          final int transactionIndex) {
+      final Transaction transaction,
+      final long blockNumber,
+      final Optional<Wei> baseFee,
+      final Hash blockHash,
+      final int transactionIndex) {
     this(transaction, blockNumber, baseFee, blockHash, transactionIndex, Optional.empty());
   }
 
   public TransactionWithMetadata(
-          final Transaction transaction,
-          final long blockNumber,
-          final Optional<Wei> baseFee,
-          final Hash blockHash,
-          final int transactionIndex,
-          final Optional<Long> nonce) {
+      final Transaction transaction,
+      final long blockNumber,
+      final Optional<Wei> baseFee,
+      final Hash blockHash,
+      final int transactionIndex,
+      final Optional<Long> nonce) {
     this.transaction = transaction;
     this.blockNumber = Optional.of(blockNumber);
     this.baseFee = baseFee;

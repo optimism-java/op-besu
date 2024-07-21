@@ -359,7 +359,8 @@ public class MainnetTransactionProcessor {
       if (!validationResult.isValid()) {
         LOG.debug("Invalid transaction: {}", validationResult.getErrorMessage());
         if (transaction.getType().equals(TransactionType.OPTIMISM_DEPOSIT)) {
-          return opDepositTxFailed(worldState, blockHeader, transaction, validationResult.getErrorMessage());
+          return opDepositTxFailed(
+              worldState, blockHeader, transaction, validationResult.getErrorMessage());
         }
         return TransactionProcessingResult.invalid(validationResult);
       }
@@ -401,15 +402,21 @@ public class MainnetTransactionProcessor {
           previousBalance,
           sender.getBalance());
       }
-      var l1CostGasFee = genesisConfigOptions.map(options -> {
-        if (TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
-          return Wei.ZERO;
-        }
-        if (l1CostCalculator.isEmpty()) {
-          return Wei.ZERO;
-        }
-        return l1CostCalculator.get().l1Cost(options, blockHeader, transaction, worldState);
-      }).orElse(Wei.ZERO);
+      var l1CostGasFee =
+          genesisConfigOptions
+              .map(
+                  options -> {
+                    if (TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
+                      return Wei.ZERO;
+                    }
+                    if (l1CostCalculator.isEmpty()) {
+                      return Wei.ZERO;
+                    }
+                    return l1CostCalculator
+                        .get()
+                        .l1Cost(options, blockHeader, transaction, worldState);
+                  })
+              .orElse(Wei.ZERO);
       sender.decrementBalance(l1CostGasFee);
 
       final List<AccessListEntry> accessListEntries = transaction.getAccessList().orElse(List.of());
@@ -551,7 +558,8 @@ public class MainnetTransactionProcessor {
       }
 
       boolean isRegolith =
-          genesisConfigOptions.isPresent() && genesisConfigOptions.get().isRegolith(blockHeader.getTimestamp());
+          genesisConfigOptions.isPresent()
+              && genesisConfigOptions.get().isRegolith(blockHeader.getTimestamp());
 
       // if deposit: skip refunds, skip tipping coinbase
       // Regolith changes this behaviour to report the actual gasUsed instead of always reporting
@@ -686,7 +694,6 @@ public class MainnetTransactionProcessor {
             MutableAccount opL1FeeRecipient =
                 evmWorldUpdater.getOrCreate(Address.fromHexString("0x420000000000000000000000000000000000001A"));
             opL1FeeRecipient.incrementBalance(l1Cost);
-
           });
 
       if (initialFrame.getState() == MessageFrame.State.COMPLETED_SUCCESS) {

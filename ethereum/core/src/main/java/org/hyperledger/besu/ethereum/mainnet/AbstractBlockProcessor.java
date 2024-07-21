@@ -219,15 +219,11 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
             (transaction.getVersionedHashes().get().size() * CancunGasCalculator.BLOB_GAS_PER_BLOB);
       }
 
-      final TransactionReceipt transactionReceipt =
-          transactionReceiptFactory.create(
-              transaction.getType(), transactionProcessingResult, worldState, currentGasUsed);
-      receipts.add(transactionReceipt);
-      TransactionReceipt receipt;
+      TransactionReceipt transactionReceipt;
       if (!TransactionType.OPTIMISM_DEPOSIT.equals(transaction.getType())) {
-        receipt =
+        transactionReceipt =
             transactionReceiptFactory.create(
-                transaction.getType(), transactionReceipt, worldState, currentGasUsed);
+                transaction.getType(), transactionProcessingResult, worldState, currentGasUsed);
       } else {
         GenesisConfigOptions options = genesisOptions.orElseThrow();
         Optional<Long> depositNonce =
@@ -237,12 +233,12 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
 
         Optional<Long> canyonDepositReceiptVer =
             options.isCanyon(blockHeader.getTimestamp()) ? Optional.of(1L) : Optional.empty();
-        receipt =
+        transactionReceipt =
             new TransactionReceipt(
                 transaction.getType(),
-                result.isSuccessful() ? 1 : 0,
+                transactionProcessingResult.isSuccessful() ? 1 : 0,
                 currentGasUsed,
-                result.getLogs(),
+                transactionProcessingResult.getLogs(),
                 Optional.empty(),
                 depositNonce,
                 canyonDepositReceiptVer);
