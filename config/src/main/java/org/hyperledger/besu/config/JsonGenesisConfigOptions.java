@@ -746,13 +746,13 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
           getEcotoneTime());
     } else {
       forkBlockTimestamps = Stream.of(
-            getShanghaiTime(),
-            getCancunTime(),
-            getCancunEOFTime(),
-            getPragueTime(),
-            getPragueEOFTime(),
-            getFutureEipsTime(),
-            getExperimentalEipsTime());
+          getShanghaiTime(),
+          getCancunTime(),
+          getCancunEOFTime(),
+          getPragueTime(),
+          getPragueEOFTime(),
+          getFutureEipsTime(),
+          getExperimentalEipsTime());
     }
     // when adding forks add an entry to ${REPO_ROOT}/config/src/test/resources/all_forks.json
 

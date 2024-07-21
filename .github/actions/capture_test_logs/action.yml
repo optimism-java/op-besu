@@ -1,0 +1,11 @@
+name: capture_test_logs
+description: "Capture test logs"
+runs:
+  using: composite
+  steps:
+    - uses: actions/upload-artifact@v3.1.3
+      with:
+        path: acceptance-tests/tests/build/acceptanceTestLogs
+    - uses: actions/upload-artifact@v3.1.3
+      with:
+        path: acceptance-tests/tests/build/jvmErrorLogs

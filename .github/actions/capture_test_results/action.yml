@@ -1,0 +1,26 @@
+name: capture_test_results
+description: "Capture test results"
+runs:
+  using: composite
+  steps:
+    - name: Jacoco
+      run: "./gradlew --no-daemon jacocoTestReport"
+      shell: bash
+    - name: Gather test results
+      run: |-
+        FILES=`find . -name test-results`
+        for FILE in $FILES
+        do
+          MODULE=`echo "$FILE" | sed -e 's@./\(.*\)/build/test-results@\1@'`
+          TARGET="build/test-results/$MODULE"
+          mkdir -p "$TARGET"
+          cp -rf ${FILE}/*/* "$TARGET"
+        done
+      if: always()
+      shell: bash
+    - uses: actions/upload-artifact@v3.1.3
+      with:
+        path: build/test-results
+    - uses: actions/upload-artifact@v3.1.3
+      with:
+        path: besu/build/reports/jacoco

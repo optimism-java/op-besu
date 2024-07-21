@@ -19,17 +19,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
-      - name: Pre-process Release Name
-        id: pre_process_release_name
-        run: |
-            RELEASE_NAME="${{ github.event.release.name }}"
-            # strip all whitespace
-            RELEASE_NAME="${RELEASE_NAME//[[:space:]]/}"
-            if [[ ! "$RELEASE_NAME" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?(-.*)?$ ]]; then
-              echo "Release name does not conform to a valid besu release format YY.M.v[-suffix], e.g. 24.8.0-RC1."
-              exit 1
-            fi
-            echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV  # Store in environment variable
       - name: Set up Java
         uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
         with:
@@ -41,26 +30,26 @@ jobs:
           cache-disabled: true
       - name: assemble release
         run:
-          ./gradlew -Prelease.releaseVersion=${{env.RELEASE_NAME}} -Pversion=${{env.RELEASE_NAME}} assemble
+          ./gradlew -Prelease.releaseVersion=${{github.event.release.name}} -Pversion=${{github.event.release.name}} assemble
       - name: hashes
         id: hashes
         run: |
           cd build/distributions
-          echo "zipSha=$(shasum -a 256 besu*.zip)"
-          echo "tarSha=$(shasum -a 256 besu*.tar.gz)"
-          echo "zipSha=$(shasum -a 256 besu*.zip)" >> $GITHUB_OUTPUT
-          echo "tarSha=$(shasum -a 256 besu*.tar.gz)" >> $GITHUB_OUTPUT
+          echo "zipSha=$(shasum -a 256 op-besu*.zip)"
+          echo "tarSha=$(shasum -a 256 op-besu*.tar.gz)"
+          echo "zipSha=$(shasum -a 256 op-besu*.zip)" >> $GITHUB_OUTPUT
+          echo "tarSha=$(shasum -a 256 op-besu*.tar.gz)" >> $GITHUB_OUTPUT
       - name: upload tarball
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3
         with:
-          path: 'build/distributions/besu*.tar.gz'
-          name: besu-${{ env.RELEASE_NAME }}.tar.gz
+          path: 'build/distributions/op-besu*.tar.gz'
+          name: op-besu-${{ github.event.release.name }}.tar.gz
           compression-level: 0
       - name: upload zipfile
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3
         with:
-          path: 'build/distributions/besu*.zip'
-          name: besu-${{ env.RELEASE_NAME }}.zip
+          path: 'build/distributions/op-besu*.zip'
+          name: besu-${{ github.event.release.name }}.zip
           compression-level: 0
 
   testWindows:
@@ -76,17 +65,17 @@ jobs:
       - name: Download zip
         uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe
         with:
-          pattern: besu-*.zip
+          pattern: op-besu-*.zip
           merge-multiple: true
       - name: test Besu
         run: |
           dir
-          unzip besu-*.zip -d besu-tmp
-          cd besu-tmp
-          mv besu-* ../besu
+          unzip op-besu-*.zip -d op-besu-tmp
+          cd op-besu-tmp
+          mv op-besu-* ../op-besu
           cd ..
-          besu\bin\besu.bat --help
-          besu\bin\besu.bat --version
+          op-besu\bin\besu.bat --help
+          op-besu\bin\besu.bat --version
 
   publish:
     runs-on: ubuntu-22.04
@@ -97,7 +86,7 @@ jobs:
       - name: Download archives
         uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe
         with:
-          pattern: besu-*
+          pattern: op-besu-*
           merge-multiple: true
           path: 'build/distributions'
       - name: Upload Release assets
@@ -105,8 +94,8 @@ jobs:
         with:
           append_body: true
           files: |
-            build/distributions/besu*.tar.gz
-            build/distributions/besu*.zip
+            build/distributions/op-besu*.tar.gz
+            build/distributions/op-besu*.zip
           body: |
             ${{needs.artifacts.outputs.tarSha}}
             ${{needs.artifacts.outputs.zipSha}}
@@ -132,7 +121,7 @@ jobs:
         env:
           ARTIFACTORY_USER: ${{ secrets.BESU_ARTIFACTORY_USER }}
           ARTIFACTORY_KEY: ${{ secrets.BESU_ARTIFACTORY_TOKEN }}
-        run: ./gradlew -Prelease.releaseVersion=${{ env.RELEASE_NAME }} -Pversion=${{env.RELEASE_NAME}} artifactoryPublish
+        run: ./gradlew -Prelease.releaseVersion=${{ github.event.release.name }} -Pversion=${{github.event.release.name}} artifactoryPublish
 
   hadolint:
     runs-on: ubuntu-22.04
@@ -206,11 +195,11 @@ jobs:
           architecture: ${{ steps.prep.outputs.ARCH }}
         with:
           cache-disabled: true
-          arguments: testDocker -PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }} -Pversion=${{env.RELEASE_NAME}} -Prelease.releaseVersion=${{ env.RELEASE_NAME }}
+          arguments: testDocker -PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
       - name: publish
         env:
           architecture: ${{ steps.prep.outputs.ARCH }}
-        run: ./gradlew --no-daemon dockerUpload -PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }} -Pversion=${{env.RELEASE_NAME}} -Prelease.releaseVersion=${{ env.RELEASE_NAME }}
+        run: ./gradlew --no-daemon dockerUpload -PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
 
   multiArch:
     needs: buildDocker
@@ -237,7 +226,7 @@ jobs:
           username: ${{ secrets.DOCKER_USER_RW }}
           password: ${{ secrets.DOCKER_PASSWORD_RW }}
       - name: multi-arch docker
-        run: ./gradlew manifestDocker -PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }} -Pversion=${{env.RELEASE_NAME}} -Prelease.releaseVersion=${{ env.RELEASE_NAME }}
+        run: ./gradlew manifestDocker -PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
 
   amendNotes:
     needs: multiArch
@@ -250,7 +239,7 @@ jobs:
         with:
           append_body: true
           body: |
-            `docker pull ${{env.registry}}/${{secrets.DOCKER_ORG}}/besu:${{env.RELEASE_NAME}}`
+            `docker pull ${{env.registry}}/${{secrets.DOCKER_ORG}}/besu:${{github.event.release.name}}`
 
   dockerPromoteX64:
     needs: multiArch
@@ -273,9 +262,9 @@ jobs:
         with:
           cache-disabled: true
       - name: Docker upload
-        run: ./gradlew "-Prelease.releaseVersion=${{ env.RELEASE_NAME }}" "-PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }}" dockerUploadRelease
+        run: ./gradlew "-Prelease.releaseVersion=${{ github.event.release.name }}" "-PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }}" dockerUploadRelease
       - name: Docker manifest
-        run: ./gradlew "-Prelease.releaseVersion=${{ env.RELEASE_NAME }}" "-PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }}" manifestDockerRelease
+        run: ./gradlew "-Prelease.releaseVersion=${{ github.event.release.name }}" "-PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }}" manifestDockerRelease
 
   verifyContainer:
     needs: dockerPromoteX64
@@ -287,6 +276,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
       - name: Trigger container verify
-        run: echo '{"version":"${{ env.RELEASE_NAME }}","verify-latest-version":"true"}' | gh workflow run container-verify.yml --json
+        run: echo '{"version":"${{ github.event.release.name }}","verify-latest-version":"true"}' | gh workflow run container-verify.yml --json
         env:
           GH_TOKEN: ${{ github.token }}

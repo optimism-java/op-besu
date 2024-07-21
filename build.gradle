@@ -799,7 +799,7 @@ tasks.register("dockerDistUntar") {
       into(dockerBuildDir)
     }
     project.delete(files("${dockerBuildDir}/besu"))
-    file("${dockerBuildDir}/${distTarFileName}").renameTo("${dockerBuildDir}/besu")
+    file("${dockerBuildDir}/${distTarFileName}").renameTo("${dockerBuildDir}/op-besu")
   }
 }
 

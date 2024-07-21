@@ -1,0 +1,323 @@
+name: default
+on:
+  push:
+    branches:
+      - op-stack
+      - main
+  pull_request:
+jobs:
+  assemble:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4.1.0
+      - uses: "./.github/actions/prepare"
+      - name: Set up Java
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: setup gradle
+        uses: gradle/actions/setup-gradle@9e899d11ad247ec76be7a60bc1cf9d3abbb9e7f1
+        with:
+          cache-disabled: true
+      - name: Assemble
+        run: "./gradlew --no-daemon clean compileJava compileTestJava assemble"
+      - name: save_cache
+        uses: actions/cache@v3.3.2
+        with:
+          path: |-
+            .gradle
+            ~/.gradle
+          key: deps-{{ checksum "gradle/versions.gradle" }}-{{ .Branch }}-{{ .Revision }}
+      - uses: actions/upload-artifact@v3.1.3
+        with:
+          path: build/assemble
+      - uses: actions/upload-artifact@v3.1.3
+        with:
+          path: build/distributions
+  unitTests:
+    runs-on: ubuntu-latest
+    needs:
+      - assemble
+    steps:
+      - uses: actions/checkout@v4.1.0
+      - uses: "./.github/actions/prepare"
+      - name: Set up Java
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: actions/download-artifact@v3.0.2
+        with:
+          path: build/assemble
+      - name: Build
+        run: "./gradlew --no-daemon build -x test"
+      - uses: "./.github/actions/capture_test_results"
+  #  testWindows:
+  #    runs-on: windows-latest
+  #    needs:
+  #    - assemble
+  #    steps:
+  #    - uses: actions/download-artifact@v3.0.2
+  #      with:
+  #        path: build/assemble
+  #    - name: Unzip Windows build
+  #      run: |-
+  #        cd build/distributions
+  #        unzip besu-*.zip -d besu-tmp
+  #        cd besu-tmp
+  #        mv besu-* ../besu
+  #    - name: Test Besu Windows executable
+  #      run: |-
+  #        build\distributions\besu\bin\besu.bat --help
+  #        build\distributions\besu\bin\besu.bat --version
+  referenceTests:
+    runs-on: ubuntu-latest
+    needs:
+      - assemble
+    steps:
+      - uses: actions/checkout@v4.1.0
+      - uses: "./.github/actions/prepare"
+      - name: Set up Java
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: actions/download-artifact@v3.0.2
+        with:
+          path: build/assemble
+      - name: ReferenceTests
+        run: |-
+          git submodule update --init --recursive
+          ./gradlew --no-daemon referenceTest
+      - uses: "./.github/actions/capture_test_results"
+  integrationTests:
+    runs-on: ubuntu-latest
+    needs:
+      - assemble
+    steps:
+      - uses: actions/checkout@v4.1.0
+      - uses: "./.github/actions/prepare"
+      - name: Set up Java
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: actions/download-artifact@v3.0.2
+        with:
+          path: build/assemble
+      - name: IntegrationTests
+        run: "./gradlew --no-daemon integrationTest"
+      - name: CompileJmh
+        run: "./gradlew --no-daemon compileJmh"
+      - uses: "./.github/actions/capture_test_results"
+#  acceptanceTests:
+#    runs-on: ubuntu-latest
+#    container:
+#      image: cimg/openjdk:17.0
+#    needs:
+#    - assemble
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+#    - uses: actions/download-artifact@v3.0.2
+#      with:
+#        path: build/assemble
+#    - name: AcceptanceTests (Mainnet)
+#      run: |-
+#        ./gradlew --no-daemon acceptanceTestMainnet
+#    - uses: "./.github/actions/capture_test_results"
+#    - uses: "./.github/actions/capture_test_logs"
+#  acceptanceTestsCliqueBft:
+#    runs-on: ubuntu-latest
+#    container:
+#      image: cimg/openjdk:17.0
+#    needs:
+#    - assemble
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+#    - uses: actions/download-artifact@v3.0.2
+#      with:
+#        path: build/assemble
+#    - name: AcceptanceTests (Non-Mainnet)
+#      run: |-
+#        ./gradlew --no-daemon acceptanceTestCliqueBft
+#    - uses: "./.github/actions/capture_test_results"
+#    - uses: "./.github/actions/capture_test_logs"
+#  acceptanceTestsPrivacy:
+#    runs-on: ubuntu-latest
+#    container:
+#      image: cimg/openjdk:17.0
+#    needs:
+#    - assemble
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+#    - uses: actions/download-artifact@v3.0.2
+#      with:
+#        path: build/assemble
+#    - name: AcceptanceTests (Non-Mainnet)
+#      run: |-
+#        ./gradlew --no-daemon acceptanceTestPrivacy
+#    - uses: "./.github/actions/capture_test_results"
+#    - uses: "./.github/actions/capture_test_logs"
+#  acceptanceTestsPermissioning:
+#    runs-on: ubuntu-latest
+#    container:
+#      image: cimg/openjdk:17.0
+#    needs:
+#    - assemble
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+#    - uses: actions/download-artifact@v3.0.2
+#      with:
+#        path: build/assemble
+#    - name: AcceptanceTests (Non-Mainnet)
+#      run: |-
+#        ./gradlew --no-daemon acceptanceTestPermissioning
+#    - uses: "./.github/actions/capture_test_results"
+#    - uses: "./.github/actions/capture_test_logs"
+#  buildDocker:
+#    runs-on: ubuntu-latest
+#    container:
+#      image: cimg/openjdk:17.0
+#    needs:
+#    - assemble
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+#    - uses: actions/download-artifact@v3.0.2
+#      with:
+#        path: build/assemble
+##     # 'setup_remote_docker' was not transformed because there is no suitable equivalent in GitHub Actions
+#    - name: hadoLint_openjdk_17
+#      run: docker run --rm -i hadolint/hadolint < docker/openjdk-17/Dockerfile
+#    - name: hadoLint_openjdk_17_debug
+#      run: docker run --rm -i hadolint/hadolint < docker/openjdk-17-debug/Dockerfile
+#    - name: hadoLint_openjdk_latest
+#      run: docker run --rm -i hadolint/hadolint < docker/openjdk-latest/Dockerfile
+#    - name: hadoLint_graalvm
+#      run: docker run --rm -i hadolint/hadolint < docker/graalvm/Dockerfile
+#    - name: build image
+#      run: "./gradlew --no-daemon distDocker"
+#    - name: test image
+#      run: |-
+#        mkdir -p docker/reports
+#        curl -L https://github.com/aelsabbahy/goss/releases/download/v0.3.9/goss-linux-amd64 -o ./docker/tests/goss-linux-amd64
+#        ./gradlew --no-daemon testDocker
+#  buildArm64Docker:
+#    runs-on: ubuntu-latest
+#    needs:
+#    - assemble
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+#    - uses: actions/download-artifact@v3.0.2
+#      with:
+#        path: build/assemble
+#    - name: hadoLint_openjdk_17
+#      run: docker run --rm -i hadolint/hadolint < docker/openjdk-17/Dockerfile
+#    - name: hadoLint_openjdk_latest
+#      run: docker run --rm -i hadolint/hadolint < docker/openjdk-latest/Dockerfile
+#    - name: hadoLint_graalvm
+#      run: docker run --rm -i hadolint/hadolint < docker/graalvm/Dockerfile
+#    - name: Java_17
+#      run: |-
+#        sudo apt install -q --assume-yes openjdk-17-jre-headless openjdk-17-jdk-headless
+#        sudo update-java-alternatives -a
+#    - name: build image
+#      run: "./gradlew --no-daemon distDocker"
+#    - name: test image
+#      run: |-
+#        mkdir -p docker/reports
+#        curl -L https://github.com/aelsabbahy/goss/releases/download/v0.3.9/goss-linux-arm -o ./docker/tests/goss-linux-arm64
+#        ./gradlew --no-daemon testDocker
+
+#  publish:
+#    if: # GitHub does not currently support regular expressions inside if conditions
+##         github.ref == 'refs/heads/main' || github.ref == 'refs/heads//^release-.*/'
+#    runs-on: ubuntu-latest
+#    container:
+#      image: cimg/openjdk:17.0
+#    needs:
+#    - assemble
+#    - integrationTests
+#    - unitTests
+#    - acceptanceTests
+#    - referenceTests
+#    - buildDocker
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+#    - uses: actions/download-artifact@v3.0.2
+#      with:
+#        path: "~/project"
+#    - name: Publish
+#      run: "./gradlew --no-daemon artifactoryPublish"
+#  publishDocker:
+#    if: # GitHub does not currently support regular expressions inside if conditions
+##         github.ref == 'refs/heads/main' || github.ref == 'refs/heads//^release-.*/'
+#    runs-on: ubuntu-latest
+#    container:
+#      image: cimg/openjdk:17.0
+#    needs:
+#    - assemble
+#    - integrationTests
+#    - unitTests
+#    - acceptanceTests
+#    - referenceTests
+#    - buildDocker
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+#    - uses: actions/download-artifact@v3.0.2
+#      with:
+#        path: "~/project"
+##     # 'setup_remote_docker' was not transformed because there is no suitable equivalent in GitHub Actions
+#    - name: Publish Docker
+#      run: |-
+#        docker login --username "${DOCKER_USER_RW}" --password "${DOCKER_PASSWORD_RW}"
+#        ./gradlew --no-daemon "-Pbranch=${{ github.ref }}" dockerUpload
+#  publishArm64Docker:
+#    if: # GitHub does not currently support regular expressions inside if conditions
+##         github.ref == 'refs/heads/main' || github.ref == 'refs/heads//^release-.*/'
+#    runs-on: ubuntu-latest
+#    needs:
+#    - integrationTests
+#    - unitTests
+#    - acceptanceTests
+#    - referenceTests
+#    - buildArm64Docker
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+#    - uses: actions/download-artifact@v3.0.2
+#      with:
+#        path: "~/project"
+#    - name: Java_17
+#      run: |-
+#        sudo apt install -q --assume-yes openjdk-17-jre-headless openjdk-17-jdk-headless
+#        sudo update-java-alternatives -a
+#    - name: Publish Docker
+#      run: |-
+#        docker login --username "${DOCKER_USER_RW}" --password "${DOCKER_PASSWORD_RW}"
+#        ./gradlew --no-daemon "-Pbranch=${{ github.ref }}" dockerUpload
+#  manifestDocker:
+#    if: # GitHub does not currently support regular expressions inside if conditions
+##         github.ref == 'refs/heads/main' || github.ref == 'refs/heads//^release-.*/'
+#    runs-on: ubuntu-latest
+#    container:
+#      image: cimg/openjdk:17.0
+#    needs:
+#    - publishDocker
+#    - publishArm64Docker
+#    steps:
+#    - uses: actions/checkout@v4.1.0
+#    - uses: "./.github/actions/prepare"
+##     # 'setup_remote_docker' was not transformed because there is no suitable equivalent in GitHub Actions
+#    - name: Create and publish docker manifest
+#      run: |-
+#        docker login --username "${DOCKER_USER_RW}" --password "${DOCKER_PASSWORD_RW}"
+#        ./gradlew --no-daemon "-Pbranch=${{ github.ref }}" --parallel manifestDocker
