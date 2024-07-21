@@ -17,6 +17,7 @@ package org.hyperledger.besu.services;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -145,7 +146,7 @@ public class BesuEventsImplTest {
         .when(
             mockTransactionValidatorFactory
                 .get()
-                .validate(any(), any(Optional.class), any(Optional.class), any()))
+                .validate(any(), anyLong(), any(Optional.class), any(Optional.class), any()))
         .thenReturn(ValidationResult.valid());
     lenient()
         .when(mockTransactionValidatorFactory.get().validateForSender(any(), any(), any()))

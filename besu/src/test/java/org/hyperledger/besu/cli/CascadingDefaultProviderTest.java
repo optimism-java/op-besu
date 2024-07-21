@@ -46,6 +46,7 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import com.google.common.io.Resources;
@@ -167,6 +168,7 @@ public class CascadingDefaultProviderTest extends CommandTestAbstract {
         .ethNetworkConfig(
             new EthNetworkConfig(
                 GenesisConfigFile.fromResource(MAINNET.getGenesisFile()),
+                new HashMap<>(),
                 MAINNET.getNetworkId(),
                 MAINNET_BOOTSTRAP_NODES,
                 MAINNET_DISCOVERY_URL));
