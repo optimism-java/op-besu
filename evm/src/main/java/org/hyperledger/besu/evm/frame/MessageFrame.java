@@ -1549,7 +1549,6 @@ public class MessageFrame {
       return this;
     }
 
-
     /**
      * Is system tx builder.
      *

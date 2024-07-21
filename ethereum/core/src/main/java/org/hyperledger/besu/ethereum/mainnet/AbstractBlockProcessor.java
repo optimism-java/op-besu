@@ -67,10 +67,10 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
   @FunctionalInterface
   public interface OpTransactionReceiptFactory {
     TransactionReceipt create(
-            TransactionType transactionType,
-            TransactionProcessingResult result,
-            WorldState worldState,
-            long gasUsed);
+        TransactionType transactionType,
+        TransactionProcessingResult result,
+        WorldState worldState,
+        long gasUsed);
   }
 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractBlockProcessor.class);
@@ -142,7 +142,6 @@ public abstract class AbstractBlockProcessor implements BlockProcessor {
 
     Create2DeployerFunction.ensureCreate2Deployer(
         genesisOptions, blockHeader.getTimestamp(), worldState.updater());
-
 
     for (final Transaction transaction : transactions) {
       if (!hasAvailableBlockBudget(blockHeader, transaction, currentGasUsed)) {

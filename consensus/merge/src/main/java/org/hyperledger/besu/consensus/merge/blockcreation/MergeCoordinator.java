@@ -50,7 +50,6 @@ import org.hyperledger.besu.plugin.services.exception.StorageException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -336,8 +335,8 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
         payloadIdentifier,
         mergeBlockCreator,
         withdrawals,
-        parentBeaconBlockRoot
-        ,Optional.of(false),
+        parentBeaconBlockRoot,
+        Optional.of(false),
         transactions,
         gasLimit);
 
@@ -388,7 +387,13 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
     final Supplier<BlockCreationResult> blockCreator =
         () ->
             mergeBlockCreator.createBlock(
-                transactions, random, timestamp, withdrawals, parentBeaconBlockRoot, noTxPool, gasLimit);
+                transactions,
+                random,
+                timestamp,
+                withdrawals,
+                parentBeaconBlockRoot,
+                noTxPool,
+                gasLimit);
 
     LOG.debug(
         "Block creation started for payload id {}, remaining time is {}ms",

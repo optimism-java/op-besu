@@ -817,7 +817,6 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
     return this;
   }
 
-
   /**
    * Terminal total difficulty stub genesis config options.
    *

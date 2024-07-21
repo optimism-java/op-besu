@@ -16,7 +16,6 @@ package org.hyperledger.besu.ethereum.api.jsonrpc.internal.parameters;
 
 import org.hyperledger.besu.datatypes.Address;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 

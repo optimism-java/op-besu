@@ -18,7 +18,6 @@ import static java.util.stream.Collectors.toList;
 import static org.hyperledger.besu.ethereum.api.jsonrpc.internal.methods.ExecutionEngineJsonRpcMethod.EngineStatus.SYNCING;
 import static org.hyperledger.besu.ethereum.api.jsonrpc.internal.methods.ExecutionEngineJsonRpcMethod.EngineStatus.VALID;
 
-import org.apache.tuweni.bytes.Bytes;
 import org.hyperledger.besu.consensus.merge.blockcreation.MergeMiningCoordinator;
 import org.hyperledger.besu.consensus.merge.blockcreation.PayloadIdentifier;
 import org.hyperledger.besu.ethereum.ProtocolContext;
@@ -40,6 +39,7 @@ import java.util.Optional;
 
 import graphql.VisibleForTesting;
 import io.vertx.core.Vertx;
+import org.apache.tuweni.bytes.Bytes;
 
 public class EnginePreparePayloadDebug extends ExecutionEngineJsonRpcMethod {
   private final MergeMiningCoordinator mergeCoordinator;
@@ -69,9 +69,9 @@ public class EnginePreparePayloadDebug extends ExecutionEngineJsonRpcMethod {
                     Optional.empty(),
                     Optional.empty(),
                     Optional.empty(),
-                        Optional.empty(),
-                        Optional.empty(),
-                        Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty(),
                     Optional.empty(),
                     Optional.empty()));
 
@@ -95,9 +95,9 @@ public class EnginePreparePayloadDebug extends ExecutionEngineJsonRpcMethod {
         param.getWithdrawals().stream().map(WithdrawalParameter::toWithdrawal).collect(toList());
 
     final List<Transaction> transactions =
-            param.getTransactions().stream()
-                    .map(s -> Transaction.readFrom(Bytes.fromHexString(s)))
-                    .collect(toList());
+        param.getTransactions().stream()
+            .map(s -> Transaction.readFrom(Bytes.fromHexString(s)))
+            .collect(toList());
     return param
         .getParentHash()
         .map(header -> protocolContext.getBlockchain().getBlockHeader(header))

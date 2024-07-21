@@ -357,7 +357,8 @@ public class ProtocolSpecBuilder {
 
     final BlockBodyValidator blockBodyValidator = blockBodyValidatorBuilder.apply(protocolSchedule);
 
-    BlockProcessor blockProcessor = createBlockProcessor(transactionProcessor, protocolSchedule, genesisConfigOptions);
+    BlockProcessor blockProcessor =
+        createBlockProcessor(transactionProcessor, protocolSchedule, genesisConfigOptions);
     // Set private Tx Processor
     PrivateTransactionProcessor privateTransactionProcessor =
         createPrivateTransactionProcessor(

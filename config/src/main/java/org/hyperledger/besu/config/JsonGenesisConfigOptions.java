@@ -723,10 +723,7 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
   public List<Long> getForkBlockTimestamps() {
     Stream<OptionalLong> forkBlockTimestamps;
     if (this.isOptimism()) {
-      forkBlockTimestamps = Stream.of(
-          getFjordTime(),
-        getCanyonTime(),
-        getEcotoneTime());
+      forkBlockTimestamps = Stream.of(getFjordTime(), getCanyonTime(), getEcotoneTime());
     } else {
       forkBlockTimestamps =
           Stream.of(

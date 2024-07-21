@@ -161,7 +161,6 @@ public interface MainnetPrecompiledContracts {
       final PrecompileContractRegistry registry, final GasCalculator gasCalculator) {
     populateForCancun(registry, gasCalculator);
     registry.put(Address.P256_VERIFY, new P256VerifyPrecompiledContract());
-
   }
 
   /**

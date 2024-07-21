@@ -225,16 +225,14 @@ public abstract class PendingTransaction
         .orElse(0);
   }
 
-  /**
-   * correct memory size for OptimismDeposit transactions.
-   */
+  /** correct memory size for OptimismDeposit transactions. */
   private int computeOptimismDepositMemorySize() {
     return FRONTIER_AND_ACCESS_LIST_BASE_MEMORY_SIZE
-            + computePayloadMemorySize()
-            + computeToMemorySize()
-            + SOURCE_HASH_SIZE
-            + IS_SYSTEM_TX_SIZE
-            + MINT_SIZE;
+        + computePayloadMemorySize()
+        + computeToMemorySize()
+        + SOURCE_HASH_SIZE
+        + IS_SYSTEM_TX_SIZE
+        + MINT_SIZE;
   }
 
   public static List<Transaction> toTransactionList(

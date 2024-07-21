@@ -1,5 +1,5 @@
 /*
- * Copyright Hyperledger Besu Contributors.
+ * Copyright contributors to Hyperledger Besu.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -288,13 +288,13 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
 
       if (rewardCoinbase
           && !rewardBeneficiary(
-          disposableWorldState,
-          processableBlockHeader,
-          ommers,
-          miningBeneficiary,
-          newProtocolSpec.getBlockReward(),
-          newProtocolSpec.isSkipZeroBlockRewards(),
-          newProtocolSpec)) {
+              disposableWorldState,
+              processableBlockHeader,
+              ommers,
+              miningBeneficiary,
+              newProtocolSpec.getBlockReward(),
+              newProtocolSpec.isSkipZeroBlockRewards(),
+              newProtocolSpec)) {
         LOG.trace("Failed to apply mining reward, exiting.");
         throw new RuntimeException("Failed to apply mining reward.");
       }
@@ -471,13 +471,14 @@ public abstract class AbstractBlockCreator implements AsyncBlockCreator {
       final Optional<Long> gasLimitOptional,
       final ProtocolSpec protocolSpec) {
     final long newBlockNumber = parentHeader.getNumber() + 1;
-    long gasLimit = gasLimitOptional.orElse(
-        protocolSpec
-            .getGasLimitCalculator()
-            .nextGasLimit(
-                parentHeader.getGasLimit(),
-                miningParameters.getTargetGasLimit().orElse(parentHeader.getGasLimit()),
-                newBlockNumber));
+    long gasLimit =
+        gasLimitOptional.orElse(
+            protocolSpec
+                .getGasLimitCalculator()
+                .nextGasLimit(
+                    parentHeader.getGasLimit(),
+                    miningParameters.getTargetGasLimit().orElse(parentHeader.getGasLimit()),
+                    newBlockNumber));
 
     final DifficultyCalculator difficultyCalculator = protocolSpec.getDifficultyCalculator();
     final BigInteger difficulty =

@@ -111,7 +111,7 @@ public class MainnetTransactionValidator implements TransactionValidator {
       final TransactionValidationParams transactionValidationParams) {
     if (transaction.getType() != TransactionType.OPTIMISM_DEPOSIT) {
       final ValidationResult<TransactionInvalidReason> signatureResult =
-        validateTransactionSignature(transaction);
+          validateTransactionSignature(transaction);
       if (!signatureResult.isValid()) {
         return signatureResult;
       }

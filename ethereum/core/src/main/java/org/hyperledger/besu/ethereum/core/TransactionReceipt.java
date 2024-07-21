@@ -86,24 +86,24 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
         Optional.empty());
   }
 
-//  private TransactionReceipt(
-//      final TransactionType transactionType,
-//      final Hash stateRoot,
-//      final long cumulativeGasUsed,
-//      final List<Log> logs,
-//      final LogsBloomFilter bloomFilter,
-//      final Optional<Bytes> revertReason) {
-//    this(
-//        transactionType,
-//        stateRoot,
-//        NONEXISTENT,
-//        cumulativeGasUsed,
-//        logs,
-//        bloomFilter,
-//        revertReason,
-//        Optional.empty(),
-//        Optional.empty());
-//  }
+  //  private TransactionReceipt(
+  //      final TransactionType transactionType,
+  //      final Hash stateRoot,
+  //      final long cumulativeGasUsed,
+  //      final List<Log> logs,
+  //      final LogsBloomFilter bloomFilter,
+  //      final Optional<Bytes> revertReason) {
+  //    this(
+  //        transactionType,
+  //        stateRoot,
+  //        NONEXISTENT,
+  //        cumulativeGasUsed,
+  //        logs,
+  //        bloomFilter,
+  //        revertReason,
+  //        Optional.empty(),
+  //        Optional.empty());
+  //  }
 
   /**
    * Creates an instance of a status-encoded transaction receipt.
@@ -201,7 +201,7 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     this.logs = logs;
     this.bloomFilter = bloomFilter;
     this.transactionReceiptType =
-            stateRoot == null ? TransactionReceiptType.STATUS : TransactionReceiptType.ROOT;
+        stateRoot == null ? TransactionReceiptType.STATUS : TransactionReceiptType.ROOT;
     this.depositNonce = depositNonce;
     this.depositReceiptVersion = depositReceiptVersion;
     this.revertReason = revertReason;
@@ -248,25 +248,24 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     rlpOutput.writeLongScalar(cumulativeGasUsed);
     // TODO
 
-//    Optional<Bytes> revertReason = Optional.empty();
-//    Optional<Long> depositNonce = Optional.empty();
-//    Optional<Long> depositReceptVersion = Optional.empty();
-//
-//    var element = input.readBytes();
-//    if (input.isEndOfCurrentList() && revertReasonAllowed) {
-//      revertReason = Optional.of(element);
-//    } else {
-//      depositNonce = Optional.of(element).map(Bytes::toLong);
-//      depositReceptVersion = Optional.of(input.readBytes()).map(Bytes::toLong);
-//    }
-//    if (revertReasonAllowed && revertReason.isEmpty()) {
-//      if (!input.isEndOfCurrentList()) {
-//        revertReason = Optional.of(input.readBytes());
-//      }
-//    } else if (!revertReasonAllowed && !input.isEndOfCurrentList()) {
-//      throw new RLPException("Unexpected value at end of TransactionReceipt");
-//    }
-
+    //    Optional<Bytes> revertReason = Optional.empty();
+    //    Optional<Long> depositNonce = Optional.empty();
+    //    Optional<Long> depositReceptVersion = Optional.empty();
+    //
+    //    var element = input.readBytes();
+    //    if (input.isEndOfCurrentList() && revertReasonAllowed) {
+    //      revertReason = Optional.of(element);
+    //    } else {
+    //      depositNonce = Optional.of(element).map(Bytes::toLong);
+    //      depositReceptVersion = Optional.of(input.readBytes()).map(Bytes::toLong);
+    //    }
+    //    if (revertReasonAllowed && revertReason.isEmpty()) {
+    //      if (!input.isEndOfCurrentList()) {
+    //        revertReason = Optional.of(input.readBytes());
+    //      }
+    //    } else if (!revertReasonAllowed && !input.isEndOfCurrentList()) {
+    //      throw new RLPException("Unexpected value at end of TransactionReceipt");
+    //    }
 
     if (!compacted) {
       rlpOutput.writeBytes(bloomFilter);
@@ -356,28 +355,28 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
       final int status = firstElement.readIntScalar();
       input.leaveList();
       return new TransactionReceipt(
-              transactionType,
-              null,
-              status,
-              cumulativeGas,
-              logs,
-              bloomFilter,
-              revertReason,
-              depositNonce,
-              depositReceptVersion);
+          transactionType,
+          null,
+          status,
+          cumulativeGas,
+          logs,
+          bloomFilter,
+          revertReason,
+          depositNonce,
+          depositReceptVersion);
     } else {
       final Hash stateRoot = Hash.wrap(firstElement.readBytes32());
       input.leaveList();
       return new TransactionReceipt(
-              transactionType,
-              stateRoot,
-              0,
-              cumulativeGas,
-              logs,
-              bloomFilter,
-              revertReason,
-              depositNonce,
-              depositReceptVersion);
+          transactionType,
+          stateRoot,
+          0,
+          cumulativeGas,
+          logs,
+          bloomFilter,
+          revertReason,
+          depositNonce,
+          depositReceptVersion);
     }
   }
 
@@ -466,9 +465,9 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
     }
     final TransactionReceipt other = (TransactionReceipt) obj;
     return logs.equals(other.getLogsList())
-            && Objects.equals(stateRoot, other.stateRoot)
-            && cumulativeGasUsed == other.getCumulativeGasUsed()
-            && status == other.status;
+        && Objects.equals(stateRoot, other.stateRoot)
+        && cumulativeGasUsed == other.getCumulativeGasUsed()
+        && status == other.status;
   }
 
   @Override
@@ -479,12 +478,12 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-            .add("stateRoot", stateRoot)
-            .add("cumulativeGasUsed", cumulativeGasUsed)
-            .add("logs", logs)
-            .add("bloomFilter", bloomFilter)
-            .add("status", status)
-            .add("transactionReceiptType", transactionReceiptType)
-            .toString();
+        .add("stateRoot", stateRoot)
+        .add("cumulativeGasUsed", cumulativeGasUsed)
+        .add("logs", logs)
+        .add("bloomFilter", bloomFilter)
+        .add("status", status)
+        .add("transactionReceiptType", transactionReceiptType)
+        .toString();
   }
 }

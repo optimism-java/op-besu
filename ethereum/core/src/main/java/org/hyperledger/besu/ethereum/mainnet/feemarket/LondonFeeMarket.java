@@ -48,16 +48,23 @@ public class LondonFeeMarket implements BaseFeeMarket {
   }
 
   public LondonFeeMarket(
-      final long londonForkBlockNumber,
-      final Optional<Wei> baseFeePerGasOverride) {
-    this(TransactionPriceCalculator.eip1559(), londonForkBlockNumber, baseFeePerGasOverride, Optional.empty());
+      final long londonForkBlockNumber, final Optional<Wei> baseFeePerGasOverride) {
+    this(
+        TransactionPriceCalculator.eip1559(),
+        londonForkBlockNumber,
+        baseFeePerGasOverride,
+        Optional.empty());
   }
 
   public LondonFeeMarket(
       final long londonForkBlockNumber,
       final Optional<Wei> baseFeePerGasOverride,
       final Optional<GenesisConfigOptions> genesisConfigOptions) {
-    this(TransactionPriceCalculator.eip1559(), londonForkBlockNumber, baseFeePerGasOverride, genesisConfigOptions);
+    this(
+        TransactionPriceCalculator.eip1559(),
+        londonForkBlockNumber,
+        baseFeePerGasOverride,
+        genesisConfigOptions);
   }
 
   protected LondonFeeMarket(
@@ -100,7 +107,11 @@ public class LondonFeeMarket implements BaseFeeMarket {
   @Override
   public long getSlackCoefficient() {
     if (genesisConfigOptions.isPresent() && genesisConfigOptions.get().isOptimism()) {
-      return genesisConfigOptions.get().getOptimismConfigOptions().getEIP1559Elasticity().orElseThrow();
+      return genesisConfigOptions
+          .get()
+          .getOptimismConfigOptions()
+          .getEIP1559Elasticity()
+          .orElseThrow();
     }
     return DEFAULT_SLACK_COEFFICIENT;
   }
@@ -126,7 +137,8 @@ public class LondonFeeMarket implements BaseFeeMarket {
       final Wei parentBaseFee,
       final long parentBlockGasUsed,
       final long targetGasUsed) {
-    return computeBaseFee(blockNumber, parentBaseFee, parentBlockGasUsed, targetGasUsed, OptionalLong.empty());
+    return computeBaseFee(
+        blockNumber, parentBaseFee, parentBlockGasUsed, targetGasUsed, OptionalLong.empty());
   }
 
   @Override

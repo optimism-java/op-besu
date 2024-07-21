@@ -300,7 +300,8 @@ public class TransitionBesuControllerBuilder extends BesuControllerBuilder {
   }
 
   @Override
-  public BesuControllerBuilder genesisConfigOptions(final GenesisConfigOptions genesisConfigOptions) {
+  public BesuControllerBuilder genesisConfigOptions(
+      final GenesisConfigOptions genesisConfigOptions) {
     super.genesisConfigOptions(genesisConfigOptions);
     return propagateConfig(z -> z.genesisConfigOptions(genesisConfigOptions));
   }
