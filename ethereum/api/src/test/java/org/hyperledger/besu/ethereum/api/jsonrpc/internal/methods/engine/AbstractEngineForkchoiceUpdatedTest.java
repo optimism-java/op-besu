@@ -41,6 +41,7 @@ import org.hyperledger.besu.ethereum.api.jsonrpc.internal.JsonRpcRequestContext;
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.methods.ExecutionEngineJsonRpcMethod.EngineStatus;
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.parameters.EngineForkchoiceUpdatedParameter;
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.parameters.EnginePayloadAttributesParameter;
+import org.hyperledger.besu.ethereum.api.jsonrpc.internal.parameters.UnsignedLongParameter;
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.parameters.WithdrawalParameter;
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.response.JsonRpcErrorResponse;
 import org.hyperledger.besu.ethereum.api.jsonrpc.internal.response.JsonRpcResponse;
@@ -241,7 +242,10 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             Bytes32.fromHexStringLenient("0xDEADBEEF").toHexString(),
             Address.ECREC.toString(),
             null,
-            null);
+            null,
+            null,
+            null,
+            new UnsignedLongParameter(0L));
     var mockPayloadId =
         PayloadIdentifier.forPayloadParams(
             mockHeader.getHash(),
@@ -256,6 +260,9 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             payloadParams.getTimestamp(),
             payloadParams.getPrevRandao(),
             Address.ECREC,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
             Optional.empty(),
             Optional.empty()))
         .thenReturn(mockPayloadId);
@@ -430,7 +437,10 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             Bytes32.fromHexStringLenient("0xDEADBEEF").toHexString(),
             Address.ECREC.toString(),
             null,
-            null);
+            null,
+            null,
+            null,
+            new UnsignedLongParameter(0L));
 
     var resp =
         (JsonRpcSuccessResponse)
@@ -441,7 +451,7 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
 
     var forkchoiceRes = (EngineUpdateForkchoiceResult) resp.getResult();
 
-    verify(mergeCoordinator, never()).preparePayload(any(), any(), any(), any(), any(), any());
+    verify(mergeCoordinator, never()).preparePayload(any(), any(), any(), any(), any(), any(), any(), any(), any());
 
     assertThat(forkchoiceRes.getPayloadStatus().getStatus()).isEqualTo(VALID);
     assertThat(forkchoiceRes.getPayloadStatus().getError()).isNull();
@@ -467,7 +477,10 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             Bytes32.fromHexStringLenient("0xDEADBEEF").toHexString(),
             Address.ECREC.toString(),
             emptyList(),
-            null);
+            null,
+            null,
+            null,
+            new UnsignedLongParameter(0L));
 
     var resp =
         resp(
@@ -492,7 +505,10 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             Bytes32.fromHexStringLenient("0xDEADBEEF").toHexString(),
             Address.ECREC.toString(),
             emptyList(),
-            null);
+            null,
+            null,
+            null,
+            new UnsignedLongParameter(0L));
 
     var resp =
         resp(
@@ -517,7 +533,10 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             Bytes32.fromHexStringLenient("0xDEADBEEF").toHexString(),
             Address.ECREC.toString(),
             null,
-            null);
+            null,
+            null,
+            null,
+            new UnsignedLongParameter(0L));
 
     var mockPayloadId =
         PayloadIdentifier.forPayloadParams(
@@ -533,6 +552,9 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             payloadParams.getTimestamp(),
             payloadParams.getPrevRandao(),
             Address.ECREC,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
             Optional.empty(),
             Optional.empty()))
         .thenReturn(mockPayloadId);
@@ -561,7 +583,10 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             Bytes32.fromHexStringLenient("0xDEADBEEF").toHexString(),
             Address.ECREC.toString(),
             null,
-            null);
+            null,
+            null,
+            null,
+            new UnsignedLongParameter(0L));
 
     var resp =
         resp(
@@ -597,7 +622,7 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             Bytes32.fromHexStringLenient("0xDEADBEEF").toHexString(),
             Address.ECREC.toString(),
             withdrawalParameters,
-            null);
+            null, null, null, new UnsignedLongParameter(0L));
 
     final Optional<List<Withdrawal>> withdrawals =
         Optional.of(
@@ -620,6 +645,9 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             payloadParams.getPrevRandao(),
             Address.ECREC,
             withdrawals,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
             Optional.empty()))
         .thenReturn(mockPayloadId);
 
@@ -646,7 +674,10 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             Bytes32.fromHexStringLenient("0xDEADBEEF").toHexString(),
             Address.ECREC.toString(),
             null,
-            null);
+            null,
+            null,
+            null,
+            new UnsignedLongParameter(0L));
 
     var mockPayloadId =
         PayloadIdentifier.forPayloadParams(
@@ -662,6 +693,9 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             payloadParams.getTimestamp(),
             payloadParams.getPrevRandao(),
             Address.ECREC,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
             Optional.empty(),
             Optional.empty()))
         .thenReturn(mockPayloadId);

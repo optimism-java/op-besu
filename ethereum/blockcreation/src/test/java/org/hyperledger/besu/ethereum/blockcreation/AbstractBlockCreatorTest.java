@@ -152,7 +152,9 @@ abstract class AbstractBlockCreatorTest {
             Optional.empty(),
             Optional.empty(),
             1L,
-            false);
+            false,
+            Optional.empty(),
+            Optional.empty());
 
     List<Request> depositRequests = emptyList();
     final Hash requestsRoot = BodyValidation.requestsRoot(depositRequests);
@@ -172,7 +174,9 @@ abstract class AbstractBlockCreatorTest {
             Optional.empty(),
             Optional.empty(),
             1L,
-            false);
+            false,
+            Optional.empty(),
+            Optional.empty());
 
     assertThat(blockCreationResult.getBlock().getHeader().getRequestsRoot()).isEmpty();
     assertThat(blockCreationResult.getBlock().getBody().getRequests()).isEmpty();
@@ -190,7 +194,9 @@ abstract class AbstractBlockCreatorTest {
             Optional.empty(),
             Optional.empty(),
             1L,
-            false);
+            false,
+            Optional.empty(),
+            Optional.empty());
 
     assertThat(blockCreationResult.getBlock().getHeader().getRequestsRoot()).isEmpty();
     assertThat(blockCreationResult.getBlock().getBody().getRequests()).isEmpty();
@@ -235,7 +241,9 @@ abstract class AbstractBlockCreatorTest {
             Optional.empty(),
             Optional.empty(),
             1L,
-            false);
+            false,
+            Optional.empty(),
+            Optional.empty());
     verify(withdrawalsProcessor, never()).processWithdrawals(any(), any());
     assertThat(blockCreationResult.getBlock().getHeader().getWithdrawalsRoot()).isEmpty();
     assertThat(blockCreationResult.getBlock().getBody().getWithdrawals()).isEmpty();
@@ -252,7 +260,9 @@ abstract class AbstractBlockCreatorTest {
             Optional.empty(),
             Optional.empty(),
             1L,
-            false);
+            false,
+            Optional.empty(),
+            Optional.empty());
     verify(withdrawalsProcessor, never()).processWithdrawals(any(), any());
     assertThat(blockCreationResult.getBlock().getHeader().getWithdrawalsRoot()).isEmpty();
     assertThat(blockCreationResult.getBlock().getBody().getWithdrawals()).isEmpty();
@@ -271,7 +281,9 @@ abstract class AbstractBlockCreatorTest {
             Optional.empty(),
             Optional.empty(),
             1L,
-            false);
+            false,
+            Optional.empty(),
+            Optional.empty());
 
     final Hash withdrawalsRoot = BodyValidation.withdrawalsRoot(withdrawals);
     verify(withdrawalsProcessor).processWithdrawals(eq(withdrawals), any());
@@ -293,7 +305,9 @@ abstract class AbstractBlockCreatorTest {
             Optional.empty(),
             Optional.empty(),
             1L,
-            false);
+            false,
+            Optional.empty(),
+            Optional.empty());
     verify(withdrawalsProcessor, never()).processWithdrawals(any(), any());
     assertThat(blockCreationResult.getBlock().getHeader().getWithdrawalsRoot()).isEmpty();
     assertThat(blockCreationResult.getBlock().getBody().getWithdrawals()).isEmpty();
@@ -326,7 +340,9 @@ abstract class AbstractBlockCreatorTest {
             Optional.empty(),
             Optional.empty(),
             1L,
-            false);
+            false,
+            Optional.empty(),
+            Optional.empty());
     long blobGasUsage = blockCreationResult.getBlock().getHeader().getGasUsed();
     assertThat(blobGasUsage).isNotZero();
     BlobGas excessBlobGas = blockCreationResult.getBlock().getHeader().getExcessBlobGas().get();

@@ -133,6 +133,7 @@ public class BaseTransactionPoolTest {
       case BLOB ->
           createTransaction(
               txType, nonce, maxGasPrice, maxGasPrice.divide(10), payloadSize, 1, keys);
+      case OPTIMISM_DEPOSIT -> null;
     };
   }
 
