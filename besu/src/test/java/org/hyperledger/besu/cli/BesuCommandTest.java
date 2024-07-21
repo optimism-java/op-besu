@@ -78,6 +78,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -205,6 +206,7 @@ public class BesuCommandTest extends CommandTestAbstract {
         .ethNetworkConfig(
             new EthNetworkConfig(
                 GenesisConfigFile.fromResource(MAINNET.getGenesisFile()),
+                new HashMap<>(),
                 MAINNET.getNetworkId(),
                 MAINNET_BOOTSTRAP_NODES,
                 MAINNET_DISCOVERY_URL));
