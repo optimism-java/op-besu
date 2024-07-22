@@ -55,6 +55,7 @@ import org.hyperledger.besu.evm.gascalculator.BerlinGasCalculator;
 import org.hyperledger.besu.evm.gascalculator.ByzantiumGasCalculator;
 import org.hyperledger.besu.evm.gascalculator.CancunGasCalculator;
 import org.hyperledger.besu.evm.gascalculator.ConstantinopleGasCalculator;
+import org.hyperledger.besu.evm.gascalculator.FjordGasCaculator;
 import org.hyperledger.besu.evm.gascalculator.FrontierGasCalculator;
 import org.hyperledger.besu.evm.gascalculator.HomesteadGasCalculator;
 import org.hyperledger.besu.evm.gascalculator.IstanbulGasCalculator;
@@ -786,7 +787,7 @@ public abstract class MainnetProtocolSpecs {
             miningParameters)
         .feeMarket(cancunFeeMarket)
         // gas calculator for EIP-4844 blob gas
-        .gasCalculator(CancunGasCalculator::new)
+        .gasCalculator(FjordGasCaculator::new)
         // gas limit with EIP-4844 max blob gas per block
         .gasLimitCalculatorBuilder(
             feeMarket ->
