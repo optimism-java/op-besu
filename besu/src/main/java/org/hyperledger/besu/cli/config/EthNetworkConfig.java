@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
  * The Eth network config.
  *
  * @param genesisConfigFile Genesis Config File
+ * @param genesisConfigOverrides Genesis Config Overrides
  * @param networkId Network Id
  * @param bootNodes Boot Nodes
  * @param dnsDiscoveryUrl DNS Discovery URL
@@ -138,6 +139,12 @@ public record EthNetworkConfig(
       return this;
     }
 
+    /**
+     * Sets genesis config overrides.
+     *
+     * @param genesisConfigOverrides the genesis config overrides
+     * @return this builder
+     */
     public Builder setGenesisConfigOverrides(final Map<String, String> genesisConfigOverrides) {
       this.genesisConfigOverrides = genesisConfigOverrides;
       return this;

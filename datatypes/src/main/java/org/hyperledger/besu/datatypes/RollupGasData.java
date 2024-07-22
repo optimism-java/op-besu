@@ -27,6 +27,13 @@ public class RollupGasData {
 
   private final long fastLzSize;
 
+  /**
+   * Create a new roll up data record.
+   *
+   * @param zeroes the count of zeroes
+   * @param ones the count of ones
+   * @param fastLzSize the fast-lz size
+   */
   public RollupGasData(final long zeroes, final long ones, final long fastLzSize) {
     this.zeroes = zeroes;
     this.ones = ones;
@@ -85,8 +92,10 @@ public class RollupGasData {
     return new RollupGasData(zeroes, ones, fastLzSize);
   }
 
-  // FlzCompressLen returns the length of the data after compression through FastLZ, based on
-  // https://github.com/Vectorized/solady/blob/5315d937d79b335c668896d7533ac603adac5315/js/solady.js
+  /**
+   * FlzCompressLen returns the length of the data after compression through FastLZ, based on <a
+   * href="">https://github.com/Vectorized/solady/blob/5315d937d79b335c668896d7533ac603adac5315/js/solady.js</a>
+   */
   static long flzCompressLength(final byte[] ib) {
     var n = 0;
     var ht = new int[8192];

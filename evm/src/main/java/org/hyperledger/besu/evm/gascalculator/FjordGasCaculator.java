@@ -16,9 +16,6 @@ package org.hyperledger.besu.evm.gascalculator;
 
 import org.hyperledger.besu.datatypes.Address;
 
-import static org.hyperledger.besu.datatypes.Address.KZG_POINT_EVAL;
-import static org.hyperledger.besu.datatypes.Address.P256_VERIFY;
-
 /**
  * Gas Calculator for Fjord
  *
