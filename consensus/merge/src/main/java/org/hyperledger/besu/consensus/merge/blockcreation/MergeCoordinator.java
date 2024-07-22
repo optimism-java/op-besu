@@ -113,6 +113,7 @@ public class MergeCoordinator implements MergeMiningCoordinator, BadChainListene
    * @param transactionPool the pending transactions
    * @param miningParams the mining params
    * @param backwardSyncContext the backward sync context
+   * @param genesisConfigOptions the genesis config options
    */
   public MergeCoordinator(
       final ProtocolContext protocolContext,

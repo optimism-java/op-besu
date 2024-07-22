@@ -23,6 +23,7 @@ import java.util.Arrays;
 
 import org.apache.tuweni.bytes.Bytes;
 
+/** The P256Verify precompiled contract. */
 public class P256VerifyPrecompiledContract implements PrecompiledContract {
 
   private static final long GAS_COST = 3450;
@@ -31,8 +32,10 @@ public class P256VerifyPrecompiledContract implements PrecompiledContract {
   private static final Bytes TRUE =
       Bytes.fromHexString("0x0000000000000000000000000000000000000000000000000000000000000001");
 
+  /** The SECP256R1 instance. */
   private final SECP256R1 secp256R1;
 
+  /** Default constructor. */
   public P256VerifyPrecompiledContract() {
     this.secp256R1 = new SECP256R1();
     this.secp256R1.disableNative();
@@ -70,6 +73,14 @@ public class P256VerifyPrecompiledContract implements PrecompiledContract {
     return PrecompileContractResult.success(Bytes.EMPTY);
   }
 
+  /**
+   * Extracts the parameter bytes from the input.
+   *
+   * @param input the input bytes
+   * @param offset the offset
+   * @param length the length
+   * @return the extracted bytes
+   */
   private static Bytes extractParameterBytes(
       final Bytes input, final int offset, final int length) {
     if (offset > input.size() || length == 0) {

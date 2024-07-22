@@ -304,6 +304,12 @@ public class PostMergeContext implements MergeContext {
     return this;
   }
 
+  /**
+   * Sets whether the context is in optimism mode
+   *
+   * @param isOptimism the isOptimism state
+   * @return the post merge context
+   */
   public PostMergeContext setIsOptimism(final boolean isOptimism) {
     this.isOptimism = isOptimism;
     return this;

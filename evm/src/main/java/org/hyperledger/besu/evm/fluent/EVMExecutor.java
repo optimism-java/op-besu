@@ -493,6 +493,13 @@ public class EVMExecutor {
     return executor;
   }
 
+  /**
+   * Instantiate Fjord evm executor.
+   *
+   * @param chainId the chain ID
+   * @param evmConfiguration the evm configuration
+   * @return the evm executor
+   */
   public static EVMExecutor fjord(
       final BigInteger chainId, final EvmConfiguration evmConfiguration) {
     final EVMExecutor executor = new EVMExecutor(MainnetEVMs.cancun(chainId, evmConfiguration));
