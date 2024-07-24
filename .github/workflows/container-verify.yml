@@ -30,9 +30,6 @@ jobs:
           - tag: latest
             platform: ''
             runner: ubuntu-latest
-          - tag: ${{ inputs.version }}-arm64
-            platform: ''
-            runner: besu-arm64
     runs-on: ${{ matrix.combination.runner }}
     env:
       CONTAINER_NAME: besu-check
@@ -44,7 +41,7 @@ jobs:
         run: |
           PLATFORM_OPT=""
           [[ x${{ matrix.combination.platform }} != 'x' ]] && PLATFORM_OPT="--platform ${{ matrix.combination.platform }}"
-          docker run -d $PLATFORM_OPT --name ${{ env.CONTAINER_NAME }} hyperledger/besu:${{ matrix.combination.tag }}
+          docker run -d $PLATFORM_OPT --name ${{ env.CONTAINER_NAME }} optimism-java/op-besu:${{ matrix.combination.tag }}
 
       - name: Verify besu container
         run: bash .github/workflows/BesuContainerVerify.sh
