@@ -22,7 +22,7 @@ RUN apt-get update $NO_PROXY_CACHE  && \
 USER besu
 WORKDIR /opt/besu
 
-COPY --chown=besu:besu besu /opt/besu/
+COPY --chown=besu:besu op-besu /opt/besu/
 
 # Expose services ports
 # 8545 HTTP JSON-RPC
@@ -51,11 +51,11 @@ HEALTHCHECK --start-period=5s --interval=5s --timeout=1s --retries=10 CMD bash -
 ARG BUILD_DATE
 ARG VCS_REF
 LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.name="Besu" \
-      org.label-schema.description="Enterprise Ethereum client" \
-      org.label-schema.url="https://besu.hyperledger.org/" \
+      org.label-schema.name="OP-Besu" \
+      org.label-schema.description="Optimism Ethereum client" \
+      org.label-schema.url="https://github.com/optimism-java/op-besu" \
       org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.vcs-url="https://github.com/hyperledger/besu.git" \
-      org.label-schema.vendor="Hyperledger" \
+      org.label-schema.vcs-url="https://github.com/optimism-java/op-besu.git" \
+      org.label-schema.vendor="Optimism-Java" \
       org.label-schema.version=$VERSION \
       org.label-schema.schema-version="1.0"

@@ -380,26 +380,26 @@ allprojects {
 
 task deploy() {}
 
-task checkMavenCoordinateCollisions {
-  doLast {
-    def coordinates = [:]
-    getAllprojects().forEach {
-      if (it.properties.containsKey('publishing') && it.jar?.enabled) {
-        def coordinate = it.publishing?.publications[0].coordinates
-        if (coordinate.toString().startsWith("org") && coordinates.containsKey(coordinate)) {
-          throw new GradleException("Duplicate maven coordinates detected, ${coordinate} is used by " +
-          "both ${coordinates[coordinate]} and ${it.path}.\n" +
-          "Please add a `publishing` script block to one or both subprojects.")
-        }
-        coordinates[coordinate] = it.path
-      }
-    }
-  }
-}
+//task checkMavenCoordinateCollisions {
+//  doLast {
+//    def coordinates = [:]
+//    getAllprojects().forEach {
+//      if (it.properties.containsKey('publishing') && it.jar?.enabled) {
+//        def coordinate = it.publishing?.publications[0].coordinates
+//        if (coordinate.toString().startsWith("org") && coordinates.containsKey(coordinate)) {
+//          throw new GradleException("Duplicate maven coordinates detected, ${coordinate} is used by " +
+//          "both ${coordinates[coordinate]} and ${it.path}.\n" +
+//          "Please add a `publishing` script block to one or both subprojects.")
+//        }
+//        coordinates[coordinate] = it.path
+//      }
+//    }
+//  }
+//}
 
 tasks.register('checkPluginAPIChanges', DefaultTask) {}
 checkPluginAPIChanges.dependsOn(':plugin-api:checkAPIChanges')
-check.dependsOn('checkPluginAPIChanges', 'checkMavenCoordinateCollisions')
+//check.dependsOn('checkPluginAPIChanges', 'checkMavenCoordinateCollisions')
 
 subprojects {
 
@@ -468,63 +468,63 @@ subprojects {
     apply plugin: 'com.jfrog.artifactory'
     apply plugin: 'maven-publish'
 
-    publishing {
-      publications {
-        mavenJava(MavenPublication) {
-          groupId "org.hyperledger.besu.internal"
-          version "${project.version}"
-          if (sourceSetIsPopulated("main")) {
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
-          }
+    //    publishing {
+    //      publications {
+    //        mavenJava(MavenPublication) {
+    //          groupId "org.hyperledger.besu.internal"
+    //          version "${project.version}"
+    //          if (sourceSetIsPopulated("main")) {
+    //            from components.java
+    //            artifact sourcesJar
+    //            artifact javadocJar
+    //          }
+    //
+    //          if (sourceSetIsPopulated("testSupport")) {
+    //            artifact testSupportJar
+    //          }
+    //          versionMapping {
+    //            usage('java-api') { fromResolutionOf('runtimeClasspath') }
+    //            usage('java-runtime') { fromResolutionResult() }
+    //          }
+    //          pom {
+    //            name = "Besu - ${project.name}"
+    //            url = 'http://github.com/hyperledger/besu'
+    //            licenses {
+    //              license {
+    //                name = 'The Apache License, Version 2.0'
+    //                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    //              }
+    //            }
+    //            scm {
+    //              connection = 'scm:git:git://github.com/hyperledger/besu.git'
+    //              developerConnection = 'scm:git:ssh://github.com/hyperledger/besu.git'
+    //              url = 'https://github.com/hyperledger/besu'
+    //            }
+    //          }
+    //        }
+    //      }
+    //    }
 
-          if (sourceSetIsPopulated("testSupport")) {
-            artifact testSupportJar
-          }
-          versionMapping {
-            usage('java-api') { fromResolutionOf('runtimeClasspath') }
-            usage('java-runtime') { fromResolutionResult() }
-          }
-          pom {
-            name = "Besu - ${project.name}"
-            url = 'http://github.com/hyperledger/besu'
-            licenses {
-              license {
-                name = 'The Apache License, Version 2.0'
-                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-              }
-            }
-            scm {
-              connection = 'scm:git:git://github.com/hyperledger/besu.git'
-              developerConnection = 'scm:git:ssh://github.com/hyperledger/besu.git'
-              url = 'https://github.com/hyperledger/besu'
-            }
-          }
-        }
-      }
-    }
+    //    def artifactoryUser = project.hasProperty('artifactoryUser') ? project.property('artifactoryUser') : System.getenv('ARTIFACTORY_USER')
+    //    def artifactoryKey = project.hasProperty('artifactoryApiKey') ? project.property('artifactoryApiKey') : System.getenv('ARTIFACTORY_KEY')
+    //    def artifactoryRepo = System.getenv('ARTIFACTORY_REPO') ?: 'besu-maven'
+    //    def artifactoryOrg = System.getenv('ARTIFACTORY_ORG') ?: 'hyperledger'
 
-    def artifactoryUser = project.hasProperty('artifactoryUser') ? project.property('artifactoryUser') : System.getenv('ARTIFACTORY_USER')
-    def artifactoryKey = project.hasProperty('artifactoryApiKey') ? project.property('artifactoryApiKey') : System.getenv('ARTIFACTORY_KEY')
-    def artifactoryRepo = System.getenv('ARTIFACTORY_REPO') ?: 'besu-maven'
-    def artifactoryOrg = System.getenv('ARTIFACTORY_ORG') ?: 'hyperledger'
-
-    artifactory {
-      contextUrl = "https://hyperledger.jfrog.io/${artifactoryOrg}"
-      publish {
-        repository {
-          repoKey = "${artifactoryRepo}"
-          username = artifactoryUser
-          password = artifactoryKey
-        }
-        defaults {
-          publications('mavenJava')
-          publishArtifacts = true
-          publishPom = true
-        }
-      }
-    }
+    //    artifactory {
+    //      contextUrl = "https://hyperledger.jfrog.io/${artifactoryOrg}"
+    //      publish {
+    //        repository {
+    //          repoKey = "${artifactoryRepo}"
+    //          username = artifactoryUser
+    //          password = artifactoryKey
+    //        }
+    //        defaults {
+    //          publications('mavenJava')
+    //          publishArtifacts = true
+    //          publishPom = true
+    //        }
+    //      }
+    //    }
   }
 
   tasks.withType(Test) {
@@ -689,6 +689,19 @@ def archiveBuildVersion = project.hasProperty('release.releaseVersion') ? projec
 
 installDist { dependsOn checkLicense, untunedStartScripts, evmToolStartScripts }
 
+distributions {
+  main {
+    distributionBaseName = 'op-besu'
+    contents {
+      from("./LICENSE") { into "." }
+      from("build/reports/license/license-dependency.html") { into "." }
+      from("./docs/GettingStartedBinaries.md") { into "." }
+      from("./docs/DocsArchive0.8.0.html") { into "." }
+      from(autocomplete) { into "." }
+    }
+  }
+}
+
 distTar {
   dependsOn checkLicense, autocomplete, untunedStartScripts, evmToolStartScripts
   doFirst {
@@ -712,7 +725,7 @@ publishing {
     distArtifactory(MavenPublication) {
       groupId = '.'
       version = project.version
-      artifactId = 'besu'
+      artifactId = 'op-besu'
     }
   }
 }
@@ -723,8 +736,8 @@ artifactoryPublish {
 }
 
 def dockerBuildVersion = project.hasProperty('release.releaseVersion') ? project.property('release.releaseVersion') : "${rootProject.version}"
-def dockerOrgName = project.hasProperty('dockerOrgName') ? project.getProperty("dockerOrgName") : "hyperledger"
-def dockerArtifactName = project.hasProperty("dockerArtifactName") ? project.getProperty("dockerArtifactName") : "besu"
+def dockerOrgName = project.hasProperty('dockerOrgName') ? project.getProperty("dockerOrgName") : "optimism-java"
+def dockerArtifactName = project.hasProperty("dockerArtifactName") ? project.getProperty("dockerArtifactName") : "op-besu"
 def dockerImageName = "${dockerOrgName}/${dockerArtifactName}"
 
 // rename the top level dir from besu-<version> to besu and this makes it really
@@ -742,7 +755,7 @@ tasks.register("dockerDistUntar") {
       from tarTree(distTarFile)
       into(dockerBuildDir)
     }
-    project.delete(files("${dockerBuildDir}/besu"))
+    project.delete(files("${dockerBuildDir}/op-besu"))
     file("${dockerBuildDir}/${distTarFileName}").renameTo("${dockerBuildDir}/op-besu")
   }
 }
@@ -773,6 +786,7 @@ task distDocker {
 }
 
 task testDocker {
+  dependsOn distributions
   dependsOn distDocker
   def dockerReportsDir = "docker/reports/"
 
@@ -791,6 +805,7 @@ task testDocker {
 }
 
 task dockerUpload {
+  dependsOn distributions
   dependsOn distDocker
   def architecture = System.getenv('architecture')
   def image = "${dockerImageName}:${dockerBuildVersion}"
@@ -1027,18 +1042,6 @@ class BouncyCastleCapability implements ComponentMetadataRule {
           }
         }
       }
-    }
-  }
-}
-
-distributions {
-  main {
-    contents {
-      from("./LICENSE") { into "." }
-      from("build/reports/license/license-dependency.html") { into "." }
-      from("./docs/GettingStartedBinaries.md") { into "." }
-      from("./docs/DocsArchive0.8.0.html") { into "." }
-      from(autocomplete) { into "." }
     }
   }
 }

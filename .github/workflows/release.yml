@@ -5,7 +5,8 @@ on:
     types: [released]
 
 env:
-  registry: docker.io
+  registry: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
   GRADLE_OPTS: "-Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
 
 jobs:
@@ -101,27 +102,26 @@ jobs:
             ${{needs.artifacts.outputs.zipSha}}
 
 
-
-  artifactoryPublish:
-    runs-on: ubuntu-22.04
-    needs: artifacts
-    steps:
-      - name: checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
-      - name: Set up Java
-        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
-        with:
-          distribution: temurin
-          java-version: 21
-      - name: setup gradle
-        uses: gradle/actions/setup-gradle@9e899d11ad247ec76be7a60bc1cf9d3abbb9e7f1
-        with:
-          cache-disabled: true
-      - name: Artifactory Publish
-        env:
-          ARTIFACTORY_USER: ${{ secrets.BESU_ARTIFACTORY_USER }}
-          ARTIFACTORY_KEY: ${{ secrets.BESU_ARTIFACTORY_TOKEN }}
-        run: ./gradlew -Prelease.releaseVersion=${{ github.event.release.name }} -Pversion=${{github.event.release.name}} artifactoryPublish
+#  artifactoryPublish:
+#    runs-on: ubuntu-22.04
+#    needs: artifacts
+#    steps:
+#      - name: checkout
+#        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+#      - name: Set up Java
+#        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
+#        with:
+#          distribution: temurin
+#          java-version: 21
+#      - name: setup gradle
+#        uses: gradle/actions/setup-gradle@9e899d11ad247ec76be7a60bc1cf9d3abbb9e7f1
+#        with:
+#          cache-disabled: true
+#      - name: Artifactory Publish
+#        env:
+#          ARTIFACTORY_USER: ${{ secrets.BESU_ARTIFACTORY_USER }}
+#          ARTIFACTORY_KEY: ${{ secrets.BESU_ARTIFACTORY_TOKEN }}
+#        run: ./gradlew -Prelease.releaseVersion=${{ github.event.release.name }} -Pversion=${{github.event.release.name}} artifactoryPublish
 
   hadolint:
     runs-on: ubuntu-22.04
@@ -187,19 +187,19 @@ jobs:
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
         with:
           registry: ${{ env.registry }}
-          username: ${{ secrets.DOCKER_USER_RW }}
-          password: ${{ secrets.DOCKER_PASSWORD_RW }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: build and test docker
         uses: gradle/actions/setup-gradle@9e899d11ad247ec76be7a60bc1cf9d3abbb9e7f1
         env:
           architecture: ${{ steps.prep.outputs.ARCH }}
         with:
           cache-disabled: true
-          arguments: testDocker -PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
+          arguments: testDocker -PdockerOrgName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
       - name: publish
         env:
           architecture: ${{ steps.prep.outputs.ARCH }}
-        run: ./gradlew --no-daemon dockerUpload -PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
+        run: ./gradlew --no-daemon dockerUpload -PdockerOrgName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
 
   multiArch:
     needs: buildDocker
@@ -223,10 +223,10 @@ jobs:
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
         with:
           registry: ${{ env.registry }}
-          username: ${{ secrets.DOCKER_USER_RW }}
-          password: ${{ secrets.DOCKER_PASSWORD_RW }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: multi-arch docker
-        run: ./gradlew manifestDocker -PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
+        run: ./gradlew manifestDocker -PdockerOrgName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
 
   amendNotes:
     needs: multiArch
@@ -239,7 +239,7 @@ jobs:
         with:
           append_body: true
           body: |
-            `docker pull ${{env.registry}}/${{secrets.DOCKER_ORG}}/besu:${{github.event.release.name}}`
+            `docker pull ${{env.registry}}/${{github.repository}}/besu:${{github.event.release.name}}`
 
   dockerPromoteX64:
     needs: multiArch
@@ -255,16 +255,16 @@ jobs:
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
         with:
           registry: ${{ env.registry }}
-          username: ${{ secrets.DOCKER_USER_RW }}
-          password: ${{ secrets.DOCKER_PASSWORD_RW }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@9e899d11ad247ec76be7a60bc1cf9d3abbb9e7f1
         with:
           cache-disabled: true
       - name: Docker upload
-        run: ./gradlew "-Prelease.releaseVersion=${{ github.event.release.name }}" "-PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }}" dockerUploadRelease
+        run: ./gradlew "-Prelease.releaseVersion=${{ github.event.release.name }}" "-PdockerOrgName=${{ env.registry }}/${{ github.repository }}" dockerUploadRelease
       - name: Docker manifest
-        run: ./gradlew "-Prelease.releaseVersion=${{ github.event.release.name }}" "-PdockerOrgName=${{ env.registry }}/${{ secrets.DOCKER_ORG }}" manifestDockerRelease
+        run: ./gradlew "-Prelease.releaseVersion=${{ github.event.release.name }}" "-PdockerOrgName=${{ env.registry }}/${{ github.repository }}" manifestDockerRelease
 
   verifyContainer:
     needs: dockerPromoteX64
