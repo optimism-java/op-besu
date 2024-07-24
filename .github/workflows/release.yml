@@ -194,11 +194,11 @@ jobs:
           architecture: ${{ steps.prep.outputs.ARCH }}
         with:
           cache-disabled: true
-          arguments: testDocker -PdockerOrgName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
+          arguments: testDocker -PdockerArtifactName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
       - name: publish
         env:
           architecture: ${{ steps.prep.outputs.ARCH }}
-        run: ./gradlew --no-daemon dockerUpload -PdockerOrgName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
+        run: ./gradlew --no-daemon dockerUpload -PdockerArtifactName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
 
   multiArch:
     needs: buildDocker
@@ -225,7 +225,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: multi-arch docker
-        run: ./gradlew manifestDocker -PdockerOrgName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
+        run: ./gradlew manifestDocker -PdockerArtifactName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
 
   amendNotes:
     needs: multiArch
@@ -261,9 +261,9 @@ jobs:
         with:
           cache-disabled: true
       - name: Docker upload
-        run: ./gradlew "-Prelease.releaseVersion=${{ github.event.release.name }}" "-PdockerOrgName=${{ env.registry }}/${{ github.repository }}" dockerUploadRelease
+        run: ./gradlew "-Prelease.releaseVersion=${{ github.event.release.name }}" "-PdockerArtifactName=${{ env.registry }}/${{ github.repository }}" dockerUploadRelease
       - name: Docker manifest
-        run: ./gradlew "-Prelease.releaseVersion=${{ github.event.release.name }}" "-PdockerOrgName=${{ env.registry }}/${{ github.repository }}" manifestDockerRelease
+        run: ./gradlew "-Prelease.releaseVersion=${{ github.event.release.name }}" "-PdockerArtifactName=${{ env.registry }}/${{ github.repository }}" manifestDockerRelease
 
   verifyContainer:
     needs: dockerPromoteX64

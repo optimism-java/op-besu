@@ -736,9 +736,8 @@ artifactoryPublish {
 }
 
 def dockerBuildVersion = project.hasProperty('release.releaseVersion') ? project.property('release.releaseVersion') : "${rootProject.version}"
-def dockerOrgName = project.hasProperty('dockerOrgName') ? project.getProperty("dockerOrgName") : "optimism-java"
-def dockerArtifactName = project.hasProperty("dockerArtifactName") ? project.getProperty("dockerArtifactName") : "op-besu"
-def dockerImageName = "${dockerOrgName}/${dockerArtifactName}"
+def dockerArtifactName = project.hasProperty("dockerArtifactName") ? project.getProperty("dockerArtifactName") : "optimism-java/op-besu"
+def dockerImageName = "${dockerArtifactName}"
 
 // rename the top level dir from besu-<version> to besu and this makes it really
 // simple for use in docker
@@ -889,7 +888,7 @@ task manifestDocker {
 }
 
 task manifestDockerRelease {
-  def archs = ["arm64", "amd64"]
+  def archs = ["amd64"]
   def baseTag = "${dockerImageName}:latest";
 
   doLast {
