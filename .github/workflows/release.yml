@@ -239,7 +239,7 @@ jobs:
         with:
           append_body: true
           body: |
-            `docker pull ${{env.registry}}/${{github.repository}}/besu:${{github.event.release.name}}`
+            `docker pull ${{env.registry}}/${{github.repository}}:${{github.event.release.name}}`
 
   dockerPromoteX64:
     needs: multiArch
@@ -279,3 +279,41 @@ jobs:
         run: echo '{"version":"${{ github.event.release.name }}","verify-latest-version":"true"}' | gh workflow run container-verify.yml --json
         env:
           GH_TOKEN: ${{ github.token }}
+
+  release:
+    name: 🚰 Release new version.
+    needs: [ verifyContainer, build-jar ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛎️Check out the source code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: ⚙️Build Changelog
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@v4
+        with:
+          configuration: ".github/config/configuration.json"
+          commitMode: true
+          ignorePreReleases: ${{ !contains(github.ref, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: ⏬Download all the build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: release-artifacts
+
+      - name: ✨Github Release (version = ${{ needs.push_image_to_github.outputs.version }})
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ${{ steps.github_release.outputs.changelog }}
+          files: |
+            ${{ github.workspace }}/release-artifacts/**
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
