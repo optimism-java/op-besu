@@ -786,7 +786,6 @@ task distDocker {
 }
 
 task testDocker {
-  dependsOn distributions
   dependsOn distDocker
   def dockerReportsDir = "docker/reports/"
 
