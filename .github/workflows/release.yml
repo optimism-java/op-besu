@@ -282,7 +282,7 @@ jobs:
 
   release:
     name: 🚰 Release new version.
-    needs: [ verifyContainer, build-jar ]
+    needs: [ verifyContainer, publish ]
     runs-on: ubuntu-latest
 
     steps:
