@@ -151,9 +151,7 @@ jobs:
       matrix:
         platform:
           - ubuntu-22.04
-          - macos-latest
     runs-on: ${{ matrix.platform }}
-    name: Build on ${{ matrix.distro }}-${{ matrix.arch }}
     steps:
       - name: Prepare
         id: prep
