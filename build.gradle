@@ -804,7 +804,6 @@ task testDocker {
 }
 
 task dockerUpload {
-  dependsOn distributions
   dependsOn distDocker
   def architecture = System.getenv('architecture')
   def image = "${dockerImageName}:${dockerBuildVersion}"
