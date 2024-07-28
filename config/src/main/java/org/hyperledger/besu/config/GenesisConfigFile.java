@@ -162,6 +162,15 @@ public class GenesisConfigFile {
   }
 
   /**
+   * Gets parent hash.
+   *
+   * @return the parent hash
+   */
+  public String getStateHash() {
+    return JsonUtil.getString(genesisRoot, "statehash", "");
+  }
+
+  /**
    * Gets difficulty.
    *
    * @return the difficulty

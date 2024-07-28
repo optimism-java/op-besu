@@ -114,8 +114,13 @@ public final class GenesisState {
       final DataStorageConfiguration dataStorageConfiguration,
       final GenesisConfigFile genesisConfigFile,
       final ProtocolSchedule protocolSchedule) {
-    final var genesisStateRoot =
-        calculateGenesisStateRoot(dataStorageConfiguration, genesisConfigFile);
+    var genesisStateRoot = calculateGenesisStateRoot(dataStorageConfiguration, genesisConfigFile);
+    if (genesisConfigFile.getConfigOptions().isOptimism()) {
+      if (genesisStateRoot.equals(Hash.EMPTY_TRIE_HASH)
+          && !genesisConfigFile.getStateHash().isEmpty()) {
+        genesisStateRoot = Hash.fromHexStringLenient(genesisConfigFile.getStateHash());
+      }
+    }
     final Block block =
         new Block(
             buildHeader(genesisConfigFile, genesisStateRoot, protocolSchedule),
