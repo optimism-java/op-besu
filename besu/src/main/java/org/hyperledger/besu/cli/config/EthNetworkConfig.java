@@ -16,6 +16,7 @@ package org.hyperledger.besu.cli.config;
 
 import org.hyperledger.besu.config.GenesisConfigFile;
 import org.hyperledger.besu.config.GenesisConfigOptions;
+import org.hyperledger.besu.ethereum.p2p.config.DiscoveryConfiguration;
 import org.hyperledger.besu.ethereum.p2p.peers.EnodeURLImpl;
 import org.hyperledger.besu.plugin.data.EnodeURL;
 
@@ -74,6 +75,11 @@ public record EthNetworkConfig(
     final GenesisConfigOptions genesisConfigOptions = genesisConfigFile.getConfigOptions();
     final Optional<List<String>> rawBootNodes =
         genesisConfigOptions.getDiscoveryOptions().getBootNodes();
+    if (networkName == NetworkName.OP_MAINNET) {
+      rawBootNodes.get().addAll(DiscoveryConfiguration.V5_OP_BOOTNODES);
+    } else if (networkName == NetworkName.OP_SEPOLIA) {
+      rawBootNodes.get().addAll(DiscoveryConfiguration.V5_OP_TESTNET_BOOTNODES);
+    }
     final List<EnodeURL> bootNodes =
         rawBootNodes
             .map(
@@ -113,7 +119,7 @@ public record EthNetworkConfig(
     private String dnsDiscoveryUrl;
     private GenesisConfigFile genesisConfigFile;
     private BigInteger networkId;
-    private List<EnodeURL> bootNodes;
+    private final List<EnodeURL> bootNodes;
     private Map<String, String> genesisConfigOverrides;
 
     /**
@@ -168,7 +174,15 @@ public record EthNetworkConfig(
      * @return this builder
      */
     public Builder setBootNodes(final List<EnodeURL> bootNodes) {
-      this.bootNodes = bootNodes;
+      if (bootNodes == null) {
+        return this;
+      }
+      bootNodes.forEach(
+          bootNode -> {
+            if (!this.bootNodes.contains(bootNode)) {
+              this.bootNodes.add(bootNode);
+            }
+          });
       return this;
     }
 

@@ -39,6 +39,7 @@ import org.hyperledger.besu.plugin.services.storage.SegmentIdentifier;
 import org.hyperledger.besu.plugin.services.storage.SegmentedKeyValueStorageTransaction;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 
@@ -162,32 +163,39 @@ public abstract class DiffBasedWorldState
     Runnable saveTrieLog = () -> {};
 
     try {
-      final Hash calculatedRootHash;
+      final AtomicReference<Hash> calculatedRootHash = new AtomicReference<>();
 
       if (blockHeader == null || !worldStateConfig.isTrieDisabled()) {
-        calculatedRootHash =
+        calculatedRootHash.set(
             calculateRootHash(
                 worldStateConfig.isFrozen() ? Optional.empty() : Optional.of(stateUpdater),
-                accumulator);
+                accumulator));
+        ;
       } else {
         // if the trie is disabled, we cannot calculate the state root, so we directly use the root
         // of the block. It's important to understand that in all networks,
         // the state root must be validated independently and the block should not be trusted
         // implicitly. This mode
         // can be used in cases where Besu would just be a follower of another trusted client.
-        calculatedRootHash = unsafeRootHashUpdate(blockHeader, stateUpdater);
+        calculatedRootHash.set(unsafeRootHashUpdate(blockHeader, stateUpdater));
       }
       // if we are persisted with a block header, and the prior state is the parent
       // then persist the TrieLog for that transition.
       // If specified but not a direct descendant simply store the new block hash.
       if (blockHeader != null) {
-        verifyWorldStateRoot(calculatedRootHash, blockHeader);
+        if (blockHeader.getNumber() == 0L
+            && calculatedRootHash.get().equals(getEmptyTrieHash())
+            && !blockHeader.getStateRoot().equals(getEmptyTrieHash())) {
+          calculatedRootHash.set(blockHeader.getStateRoot());
+        }
+        verifyWorldStateRoot(calculatedRootHash.get(), blockHeader);
         saveTrieLog =
             () -> {
-              trieLogManager.saveTrieLog(localCopy, calculatedRootHash, blockHeader, this);
+              trieLogManager.saveTrieLog(localCopy, calculatedRootHash.get(), blockHeader, this);
               // not save a frozen state in the cache
               if (!worldStateConfig.isFrozen()) {
-                cachedWorldStorageManager.addCachedLayer(blockHeader, calculatedRootHash, this);
+                cachedWorldStorageManager.addCachedLayer(
+                    blockHeader, calculatedRootHash.get(), this);
               }
             };
 
@@ -202,8 +210,8 @@ public abstract class DiffBasedWorldState
 
       stateUpdater
           .getWorldStateTransaction()
-          .put(TRIE_BRANCH_STORAGE, WORLD_ROOT_HASH_KEY, calculatedRootHash.toArrayUnsafe());
-      worldStateRootHash = calculatedRootHash;
+          .put(TRIE_BRANCH_STORAGE, WORLD_ROOT_HASH_KEY, calculatedRootHash.get().toArrayUnsafe());
+      worldStateRootHash = calculatedRootHash.get();
       success = true;
     } finally {
       if (success) {
