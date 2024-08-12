@@ -357,7 +357,7 @@ jobs:
         with:
           path: release-artifacts
 
-      - name: ✨Github Release (version = ${{ needs.push_image_to_github.outputs.version }})
+      - name: ✨Github Release (version = ${{ github.event.release.name }})
         uses: softprops/action-gh-release@v1
         with:
           body: ${{ steps.github_release.outputs.changelog }}
