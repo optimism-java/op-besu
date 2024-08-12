@@ -828,7 +828,7 @@ task dockerUpload {
 }
 
 task dockerUploadRelease {
-  def archs = ["amd64"]
+  def archs = ["amd64", "arm64"]
   def image = "${dockerImageName}:${dockerBuildVersion}"
 
   doLast {
@@ -867,7 +867,7 @@ task dockerUploadRelease {
 
 task manifestDocker {
   def image = "${dockerImageName}:${dockerBuildVersion}"
-  def archs = ["amd64"]
+  def archs = ["amd64", "arm64"]
   //TODO: this assumes dockerUpload task has already been run on 2 different archs!
   doLast {
     exec {
@@ -888,7 +888,7 @@ task manifestDocker {
 }
 
 task manifestDockerRelease {
-  def archs = ["amd64"]
+  def archs = ["amd64", "arm64"]
   def baseTag = "${dockerImageName}:latest";
 
   doLast {
