@@ -194,7 +194,7 @@ jobs:
           architecture: ${{ steps.prep.outputs.ARCH }}
         run: ./gradlew --no-daemon dockerUpload -PdockerArtifactName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
 
-  buildAm64Docker:
+  buildArm64Docker:
     needs: hadolint
     permissions:
       contents: read
@@ -252,7 +252,7 @@ jobs:
         run: ./gradlew --no-daemon dockerUpload -PdockerArtifactName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
 
   multiArch:
-    needs: buildDocker
+    needs: [ buildAmd64Docker, buildArm64Docker ]
     runs-on: ubuntu-22.04
     permissions:
       contents: read
