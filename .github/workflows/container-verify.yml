@@ -21,11 +21,14 @@ jobs:
     strategy:
       matrix:
         combination:
-          - tag: ${{ inputs.version }}
-            platform: ''
-            runner: ubuntu-latest
+#          - tag: ${{ inputs.version }}
+#            platform: ''
+#            runner: ubuntu-latest
           - tag: ${{ inputs.version }}-amd64
             platform: 'linux/amd64'
+            runner: ubuntu-latest
+          - tag: ${{ inputs.version }}-arm64
+            platform: 'linux/arm64'
             runner: ubuntu-latest
           - tag: latest
             platform: ''
@@ -41,7 +44,7 @@ jobs:
         run: |
           PLATFORM_OPT=""
           [[ x${{ matrix.combination.platform }} != 'x' ]] && PLATFORM_OPT="--platform ${{ matrix.combination.platform }}"
-          docker run -d $PLATFORM_OPT --name ${{ env.CONTAINER_NAME }} optimism-java/op-besu:${{ matrix.combination.tag }}
+          docker run -d $PLATFORM_OPT --name ${{ env.CONTAINER_NAME }} ghcr.io/optimism-java/op-besu:${{ matrix.combination.tag }}
 
       - name: Verify besu container
         run: bash .github/workflows/BesuContainerVerify.sh

@@ -249,7 +249,7 @@ jobs:
       - name: publish
         env:
           architecture: ${{ steps.prep.outputs.ARCH }}
-        run: ./gradlew --no-daemon dockerUpload -PdockerArtifactName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
+        run: ./gradlew --no-daemon dockerUpload -Pdocker-platform=linux/${{ steps.prep.outputs.ARCH }} -PdockerArtifactName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
 
   multiArch:
     needs: [ buildAmd64Docker, buildArm64Docker ]
