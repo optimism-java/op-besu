@@ -41,13 +41,13 @@ jobs:
           echo "zipSha=$(shasum -a 256 op-besu*.zip)" >> $GITHUB_OUTPUT
           echo "tarSha=$(shasum -a 256 op-besu*.tar.gz)" >> $GITHUB_OUTPUT
       - name: upload tarball
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           path: 'build/distributions/op-besu*.tar.gz'
           name: op-besu-${{ github.event.release.name }}.tar.gz
           compression-level: 0
       - name: upload zipfile
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           path: 'build/distributions/op-besu*.zip'
           name: op-besu-${{ github.event.release.name }}.zip
@@ -64,7 +64,7 @@ jobs:
           distribution: temurin
           java-version: 21
       - name: Download zip
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           pattern: op-besu-*.zip
           merge-multiple: true
@@ -288,7 +288,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: ⏬Download all the build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           pattern: op-besu-*.zip
           path: distributions
