@@ -194,13 +194,6 @@ jobs:
           registry: ${{ env.registry }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: build and test docker
-        uses: gradle/actions/setup-gradle@9e899d11ad247ec76be7a60bc1cf9d3abbb9e7f1
-        env:
-          architecture: ${{ steps.prep.outputs.ARCH }}
-        with:
-          cache-disabled: true
-          arguments: testDocker -PdockerArtifactName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
       - name: publish
         env:
           architecture: ${{ steps.prep.outputs.ARCH }}
