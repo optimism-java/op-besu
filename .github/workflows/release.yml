@@ -226,19 +226,6 @@ jobs:
       - name: multi-arch docker
         run: ./gradlew manifestDocker -PdockerArtifactName=${{ env.registry }}/${{ github.repository }} -Pversion=${{github.event.release.name}} -Prelease.releaseVersion=${{ github.event.release.name }}
 
-  amendNotes:
-    needs: multiArch
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: write
-    steps:
-      - name: add pull command to release notes
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
-        with:
-          append_body: true
-          body: |
-            `docker pull ${{env.registry}}/${{github.repository}}:${{github.event.release.name}}`
-
   dockerPromoteX64:
     needs: multiArch
     runs-on: ubuntu-22.04
