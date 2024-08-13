@@ -287,10 +287,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: ⏬Download all the build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: distributions
-      - run: ls distributions
       - name: ✨Github Release (version = ${{ github.event.release.name }})
         uses: softprops/action-gh-release@v2
         with:
