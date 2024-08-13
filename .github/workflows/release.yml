@@ -303,16 +303,16 @@ jobs:
       - name: ⏬Download all the build artifacts
         uses: actions/download-artifact@v3
         with:
-          pattern: op-besu-*
-          merge-multiple: true
-          path: 'build/distributions'
+          path: distributions
 
       - name: ✨Github Release (version = ${{ github.event.release.name }})
         uses: softprops/action-gh-release@v1
         with:
-          body: ${{ steps.github_release.outputs.changelog }}
+          body: |
+            ${{ steps.github_release.outputs.changelog }}
+            `docker pull ${{env.registry}}/${{github.repository}}:${{github.event.release.name}}`
           files: |
-            build/distributions/**
+            distributions/**
           generate_release_notes: true
           fail_on_unmatched_files: true
         env:
