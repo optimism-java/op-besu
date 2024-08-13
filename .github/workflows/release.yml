@@ -291,7 +291,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: distributions
-
+      - run: ls distributions
       - name: ✨Github Release (version = ${{ github.event.release.name }})
         uses: softprops/action-gh-release@v1
         with:
@@ -299,7 +299,7 @@ jobs:
             ${{ steps.github_release.outputs.changelog }}
             `docker pull ${{env.registry}}/${{github.repository}}:${{github.event.release.name}}`
           files: |
-            distributions/**
+            distributions/op-besu*
           generate_release_notes: true
           fail_on_unmatched_files: true
         env:
