@@ -64,7 +64,7 @@ jobs:
           distribution: temurin
           java-version: 21
       - name: Download zip
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe
         with:
           pattern: op-besu-*.zip
           merge-multiple: true
@@ -290,17 +290,16 @@ jobs:
       - name: ⏬Download all the build artifacts
         uses: actions/download-artifact@v3
         with:
-          pattern: op-besu-*.zip
           path: distributions
       - run: ls distributions
       - name: ✨Github Release (version = ${{ github.event.release.name }})
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           body: |
             ${{ steps.github_release.outputs.changelog }}
             `docker pull ${{env.registry}}/${{github.repository}}:${{github.event.release.name}}`
           files: |
-            distributions/op-besu*
+            ${{ github.workspace }}/distributions/**
           generate_release_notes: true
           fail_on_unmatched_files: true
         env:
