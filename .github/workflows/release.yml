@@ -78,51 +78,6 @@ jobs:
           op-besu\bin\besu.bat --help
           op-besu\bin\besu.bat --version
 
-  publish:
-    runs-on: ubuntu-22.04
-    needs: [testWindows, artifacts]
-    permissions:
-      contents: write
-    steps:
-      - name: Download archives
-        uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe
-        with:
-          pattern: op-besu-*
-          merge-multiple: true
-          path: 'build/distributions'
-      - name: Upload Release assets
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
-        with:
-          append_body: true
-          files: |
-            build/distributions/op-besu*.tar.gz
-            build/distributions/op-besu*.zip
-          body: |
-            ${{needs.artifacts.outputs.tarSha}}
-            ${{needs.artifacts.outputs.zipSha}}
-
-
-#  artifactoryPublish:
-#    runs-on: ubuntu-22.04
-#    needs: artifacts
-#    steps:
-#      - name: checkout
-#        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
-#      - name: Set up Java
-#        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
-#        with:
-#          distribution: temurin
-#          java-version: 21
-#      - name: setup gradle
-#        uses: gradle/actions/setup-gradle@9e899d11ad247ec76be7a60bc1cf9d3abbb9e7f1
-#        with:
-#          cache-disabled: true
-#      - name: Artifactory Publish
-#        env:
-#          ARTIFACTORY_USER: ${{ secrets.BESU_ARTIFACTORY_USER }}
-#          ARTIFACTORY_KEY: ${{ secrets.BESU_ARTIFACTORY_TOKEN }}
-#        run: ./gradlew -Prelease.releaseVersion=${{ github.event.release.name }} -Pversion=${{github.event.release.name}} artifactoryPublish
-
   hadolint:
     runs-on: ubuntu-22.04
     steps:
@@ -332,7 +287,7 @@ jobs:
 
   release:
     name: 🚰 Release new version.
-    needs: [ verifyContainer, publish ]
+    needs: [ verifyContainer, artifacts ]
     runs-on: ubuntu-latest
 
     steps:
@@ -355,14 +310,16 @@ jobs:
       - name: ⏬Download all the build artifacts
         uses: actions/download-artifact@v3
         with:
-          path: release-artifacts
+          pattern: op-besu-*
+          merge-multiple: true
+          path: 'build/distributions'
 
       - name: ✨Github Release (version = ${{ github.event.release.name }})
         uses: softprops/action-gh-release@v1
         with:
           body: ${{ steps.github_release.outputs.changelog }}
           files: |
-            ${{ github.workspace }}/release-artifacts/**
+            build/distributions/**
           generate_release_notes: true
           fail_on_unmatched_files: true
         env:
