@@ -41,8 +41,11 @@ public enum NetworkName {
   CLASSIC("/classic.json", BigInteger.valueOf(1)),
   /** Mordor network name. */
   MORDOR("/mordor.json", BigInteger.valueOf(7)),
-  /** Optimims Mainnet network name. */
+
+  /** Optimism Mainnet network name. */
   OP_MAINNET("/optimism-mainnet.json", BigInteger.valueOf(10L)),
+  /** Base Mainnet network name. */
+  BASE_MAINNET("/base-mainnet.json", BigInteger.valueOf(8453L)),
   /** Optimism sepolia network name. */
   OP_SEPOLIA("/optimism-sepolia.json", BigInteger.valueOf(11155420L));
 
