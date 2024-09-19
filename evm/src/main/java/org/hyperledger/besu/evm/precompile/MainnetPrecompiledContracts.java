@@ -164,6 +164,31 @@ public interface MainnetPrecompiledContracts {
   }
 
   /**
+   * Fjord precompile contract registry.
+   *
+   * @param gasCalculator the gas calculator
+   * @return the precompile contract registry
+   */
+  static PrecompileContractRegistry granite(final GasCalculator gasCalculator) {
+    PrecompileContractRegistry precompileContractRegistry = new PrecompileContractRegistry();
+    populateForGranite(precompileContractRegistry, gasCalculator);
+    return precompileContractRegistry;
+  }
+
+  /**
+   * Populate registry for Fjord.
+   *
+   * @param registry the registry
+   * @param gasCalculator the gas calculator
+   */
+  static void populateForGranite(
+      final PrecompileContractRegistry registry, final GasCalculator gasCalculator) {
+    populateForFjord(registry, gasCalculator);
+    registry.put(
+        Address.ALTBN128_PAIRING, AltBN128PairingPrecompiledContract.granite(gasCalculator));
+  }
+
+  /**
    * Prague precompile contract registry.
    *
    * @param gasCalculator the gas calculator

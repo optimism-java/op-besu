@@ -24,12 +24,12 @@ import org.hyperledger.besu.datatypes.Address;
  *   <LI>Blob gas for EIP-4844
  * </UL>
  */
-public class FjordGasCaculator extends CancunGasCalculator {
+public class FjordGasCalculator extends CancunGasCalculator {
 
   private int maxPrecompile;
 
   /** Instantiates a new Cancun Gas Calculator. */
-  public FjordGasCaculator() {
+  public FjordGasCalculator() {
     this(256);
     this.maxPrecompile = 256;
   }
@@ -39,7 +39,7 @@ public class FjordGasCaculator extends CancunGasCalculator {
    *
    * @param maxPrecompile the max precompile
    */
-  protected FjordGasCaculator(final int maxPrecompile) {
+  protected FjordGasCalculator(final int maxPrecompile) {
     super(maxPrecompile);
     this.maxPrecompile = maxPrecompile;
   }

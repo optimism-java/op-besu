@@ -387,7 +387,7 @@ public class BesuController implements java.io.Closeable {
           // https://github.com/hyperledger/besu/issues/2897
           return new TransitionBesuControllerBuilder(builder, new MergeBesuControllerBuilder())
               .genesisConfigFile(genesisConfigFile)
-              .genesisConfigOptions(genesisConfigFile.getConfigOptions(overrides));
+              .genesisConfigOptions(genesisConfigFile.withOverrides(overrides).getConfigOptions());
         }
 
       } else return builder.genesisConfigFile(genesisConfigFile);

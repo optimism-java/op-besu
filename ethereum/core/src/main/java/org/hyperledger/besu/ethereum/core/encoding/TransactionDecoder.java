@@ -42,7 +42,7 @@ public class TransactionDecoder {
           TransactionType.BLOB,
           BlobTransactionDecoder::decode,
           TransactionType.OPTIMISM_DEPOSIT,
-          OptimismDepositTransactionDecoder::decode),
+          OptimismDepositTransactionDecoder::decode,
           TransactionType.SET_CODE,
           SetCodeTransactionDecoder::decode);
 

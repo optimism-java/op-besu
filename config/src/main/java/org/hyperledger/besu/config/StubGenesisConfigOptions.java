@@ -58,6 +58,7 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
   private OptionalLong canyonTime = OptionalLong.empty();
   private OptionalLong ecotoneTime = OptionalLong.empty();
   private OptionalLong fjordTime = OptionalLong.empty();
+  private OptionalLong graniteTime = OptionalLong.empty();
   private OptionalLong interopTime = OptionalLong.empty();
   private OptionalLong terminalBlockNumber = OptionalLong.empty();
   private Optional<Hash> terminalBlockHash = Optional.empty();
@@ -329,6 +330,16 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
 
   @Override
   public boolean isFjord(final long headTime) {
+    return false;
+  }
+
+  @Override
+  public OptionalLong getGraniteTime() {
+    return graniteTime;
+  }
+
+  @Override
+  public boolean isGranite(final long headTime) {
     return false;
   }
 
@@ -827,6 +838,17 @@ public class StubGenesisConfigOptions implements GenesisConfigOptions, Cloneable
    */
   public StubGenesisConfigOptions fjordTime(final long timestamp) {
     fjordTime = OptionalLong.of(timestamp);
+    return this;
+  }
+
+  /**
+   * Granite time.
+   *
+   * @param timestamp the timestamp
+   * @return the stub genesis config options
+   */
+  public StubGenesisConfigOptions graniteTime(final long timestamp) {
+    graniteTime = OptionalLong.of(timestamp);
     return this;
   }
 

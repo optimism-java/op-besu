@@ -22,6 +22,7 @@ import static org.hyperledger.besu.evm.precompile.MainnetPrecompiledContracts.po
 import static org.hyperledger.besu.evm.precompile.MainnetPrecompiledContracts.populateForFjord;
 import static org.hyperledger.besu.evm.precompile.MainnetPrecompiledContracts.populateForFrontier;
 import static org.hyperledger.besu.evm.precompile.MainnetPrecompiledContracts.populateForFutureEIPs;
+import static org.hyperledger.besu.evm.precompile.MainnetPrecompiledContracts.populateForGranite;
 import static org.hyperledger.besu.evm.precompile.MainnetPrecompiledContracts.populateForIstanbul;
 import static org.hyperledger.besu.evm.precompile.MainnetPrecompiledContracts.populateForPrague;
 
@@ -65,6 +66,13 @@ public interface MainnetPrecompiledContractRegistries {
       final PrecompiledContractConfiguration precompiledContractConfiguration) {
     final PrecompileContractRegistry registry = new PrecompileContractRegistry();
     populateForFjord(registry, precompiledContractConfiguration.getGasCalculator());
+    return registry;
+  }
+
+  static PrecompileContractRegistry granite(
+      final PrecompiledContractConfiguration precompiledContractConfiguration) {
+    final PrecompileContractRegistry registry = new PrecompileContractRegistry();
+    populateForGranite(registry, precompiledContractConfiguration.getGasCalculator());
     return registry;
   }
 

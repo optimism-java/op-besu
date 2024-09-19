@@ -162,6 +162,7 @@ public class EVMExecutor {
       case CANCUN -> cancun(chainId, evmConfiguration);
       case CANCUN_EOF -> cancunEOF(chainId, evmConfiguration);
       case FJORD -> fjord(chainId, evmConfiguration);
+      case GRANITE -> granite(chainId, evmConfiguration);
       case PRAGUE -> prague(chainId, evmConfiguration);
       case PRAGUE_EOF -> pragueEOF(chainId, evmConfiguration);
       case OSAKA -> osaka(chainId, evmConfiguration);
@@ -522,6 +523,21 @@ public class EVMExecutor {
     final EVMExecutor executor = new EVMExecutor(MainnetEVMs.cancun(chainId, evmConfiguration));
     executor.precompileContractRegistry =
         MainnetPrecompiledContracts.fjord(executor.evm.getGasCalculator());
+    return executor;
+  }
+
+  /**
+   * Instantiate Granite evm executor.
+   *
+   * @param chainId the chain ID
+   * @param evmConfiguration the evm configuration
+   * @return the evm executor
+   */
+  private static EVMExecutor granite(
+      final BigInteger chainId, final EvmConfiguration evmConfiguration) {
+    final EVMExecutor executor = new EVMExecutor(MainnetEVMs.cancun(chainId, evmConfiguration));
+    executor.precompileContractRegistry =
+        MainnetPrecompiledContracts.granite(executor.evm.getGasCalculator());
     return executor;
   }
 

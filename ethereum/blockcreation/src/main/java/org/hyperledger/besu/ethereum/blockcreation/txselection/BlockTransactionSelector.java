@@ -418,13 +418,14 @@ public class BlockTransactionSelector {
                   transaction.getType(), processingResult, worldState, cumulativeGasUsed);
         } else {
           GenesisConfigOptions options = genesisConfigOptions.orElseThrow();
+
           Optional<Long> depositNonce =
-              options.isRegolith(blockSelectionContext.processableBlockHeader().getTimestamp())
+              options.isRegolith(blockSelectionContext.pendingBlockHeader().getTimestamp())
                   ? Optional.of(nonce)
                   : Optional.empty();
 
           Optional<Long> canyonDepositReceiptVer =
-              options.isCanyon(blockSelectionContext.processableBlockHeader().getTimestamp())
+              options.isCanyon(blockSelectionContext.pendingBlockHeader().getTimestamp())
                   ? Optional.of(1L)
                   : Optional.empty();
           receipt =

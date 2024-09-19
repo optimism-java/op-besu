@@ -368,6 +368,21 @@ public interface GenesisConfigOptions {
   boolean isFjord(long headTime);
 
   /**
+   * Gets granite time.
+   *
+   * @return the granite time
+   */
+  OptionalLong getGraniteTime();
+
+  /**
+   * Returns whether a fork scheduled at granite timestamp is active at the given head timestamp.
+   *
+   * @param headTime the current head time
+   * @return the boolean
+   */
+  boolean isGranite(long headTime);
+
+  /**
    * Gets interop time.
    *
    * @return the interop time

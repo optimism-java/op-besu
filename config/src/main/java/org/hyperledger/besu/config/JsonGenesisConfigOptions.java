@@ -416,6 +416,23 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
   }
 
   @Override
+  public OptionalLong getGraniteTime() {
+    return getOptionalLong("granitetime");
+  }
+
+  @Override
+  public boolean isGranite(final long headTime) {
+    if (!isOptimism()) {
+      return false;
+    }
+    var graniteTime = getGraniteTime();
+    if (graniteTime.isPresent()) {
+      return graniteTime.getAsLong() <= headTime;
+    }
+    return false;
+  }
+
+  @Override
   public OptionalLong getInteropTime() {
     return getOptionalLong("interoptime");
   }
@@ -740,19 +757,17 @@ public class JsonGenesisConfigOptions implements GenesisConfigOptions {
   public List<Long> getForkBlockTimestamps() {
     Stream<OptionalLong> forkBlockTimestamps;
     if (this.isOptimism()) {
-      forkBlockTimestamps = Stream.of(
-          getFjordTime(),
-          getCanyonTime(),
-          getEcotoneTime());
+      forkBlockTimestamps = Stream.of(getFjordTime(), getCanyonTime(), getEcotoneTime());
     } else {
-      forkBlockTimestamps = Stream.of(
-          getShanghaiTime(),
-          getCancunTime(),
-          getCancunEOFTime(),
-          getPragueTime(),
-          getPragueEOFTime(),
-          getFutureEipsTime(),
-          getExperimentalEipsTime());
+      forkBlockTimestamps =
+          Stream.of(
+              getShanghaiTime(),
+              getCancunTime(),
+              getCancunEOFTime(),
+              getPragueTime(),
+              getPragueEOFTime(),
+              getFutureEipsTime(),
+              getExperimentalEipsTime());
     }
     // when adding forks add an entry to ${REPO_ROOT}/config/src/test/resources/all_forks.json
 

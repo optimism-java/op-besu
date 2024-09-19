@@ -392,15 +392,15 @@ public class MainnetTransactionProcessor {
 
         final long blobGas = gasCalculator.blobGasCost(transaction.getBlobCount());
 
-      final Wei upfrontGasCost =
-          transaction.getUpfrontGasCost(transactionGasPrice, blobGasPrice, blobGas);
-      final Wei previousBalance = sender.decrementBalance(upfrontGasCost);
-      LOG.trace(
-          "Deducted sender {} upfront gas cost {} ({} -> {})",
-          senderAddress,
-          upfrontGasCost,
-          previousBalance,
-          sender.getBalance());
+        final Wei upfrontGasCost =
+            transaction.getUpfrontGasCost(transactionGasPrice, blobGasPrice, blobGas);
+        final Wei previousBalance = sender.decrementBalance(upfrontGasCost);
+        LOG.trace(
+            "Deducted sender {} upfront gas cost {} ({} -> {})",
+            senderAddress,
+            upfrontGasCost,
+            previousBalance,
+            sender.getBalance());
       }
       var l1CostGasFee =
           genesisConfigOptions
@@ -690,9 +690,11 @@ public class MainnetTransactionProcessor {
             if (l1CostCalculator.isEmpty()) {
               return;
             }
-            var l1Cost = l1CostCalculator.get().l1Cost(options, blockHeader, transaction, worldState);
+            var l1Cost =
+                l1CostCalculator.get().l1Cost(options, blockHeader, transaction, worldState);
             MutableAccount opL1FeeRecipient =
-                evmWorldUpdater.getOrCreate(Address.fromHexString("0x420000000000000000000000000000000000001A"));
+                evmWorldUpdater.getOrCreate(
+                    Address.fromHexString("0x420000000000000000000000000000000000001A"));
             opL1FeeRecipient.incrementBalance(l1Cost);
           });
 

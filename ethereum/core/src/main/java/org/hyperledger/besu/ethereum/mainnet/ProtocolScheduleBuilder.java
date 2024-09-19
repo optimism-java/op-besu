@@ -145,7 +145,12 @@ public class ProtocolScheduleBuilder {
 
     validateForkOrdering();
 
-    final List<BuilderMapEntry> mileStones = createMilestones(specFactory);
+    final List<BuilderMapEntry> mileStones;
+    if (config.isOptimism()) {
+      mileStones = createOpMileStones(specFactory);
+    } else {
+      mileStones = createMilestones(specFactory);
+    }
     final Map<HardforkId, Long> completeMileStoneList = buildFullMilestoneMap(mileStones);
     protocolSchedule.setMilestones(completeMileStoneList);
 
@@ -319,8 +324,8 @@ public class ProtocolScheduleBuilder {
 
   private NavigableMap<Long, BuilderMapEntry> buildFlattenedMilestoneMap(
       final List<BuilderMapEntry> mileStones) {
-    //Stream<Optional<BuilderMapEntry>> milestones = createMilestones(specFactory);
-    //milestones.close();
+    // Stream<Optional<BuilderMapEntry>> milestones = createMilestones(specFactory);
+    // milestones.close();
     return mileStones.stream()
         .collect(
             Collectors.toMap(
@@ -339,13 +344,33 @@ public class ProtocolScheduleBuilder {
                 (existing, replacement) -> existing));
   }
 
+  private List<BuilderMapEntry> createOpMileStones(final MainnetProtocolSpecFactory specFactory) {
+    return Stream.of(
+            blockNumberMilestone(
+                HardforkId.OptimismHardforkId.BEDROCK,
+                config.getBedrockBlock(),
+                specFactory.regolithDefinition(config)),
+            timestampMilestone(
+                HardforkId.OptimismHardforkId.REGOLITH,
+                config.getRegolithTime(),
+                specFactory.regolithDefinition(config)),
+            timestampMilestone(
+                HardforkId.OptimismHardforkId.CANYON,
+                config.getCanyonTime(),
+                specFactory.canyonDefinition(config)),
+            timestampMilestone(
+                HardforkId.OptimismHardforkId.FJORD,
+                config.getFjordTime(),
+                specFactory.fjordDefinition(config)),
+            timestampMilestone(
+                HardforkId.OptimismHardforkId.GRANITE,
+                config.getGraniteTime(),
+                specFactory.graniteDefinition(config)))
+        .flatMap(Optional::stream)
+        .toList();
+  }
+
   private List<BuilderMapEntry> createMilestones(final MainnetProtocolSpecFactory specFactory) {
-//    if (config.isOptimism()) {
-//      return Stream.of(
-//          blockNumberMilestone(config.getBedrockBlock(), specFactory.londonDefinition(config)),
-//          timestampMilestone(config.getRegolithTime(), specFactory.londonDefinition(config)),
-//          timestampMilestone(config.getCanyonTime(), specFactory.shanghaiDefinition(config)));
-//    }
     return Stream.of(
             blockNumberMilestone(
                 HardforkId.MainnetHardforkId.FRONTIER,

@@ -16,6 +16,7 @@ package org.hyperledger.besu.evm;
 
 import org.hyperledger.besu.datatypes.HardforkId;
 import org.hyperledger.besu.datatypes.HardforkId.MainnetHardforkId;
+import org.hyperledger.besu.datatypes.HardforkId.OptimismHardforkId;
 
 import java.util.Comparator;
 import java.util.stream.Stream;
@@ -53,8 +54,10 @@ public enum EvmSpecVersion {
   CANCUN(MainnetHardforkId.CANCUN, 0x6000, 0xc000, 0),
   /** Cancun evm spec version. */
   CANCUN_EOF(MainnetHardforkId.CANCUN_EOF, 0x6000, 0xc000, 1),
-//  /** Fjord evm spec version. */
-//  FJORD(0, true, "Fjord", "Finalized"),
+  /** Fjord evm spec version. */
+  FJORD(OptimismHardforkId.FJORD, 0x6000, 0xc000, 0),
+  /** Granite evm spec version. */
+  GRANITE(OptimismHardforkId.GRANITE, 0x6000, 0xc000, 0),
   /** Prague evm spec version. */
   PRAGUE(MainnetHardforkId.PRAGUE, 0x6000, 0xc000, 0),
   /** PragueEOF evm spec version. */

@@ -82,6 +82,16 @@ public class AltBN128PairingPrecompiledContract extends AbstractAltBnPrecompiled
     return new AltBN128PairingPrecompiledContract(gasCalculator, 34_000L, 45_000L);
   }
 
+  /**
+   * Create Granite AltBN128Pairing precompiled contract.
+   *
+   * @param gasCalculator the gas calculator
+   * @return the AltBN128Pairing precompiled contract
+   */
+  public static AltBN128PairingPrecompiledContract granite(final GasCalculator gasCalculator) {
+    return new AltBN128PairingGranitePrecompiledContract(gasCalculator, 34_000L, 45_000L);
+  }
+
   @Override
   public long gasRequirement(final Bytes input) {
     final int parameters = input.size() / PARAMETER_LENGTH;
@@ -154,5 +164,25 @@ public class AltBN128PairingPrecompiledContract extends AbstractAltBnPrecompiled
     }
     final byte[] raw = Arrays.copyOfRange(input.toArrayUnsafe(), offset, offset + length);
     return new BigInteger(1, raw);
+  }
+
+  private static class AltBN128PairingGranitePrecompiledContract
+      extends AltBN128PairingPrecompiledContract {
+    private static final int MAX_INPUT_SIZE_GRANITE = 112687;
+
+    private AltBN128PairingGranitePrecompiledContract(
+        final GasCalculator gasCalculator, final long pairingGasCost, final long baseGasCost) {
+      super(gasCalculator, pairingGasCost, baseGasCost);
+    }
+
+    @Override
+    public PrecompileContractResult computePrecompile(
+        final Bytes input, @Nonnull final MessageFrame messageFrame) {
+      if (input.size() > MAX_INPUT_SIZE_GRANITE) {
+        return PrecompileContractResult.halt(
+            null, Optional.of(ExceptionalHaltReason.PRECOMPILE_ERROR));
+      }
+      return super.computePrecompile(input, messageFrame);
+    }
   }
 }

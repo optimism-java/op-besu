@@ -213,15 +213,48 @@ public class MainnetProtocolSpecFactory {
         metricsSystem);
   }
 
-  public ProtocolSpecBuilder fjordDefinition(final GenesisConfigOptions genesisConfigOptions) {
-    return MainnetProtocolSpecs.fjordDefinition(
+  public ProtocolSpecBuilder regolithDefinition(final GenesisConfigOptions genesisConfigOptions) {
+    return MainnetProtocolSpecs.regolithDefinition(
         chainId,
-        contractSizeLimit,
-        evmStackSize,
         isRevertReasonEnabled,
         genesisConfigOptions,
         evmConfiguration,
-        miningParameters);
+        miningParameters,
+        isParallelTxProcessingEnabled,
+        metricsSystem);
+  }
+
+  public ProtocolSpecBuilder canyonDefinition(final GenesisConfigOptions genesisConfigOptions) {
+    return MainnetProtocolSpecs.canyonDefinition(
+        chainId,
+        isRevertReasonEnabled,
+        genesisConfigOptions,
+        evmConfiguration,
+        miningParameters,
+        isParallelTxProcessingEnabled,
+        metricsSystem);
+  }
+
+  public ProtocolSpecBuilder fjordDefinition(final GenesisConfigOptions genesisConfigOptions) {
+    return MainnetProtocolSpecs.fjordDefinition(
+        chainId,
+        isRevertReasonEnabled,
+        genesisConfigOptions,
+        evmConfiguration,
+        miningParameters,
+        isParallelTxProcessingEnabled,
+        metricsSystem);
+  }
+
+  public ProtocolSpecBuilder graniteDefinition(final GenesisConfigOptions genesisConfigOptions) {
+    return MainnetProtocolSpecs.graniteDefinition(
+        chainId,
+        isRevertReasonEnabled,
+        genesisConfigOptions,
+        evmConfiguration,
+        miningParameters,
+        isParallelTxProcessingEnabled,
+        metricsSystem);
   }
 
   public ProtocolSpecBuilder pragueDefinition(final GenesisConfigOptions genesisConfigOptions) {

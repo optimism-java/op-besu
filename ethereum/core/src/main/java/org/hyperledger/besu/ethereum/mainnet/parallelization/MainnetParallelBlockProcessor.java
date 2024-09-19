@@ -14,6 +14,7 @@
  */
 package org.hyperledger.besu.ethereum.mainnet.parallelization;
 
+import org.hyperledger.besu.config.GenesisConfigOptions;
 import org.hyperledger.besu.datatypes.Address;
 import org.hyperledger.besu.datatypes.Wei;
 import org.hyperledger.besu.ethereum.core.BlockHeader;
@@ -185,7 +186,8 @@ public class MainnetParallelBlockProcessor extends MainnetBlockProcessor {
         final Wei blockReward,
         final MiningBeneficiaryCalculator miningBeneficiaryCalculator,
         final boolean skipZeroBlockRewards,
-        final ProtocolSchedule protocolSchedule) {
+        final ProtocolSchedule protocolSchedule,
+        final Optional<GenesisConfigOptions> genesisConfigOptions) {
       return new MainnetParallelBlockProcessor(
           transactionProcessor,
           transactionReceiptFactory,
