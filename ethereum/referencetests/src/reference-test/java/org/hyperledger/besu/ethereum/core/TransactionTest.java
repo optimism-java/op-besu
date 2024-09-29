@@ -41,6 +41,7 @@ import org.hyperledger.besu.evm.gascalculator.TangerineWhistleGasCalculator;
 import org.hyperledger.besu.testutil.JsonTestParameters;
 
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.stream.Stream;
 
 import org.apache.tuweni.bytes.Bytes;
@@ -175,7 +176,7 @@ public class TransactionTest {
       final Transaction transaction = Transaction.readFrom(RLP.input(rlp));
       final ValidationResult<TransactionInvalidReason> validation =
           transactionValidator(milestone)
-              .validate(transaction, 0L, baseFee, Optional.empty(), TransactionValidationParams.processingBlock());
+              .validate(transaction, OptionalLong.empty(), baseFee, Optional.empty(), TransactionValidationParams.processingBlock());
       if (!validation.isValid()) {
         throw new RuntimeException(
             String.format(
