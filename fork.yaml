@@ -61,7 +61,6 @@ def:
             gaslimit in increments of 1/1024 of the previous gaslimit.
             The gaslimit is changed (and limited) through the `SystemConfig` contract.
           globs:
-            - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/core/feemarket/BaseFee.java"
             - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/feemarket/BaseFeeMarket.java"
             - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/feemarket/CancunFeeMarket.java"
             - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/feemarket/FeeMarket.java"

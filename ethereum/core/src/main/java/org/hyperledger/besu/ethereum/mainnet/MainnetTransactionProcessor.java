@@ -51,6 +51,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Set;
 
 import com.google.common.collect.HashMultimap;
@@ -339,7 +340,7 @@ public class MainnetTransactionProcessor {
       ValidationResult<TransactionInvalidReason> validationResult =
           transactionValidator.validate(
               transaction,
-              blockHeader.getTimestamp(),
+              OptionalLong.of(blockHeader.getTimestamp()),
               blockHeader.getBaseFee(),
               Optional.ofNullable(blobGasPrice),
               transactionValidationParams);

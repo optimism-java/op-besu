@@ -98,14 +98,7 @@ public class EnginePayloadAttributesParameterTest {
 
   private EnginePayloadAttributesParameter parameterWithdrawalsOmitted() {
     return new EnginePayloadAttributesParameter(
-        TIMESTAMP,
-        PREV_RANDAO,
-        SUGGESTED_FEE_RECIPIENT_ADDRESS,
-        null,
-        null,
-        null,
-        null,
-        new UnsignedLongParameter(0L));
+        TIMESTAMP, PREV_RANDAO, SUGGESTED_FEE_RECIPIENT_ADDRESS, null, null, null, null, null);
   }
 
   private EnginePayloadAttributesParameter parameterWithdrawalsPresent() {
@@ -118,7 +111,7 @@ public class EnginePayloadAttributesParameterTest {
         null,
         null,
         null,
-        new UnsignedLongParameter(0L));
+        null);
   }
 
   // TODO: add a parent beacon block root test here

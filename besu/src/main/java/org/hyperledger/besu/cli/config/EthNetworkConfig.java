@@ -26,6 +26,7 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -88,7 +89,7 @@ public record EthNetworkConfig(
             .orElse(Collections.emptyList());
     return new EthNetworkConfig(
         genesisConfigFile,
-        null,
+        new HashMap<>(),
         networkName.getNetworkId(),
         bootNodes,
         genesisConfigOptions.getDiscoveryOptions().getDiscoveryDnsUrl().orElse(null));
@@ -119,7 +120,7 @@ public record EthNetworkConfig(
     private String dnsDiscoveryUrl;
     private GenesisConfigFile genesisConfigFile;
     private BigInteger networkId;
-    private final List<EnodeURL> bootNodes;
+    private List<EnodeURL> bootNodes;
     private Map<String, String> genesisConfigOverrides;
 
     /**
@@ -132,6 +133,7 @@ public record EthNetworkConfig(
       this.networkId = ethNetworkConfig.networkId;
       this.bootNodes = ethNetworkConfig.bootNodes;
       this.dnsDiscoveryUrl = ethNetworkConfig.dnsDiscoveryUrl;
+      this.genesisConfigOverrides = ethNetworkConfig.genesisConfigOverrides;
     }
 
     /**
@@ -174,15 +176,7 @@ public record EthNetworkConfig(
      * @return this builder
      */
     public Builder setBootNodes(final List<EnodeURL> bootNodes) {
-      if (bootNodes == null) {
-        return this;
-      }
-      bootNodes.forEach(
-          bootNode -> {
-            if (!this.bootNodes.contains(bootNode)) {
-              this.bootNodes.add(bootNode);
-            }
-          });
+      this.bootNodes = bootNodes;
       return this;
     }
 

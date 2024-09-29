@@ -36,6 +36,7 @@ import org.hyperledger.besu.evm.gascalculator.GasCalculator;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Set;
 
 import ethereum.ckzg4844.CKZG4844JNI;
@@ -105,7 +106,7 @@ public class MainnetTransactionValidator implements TransactionValidator {
   @Override
   public ValidationResult<TransactionInvalidReason> validate(
       final Transaction transaction,
-      final long blockTimestamp,
+      final OptionalLong blockTimestamp,
       final Optional<Wei> baseFee,
       final Optional<Wei> blobFee,
       final TransactionValidationParams transactionValidationParams) {
@@ -144,7 +145,7 @@ public class MainnetTransactionValidator implements TransactionValidator {
     if (transaction.getType().equals(TransactionType.OPTIMISM_DEPOSIT)) {
       //      genesisOptions.orElseThrow();
       if (transaction.getIsSystemTx().orElse(false)) {
-        if (genesisOptions.get().isRegolith(blockTimestamp)) {
+        if (genesisOptions.get().isRegolith(blockTimestamp.orElse(0L))) {
           return ValidationResult.invalid(
               TransactionInvalidReason.SYSTEM_TX_NOT_SUPPORT,
               String.format(

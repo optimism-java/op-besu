@@ -20,6 +20,7 @@ import org.hyperledger.besu.ethereum.transaction.TransactionInvalidReason;
 import org.hyperledger.besu.evm.account.Account;
 
 import java.util.Optional;
+import java.util.OptionalLong;
 
 public interface TransactionValidator {
 
@@ -34,7 +35,7 @@ public interface TransactionValidator {
    */
   ValidationResult<TransactionInvalidReason> validate(
       Transaction transaction,
-      final long blockTimestamp,
+      OptionalLong blockTimestamp,
       Optional<Wei> baseFee,
       Optional<Wei> blobBaseFee,
       TransactionValidationParams transactionValidationParams);

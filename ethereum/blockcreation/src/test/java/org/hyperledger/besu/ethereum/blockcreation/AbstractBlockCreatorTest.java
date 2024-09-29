@@ -96,6 +96,7 @@ import java.math.BigInteger;
 import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -499,6 +500,7 @@ abstract class AbstractBlockCreatorTest {
     @Override
     public ValidationResult<TransactionInvalidReason> validate(
         final Transaction transaction,
+        final OptionalLong blockTimestamp,
         final Optional<Wei> baseFee,
         final Optional<Wei> blobBaseFee,
         final TransactionValidationParams transactionValidationParams) {

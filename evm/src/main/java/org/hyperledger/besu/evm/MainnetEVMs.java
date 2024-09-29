@@ -1008,7 +1008,7 @@ public class MainnetEVMs {
   }
 
   /**
-   * Operation registry for cancun's operations.
+   * Operation registry for fjord's operations.
    *
    * @param gasCalculator the gas calculator
    * @param chainId the chain id
@@ -1033,6 +1033,74 @@ public class MainnetEVMs {
       final GasCalculator gasCalculator,
       final BigInteger chainID) {
     registerCancunOperations(registry, gasCalculator, chainID);
+  }
+
+  /**
+   * Granite evm.
+   *
+   * @param evmConfiguration the evm configuration
+   * @return the evm
+   */
+  public static EVM granite(final EvmConfiguration evmConfiguration) {
+    return granite(DEV_NET_CHAIN_ID, evmConfiguration);
+  }
+
+  /**
+   * Granite evm.
+   *
+   * @param chainId the chain id
+   * @param evmConfiguration the evm configuration
+   * @return the evm
+   */
+  public static EVM granite(final BigInteger chainId, final EvmConfiguration evmConfiguration) {
+    return granite(new CancunGasCalculator(), chainId, evmConfiguration);
+  }
+
+  /**
+   * Granite evm.
+   *
+   * @param gasCalculator the gas calculator
+   * @param chainId the chain id
+   * @param evmConfiguration the evm configuration
+   * @return the evm
+   */
+  public static EVM granite(
+      final GasCalculator gasCalculator,
+      final BigInteger chainId,
+      final EvmConfiguration evmConfiguration) {
+    return new EVM(
+        graniteOperations(gasCalculator, chainId),
+        gasCalculator,
+        evmConfiguration,
+        EvmSpecVersion.GRANITE);
+  }
+
+  /**
+   * Operation registry for granite's operations.
+   *
+   * @param gasCalculator the gas calculator
+   * @param chainId the chain id
+   * @return the operation registry
+   */
+  public static OperationRegistry graniteOperations(
+      final GasCalculator gasCalculator, final BigInteger chainId) {
+    OperationRegistry operationRegistry = new OperationRegistry();
+    registerGraniteOperations(operationRegistry, gasCalculator, chainId);
+    return operationRegistry;
+  }
+
+  /**
+   * Register granite operations.
+   *
+   * @param registry the registry
+   * @param gasCalculator the gas calculator
+   * @param chainID the chain id
+   */
+  public static void registerGraniteOperations(
+      final OperationRegistry registry,
+      final GasCalculator gasCalculator,
+      final BigInteger chainID) {
+    registerFjordOperations(registry, gasCalculator, chainID);
   }
 
   /**

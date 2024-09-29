@@ -36,13 +36,13 @@ public class L1CostCalculator {
   private static final UInt256 SIXTEEN = UInt256.valueOf(16L);
 
   private static final BigInteger L1_COST_INTERCEPT = BigInteger.valueOf(-42_585_600L);
-  private static final UInt256 L1_COST_FAST_LZ_COEF = UInt256.valueOf(836_500L);
+  private static final BigInteger L1_COST_FAST_LZ_COEF = BigInteger.valueOf(836_500L);
 
-  private static final UInt256 MIN_TX_SIZE = UInt256.valueOf(100L);
-  private static final UInt256 MIN_TX_SIZE_SCALED =
-      UInt256.valueOf(1_000_000L).multiply(MIN_TX_SIZE);
+  private static final BigInteger MIN_TX_SIZE = BigInteger.valueOf(100L);
+  private static final BigInteger MIN_TX_SIZE_SCALED =
+      BigInteger.valueOf(1_000_000L).multiply(MIN_TX_SIZE);
   private static final UInt256 ECOTONE_DIVISOR = UInt256.valueOf(1_000_000L * 16L);
-  private static final UInt256 FJORD_DIVISOR = UInt256.valueOf(1_000_000_000_000L);
+  private static final BigInteger FJORD_DIVISOR = BigInteger.valueOf(1_000_000_000_000L);
 
   private static final int BASE_FEE_SCALAR_SLOT_OFFSET = 12;
   //  private static final int BLOB_BASE_FEE_SCALAR_SLOT_OFFSET = 8;
@@ -231,16 +231,15 @@ public class L1CostCalculator {
     var blobCostPerByte = l1BlobBaseFeeScalar.multiply(l1BlobBaseFee);
     var l1FeeScaled = calldataCostPerByte.add(blobCostPerByte);
 
-    var fastLzSize = UInt256.valueOf(costData.getFastLzSize());
     var estimatedSize =
-        UInt256.valueOf(
-            L1_COST_INTERCEPT.add(L1_COST_FAST_LZ_COEF.multiply(fastLzSize).toBigInteger()));
+        L1_COST_INTERCEPT.add(
+            L1_COST_FAST_LZ_COEF.multiply(BigInteger.valueOf(costData.getFastLzSize())));
 
     if (estimatedSize.compareTo(MIN_TX_SIZE_SCALED) < 0) {
       estimatedSize = MIN_TX_SIZE_SCALED;
     }
 
-    var l1CostScaled = estimatedSize.multiply(l1FeeScaled);
+    var l1CostScaled = estimatedSize.multiply(l1FeeScaled.toBigInteger());
     var l1Cost = l1CostScaled.divide(FJORD_DIVISOR);
     return Wei.of(l1Cost);
   }

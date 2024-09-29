@@ -114,7 +114,7 @@ public enum EvmSpecVersion {
   public static EvmSpecVersion defaultVersion() {
     EvmSpecVersion answer = null;
     for (EvmSpecVersion version : EvmSpecVersion.values()) {
-      if (version.initialHardfork.finalized()) {
+      if (version.initialHardfork.finalized() && !(version.initialHardfork instanceof OptimismHardforkId)) {
         answer = version;
       }
     }

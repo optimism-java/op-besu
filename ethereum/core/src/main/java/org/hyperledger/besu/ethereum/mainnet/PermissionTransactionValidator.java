@@ -21,6 +21,7 @@ import org.hyperledger.besu.ethereum.transaction.TransactionInvalidReason;
 import org.hyperledger.besu.evm.account.Account;
 
 import java.util.Optional;
+import java.util.OptionalLong;
 
 /**
  * Validates a transaction based on Frontier protocol runtime requirements.
@@ -42,7 +43,7 @@ public class PermissionTransactionValidator implements TransactionValidator {
   @Override
   public ValidationResult<TransactionInvalidReason> validate(
       final Transaction transaction,
-      final long blockTimestamp,
+      final OptionalLong blockTimestamp,
       final Optional<Wei> baseFee,
       final Optional<Wei> blobBaseFee,
       final TransactionValidationParams transactionValidationParams) {

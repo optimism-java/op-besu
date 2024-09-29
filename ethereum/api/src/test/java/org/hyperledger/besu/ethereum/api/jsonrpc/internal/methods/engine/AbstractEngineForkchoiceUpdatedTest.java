@@ -248,7 +248,7 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             null,
             null,
             null,
-            new UnsignedLongParameter(0L));
+            null);
     var mockPayloadId =
         PayloadIdentifier.forPayloadParams(
             mockHeader.getHash(),
@@ -512,7 +512,7 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             null,
             null,
             null,
-            new UnsignedLongParameter(0L));
+            null);
 
     var resp =
         resp(
@@ -540,7 +540,7 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             null,
             null,
             null,
-            new UnsignedLongParameter(0L));
+            null);
 
     var mockPayloadId =
         PayloadIdentifier.forPayloadParams(
@@ -629,7 +629,7 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             null,
             null,
             null,
-            new UnsignedLongParameter(0L));
+            null);
 
     final Optional<List<Withdrawal>> withdrawals =
         Optional.of(
@@ -684,7 +684,7 @@ public abstract class AbstractEngineForkchoiceUpdatedTest {
             null,
             null,
             null,
-            new UnsignedLongParameter(0L));
+            null);
 
     var mockPayloadId =
         PayloadIdentifier.forPayloadParams(

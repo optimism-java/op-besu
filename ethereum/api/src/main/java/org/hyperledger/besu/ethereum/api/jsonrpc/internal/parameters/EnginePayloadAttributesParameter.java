@@ -55,7 +55,7 @@ public class EnginePayloadAttributesParameter {
         parentBeaconBlockRoot == null ? null : Bytes32.fromHexString(parentBeaconBlockRoot);
     this.noTxPool = noTxPool;
     this.transactions = transactions;
-    this.gasLimit = gasLimit.getValue();
+    this.gasLimit = gasLimit == null ? null : gasLimit.getValue();
   }
 
   public Long getTimestamp() {

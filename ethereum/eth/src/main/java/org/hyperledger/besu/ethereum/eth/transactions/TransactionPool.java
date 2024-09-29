@@ -410,7 +410,7 @@ public class TransactionPool implements BlockAddedObserver {
         getTransactionValidator()
             .validate(
                 transaction,
-                0,
+                OptionalLong.empty(),
                 chainHeadBlockHeader.getBaseFee(),
                 Optional.of(
                     Wei.ZERO), // TransactionValidationParams.transactionPool() allows underpriced

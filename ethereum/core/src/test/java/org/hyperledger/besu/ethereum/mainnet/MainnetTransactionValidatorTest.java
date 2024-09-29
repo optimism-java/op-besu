@@ -53,6 +53,7 @@ import org.hyperledger.besu.evm.gascalculator.GasCalculator;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -132,7 +133,11 @@ public class MainnetTransactionValidatorTest {
 
     assertThat(
             validator.validate(
-                transaction, 0L, Optional.empty(), Optional.empty(), transactionValidationParams))
+                transaction,
+                OptionalLong.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                transactionValidationParams))
         .isEqualTo(
             ValidationResult.invalid(TransactionInvalidReason.INTRINSIC_GAS_EXCEEDS_GAS_LIMIT));
   }
@@ -145,7 +150,7 @@ public class MainnetTransactionValidatorTest {
     assertThat(
             validator.validate(
                 basicTransaction,
-                0L,
+                OptionalLong.empty(),
                 Optional.empty(),
                 Optional.empty(),
                 transactionValidationParams))
@@ -165,7 +170,7 @@ public class MainnetTransactionValidatorTest {
     assertThat(
             validator.validate(
                 basicTransaction,
-                0L,
+                OptionalLong.empty(),
                 Optional.empty(),
                 Optional.empty(),
                 transactionValidationParams))
@@ -317,7 +322,11 @@ public class MainnetTransactionValidatorTest {
 
     final ValidationResult<TransactionInvalidReason> validationResult =
         validator.validate(
-            transaction, 0L, Optional.of(Wei.ONE), Optional.empty(), transactionValidationParams);
+            transaction,
+            OptionalLong.empty(),
+            Optional.of(Wei.ONE),
+            Optional.empty(),
+            transactionValidationParams);
     assertThat(validationResult)
         .isEqualTo(ValidationResult.invalid(MAX_PRIORITY_FEE_PER_GAS_EXCEEDS_MAX_FEE_PER_GAS));
     assertThat(validationResult.getErrorMessage())
@@ -360,7 +369,7 @@ public class MainnetTransactionValidatorTest {
     final ValidationResult<TransactionInvalidReason> validationResult =
         validator.validate(
             transaction,
-            0L,
+            OptionalLong.empty(),
             Optional.of(Wei.ONE),
             Optional.of(Wei.of(10)),
             transactionValidationParams);
@@ -404,7 +413,11 @@ public class MainnetTransactionValidatorTest {
 
     assertThat(
             frontierValidator.validate(
-                transaction, 0L, Optional.empty(), Optional.empty(), transactionValidationParams))
+                transaction,
+                OptionalLong.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                transactionValidationParams))
         .isEqualTo(ValidationResult.invalid(INVALID_TRANSACTION_FORMAT));
 
     when(gasCalculator.transactionIntrinsicGasCost(any(), anyBoolean())).thenReturn(0L);
@@ -412,7 +425,7 @@ public class MainnetTransactionValidatorTest {
     assertThat(
             eip1559Validator.validate(
                 transaction,
-                0L,
+                OptionalLong.empty(),
                 Optional.of(Wei.ONE),
                 Optional.empty(),
                 transactionValidationParams))
@@ -440,7 +453,11 @@ public class MainnetTransactionValidatorTest {
     final Optional<Wei> basefee = Optional.of(Wei.of(150000L));
     assertThat(
             validator.validate(
-                transaction, 0L, basefee, Optional.empty(), transactionValidationParams))
+                transaction,
+                OptionalLong.empty(),
+                basefee,
+                Optional.empty(),
+                transactionValidationParams))
         .isEqualTo(ValidationResult.invalid(GAS_PRICE_BELOW_CURRENT_BASE_FEE));
   }
 
@@ -466,7 +483,11 @@ public class MainnetTransactionValidatorTest {
 
     assertThat(
             validator.validate(
-                transaction, 0L, zeroBaseFee, Optional.empty(), transactionValidationParams))
+                transaction,
+                OptionalLong.empty(),
+                zeroBaseFee,
+                Optional.empty(),
+                transactionValidationParams))
         .isEqualTo(ValidationResult.valid());
   }
 
@@ -493,7 +514,11 @@ public class MainnetTransactionValidatorTest {
 
     assertThat(
             validator.validate(
-                transaction, 0L, basefee, Optional.empty(), transactionValidationParams))
+                transaction,
+                OptionalLong.empty(),
+                basefee,
+                Optional.empty(),
+                transactionValidationParams))
         .isEqualTo(ValidationResult.valid());
   }
 
@@ -520,7 +545,7 @@ public class MainnetTransactionValidatorTest {
     assertThat(
             validator.validate(
                 transaction,
-                0L,
+                OptionalLong.empty(),
                 Optional.of(Wei.ONE),
                 Optional.empty(),
                 TransactionValidationParams.transactionPool()))
@@ -546,7 +571,11 @@ public class MainnetTransactionValidatorTest {
             .createTransaction(senderKeys);
     var validationResult =
         validator.validate(
-            bigPayload, 0L, Optional.empty(), Optional.empty(), transactionValidationParams);
+            bigPayload,
+            OptionalLong.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            transactionValidationParams);
 
     assertThat(validationResult.isValid()).isFalse();
     assertThat(validationResult.getInvalidReason())
@@ -592,7 +621,11 @@ public class MainnetTransactionValidatorTest {
             .createTransaction(senderKeys);
     var validationResult =
         validator.validate(
-            blobTx, 0L, Optional.empty(), Optional.of(Wei.of(15)), transactionValidationParams);
+            blobTx,
+            OptionalLong.empty(),
+            Optional.empty(),
+            Optional.of(Wei.of(15)),
+            transactionValidationParams);
     if (!validationResult.isValid()) {
       System.out.println(
           validationResult.getInvalidReason() + " " + validationResult.getErrorMessage());
@@ -631,7 +664,11 @@ public class MainnetTransactionValidatorTest {
             .createTransaction(senderKeys);
     var validationResult =
         validator.validate(
-            blobTx, 0L, Optional.empty(), Optional.of(Wei.of(15)), transactionValidationParams);
+            blobTx,
+            OptionalLong.empty(),
+            Optional.empty(),
+            Optional.of(Wei.of(15)),
+            transactionValidationParams);
     if (!validationResult.isValid()) {
       System.out.println(
           validationResult.getInvalidReason() + " " + validationResult.getErrorMessage());

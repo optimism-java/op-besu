@@ -370,7 +370,7 @@ public class TransactionReceipt implements org.hyperledger.besu.plugin.data.Tran
       return new TransactionReceipt(
           transactionType,
           stateRoot,
-          0,
+          -1,
           cumulativeGas,
           logs,
           bloomFilter,

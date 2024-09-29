@@ -29,7 +29,6 @@ import static org.hyperledger.besu.ethereum.transaction.TransactionInvalidReason
 import static org.hyperledger.besu.ethereum.transaction.TransactionInvalidReason.TRANSACTION_REPLACEMENT_UNDERPRICED;
 import static org.hyperledger.besu.ethereum.transaction.TransactionInvalidReason.TX_FEECAP_EXCEEDED;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
@@ -561,11 +560,11 @@ public abstract class AbstractTransactionPoolTest {
     assertTransactionNotPending(transaction1);
     verify(transactionBroadcaster).onTransactionsAdded(singletonList(transaction0));
     verify(transactionValidatorFactory.get())
-        .validate(eq(transaction0), anyLong(), any(Optional.class), any(Optional.class), any());
+        .validate(eq(transaction0), any(), any(Optional.class), any(Optional.class), any());
     verify(transactionValidatorFactory.get())
         .validateForSender(eq(transaction0), eq(null), any(TransactionValidationParams.class));
     verify(transactionValidatorFactory.get())
-        .validate(eq(transaction1), anyLong(), any(Optional.class), any(Optional.class), any());
+        .validate(eq(transaction1), any(), any(Optional.class), any(Optional.class), any());
     verify(transactionValidatorFactory.get()).validateForSender(eq(transaction1), any(), any());
     verifyNoMoreInteractions(transactionValidatorFactory.get());
   }
@@ -738,7 +737,7 @@ public abstract class AbstractTransactionPoolTest {
 
     when(transactionValidatorFactory
             .get()
-            .validate(eq(transaction0), anyLong(), any(Optional.class), any(Optional.class), any()))
+            .validate(eq(transaction0), any(), any(Optional.class), any(Optional.class), any()))
         .thenReturn(valid());
     when(transactionValidatorFactory
             .get()
@@ -1372,7 +1371,7 @@ public abstract class AbstractTransactionPoolTest {
   protected void givenTransactionIsValid(final Transaction transaction) {
     when(transactionValidatorFactory
             .get()
-            .validate(eq(transaction), anyLong(), any(Optional.class), any(Optional.class), any()))
+            .validate(eq(transaction), any(), any(Optional.class), any(Optional.class), any()))
         .thenReturn(valid());
     when(transactionValidatorFactory
             .get()

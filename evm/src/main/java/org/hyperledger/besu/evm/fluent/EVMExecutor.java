@@ -520,7 +520,7 @@ public class EVMExecutor {
    */
   public static EVMExecutor fjord(
       final BigInteger chainId, final EvmConfiguration evmConfiguration) {
-    final EVMExecutor executor = new EVMExecutor(MainnetEVMs.cancun(chainId, evmConfiguration));
+    final EVMExecutor executor = new EVMExecutor(MainnetEVMs.fjord(chainId, evmConfiguration));
     executor.precompileContractRegistry =
         MainnetPrecompiledContracts.fjord(executor.evm.getGasCalculator());
     return executor;
@@ -535,7 +535,7 @@ public class EVMExecutor {
    */
   private static EVMExecutor granite(
       final BigInteger chainId, final EvmConfiguration evmConfiguration) {
-    final EVMExecutor executor = new EVMExecutor(MainnetEVMs.cancun(chainId, evmConfiguration));
+    final EVMExecutor executor = new EVMExecutor(MainnetEVMs.granite(chainId, evmConfiguration));
     executor.precompileContractRegistry =
         MainnetPrecompiledContracts.granite(executor.evm.getGasCalculator());
     return executor;
