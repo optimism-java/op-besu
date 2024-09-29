@@ -4,7 +4,7 @@ footer: |  # define the footer with markdown
 base:
   name: hyperledger/besu
   url: https://github.com/hyperledger/besu
-  hash: 86b9c38015590923c3c24d0599a17385c55c7332
+  hash: 58bb931efeab12f472ba7aee5f363fd0fcf4b141
 fork:
   name: optimism-java/op-besu
   url: https://github.com/optimism-java/op-besu
@@ -42,7 +42,9 @@ def:
                 estimated based on gas-price-oracle information and encoded tx size."
               globs:
                 - "datatypes/src/main/java/org/hyperledger/besu/datatypes/RollupGasData.java"
+                - "datatypes/src/test/java/org/hyperledger/besu/datatypes/RollupGasDataTest.java"
                 - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/L1CostCalculator.java"
+                - "ethereum/core/src/test/java/org/hyperledger/besu/ethereum/mainnet/L1CostCalculatorTest.java"
             - title: "Transaction processing"
               description: |
                 Deposit transactions have special processing rules: gas is pre-paid on L1,
@@ -116,6 +118,12 @@ def:
             It is used by the sequencer to deploy the sequencer contract.
           globs:
             - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/Create2DeployerFunction.java"
+        - title: "Precompiled Contracts"
+          description: |
+            The Precompiled Contracts is used on the L2.
+          globs:
+            - "evm/src/main/java/org/hyperledger/besu/evm/precompile/P256VerifyPrecompiledContract.java"
+            - "evm/src/main/java/org/hyperledger/besu/evm/precompile/AltBN128PairingPrecompiledContract.java"
     - title: "Chain Configuration"
       sub:
         - title: "Chain config"
@@ -154,6 +162,14 @@ ignore:
   - ".circleci/**/*"
   - "gradle/*"
   - "**/*.yml"
+  - ".github/actions/capture_test_logs/*"
+  - ".github/actions/capture_test_results/*"
+  - ".github/actions/prepare/*"
+  - ".github/actions/restore_gradle_cache/*"
+  - ".github/config/*"
+  - ".github/ISSUE_TEMPLATE/*"
+  - ".github/workflows/*"
+  - ".github/*"
   - "fork.yaml"
   - "README.md"
   - "evm/src/test/resources/org/hyperledger/besu/evm/precompile/p256Verify.json"
