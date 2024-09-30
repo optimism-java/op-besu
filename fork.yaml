@@ -122,8 +122,12 @@ def:
           description: |
             The Precompiled Contracts is used on the L2.
           globs:
+            - "evm/src/main/java/org/hyperledger/besu/evm/precompile/MainnetPrecompiledContracts.java"
             - "evm/src/main/java/org/hyperledger/besu/evm/precompile/P256VerifyPrecompiledContract.java"
             - "evm/src/main/java/org/hyperledger/besu/evm/precompile/AltBN128PairingPrecompiledContract.java"
+            - "evm/src/main/java/org/hyperledger/besu/evm/MainnetEVMs.java"
+            - "evm/src/main/java/org/hyperledger/besu/evm/fluent/EVMExecutor.java"
+            - "evm/src/test/java/org/hyperledger/besu/evm/precompile/P256VerifyPrecompiledContractTest.java"
     - title: "Chain Configuration"
       sub:
         - title: "Chain config"
@@ -151,6 +155,7 @@ def:
         - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/ProtocolSpecBuilder.java"
         - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/MainnetProtocolSpecs.java"
         - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/ClassicProtocolSpecs.java"
+        - "ethereum/core/src/main/java/org/hyperledger/besu/ethereum/mainnet/MainnetProtocolSpecFactory.java"
 
 
 
@@ -161,7 +166,6 @@ ignore:
   - ".gitignore"
   - ".circleci/**/*"
   - "gradle/*"
-  - "**/*.yml"
   - ".github/actions/capture_test_logs/*"
   - ".github/actions/capture_test_results/*"
   - ".github/actions/prepare/*"
