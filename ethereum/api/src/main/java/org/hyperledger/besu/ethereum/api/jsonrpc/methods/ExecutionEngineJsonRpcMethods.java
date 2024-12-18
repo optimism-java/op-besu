@@ -149,7 +149,7 @@ public class ExecutionEngineJsonRpcMethods extends ApiGroupJsonRpcMethods {
               new EnginePreparePayloadDebug(
                   consensusEngineServer, protocolContext, engineQosTimer, mergeCoordinator.get())));
 
-      if (protocolSchedule.anyMatch(p -> p.spec().getName().equalsIgnoreCase("cancun"))) {
+      if (protocolSchedule.anyMatch(p -> p.spec().getName().equalsIgnoreCase("cancun") || p.spec().getName().equalsIgnoreCase("canyon"))) {
         executionEngineApisSupported.add(
             new EngineGetPayloadV3(
                 consensusEngineServer,

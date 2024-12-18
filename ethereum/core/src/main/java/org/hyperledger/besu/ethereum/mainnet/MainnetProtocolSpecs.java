@@ -1252,7 +1252,8 @@ public abstract class MainnetProtocolSpecs {
                         TransactionType.ACCESS_LIST,
                         TransactionType.EIP1559,
                         TransactionType.OPTIMISM_DEPOSIT),
-                    evm.getEvmVersion().getMaxInitcodeSize()))
+                    evm.getEvmVersion().getMaxInitcodeSize(),
+                    genesisConfigOptions))
         .precompileContractRegistryBuilder(MainnetPrecompiledContractRegistries::granite)
         .blockHeaderValidatorBuilder(MainnetBlockHeaderValidator::cancunBlockHeaderValidator)
         .blockHashProcessor(new CancunBlockHashProcessor())
