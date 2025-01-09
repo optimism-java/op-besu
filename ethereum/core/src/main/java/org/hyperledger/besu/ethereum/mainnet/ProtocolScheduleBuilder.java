@@ -24,13 +24,7 @@ import org.hyperledger.besu.evm.internal.EvmConfiguration;
 import org.hyperledger.besu.plugin.services.MetricsSystem;
 
 import java.math.BigInteger;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.OptionalLong;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -145,11 +139,11 @@ public class ProtocolScheduleBuilder {
 
     validateForkOrdering();
 
-    final List<BuilderMapEntry> mileStones;
+    List<BuilderMapEntry> mileStones = createMilestones(specFactory);
     if (config.isOptimism()) {
-      mileStones = createOpMileStones(specFactory);
-    } else {
-      mileStones = createMilestones(specFactory);
+      final List<BuilderMapEntry> tmpMileStones = new ArrayList<>(mileStones);
+      tmpMileStones.addAll(createOpMileStones(specFactory));
+      mileStones = Collections.unmodifiableList(tmpMileStones);
     }
     final Map<HardforkId, Long> completeMileStoneList = buildFullMilestoneMap(mileStones);
     protocolSchedule.setMilestones(completeMileStoneList);
