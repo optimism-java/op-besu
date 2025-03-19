@@ -1024,7 +1024,7 @@ public abstract class MainnetProtocolSpecs {
                     (BaseFeeMarket) feeMarket))
         .blockBodyValidatorBuilder(BaseFeeBlockBodyValidator::new)
         .genesisConfigOptions(Optional.of(genesisConfigOptions))
-        .withdrawalsValidator(new WithdrawalsValidator.AllowedWithdrawals())
+        .withdrawalsValidator(new WithdrawalsValidator.NotApplicableWithdrawals())
         .name("Regolith");
   }
 
