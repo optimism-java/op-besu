@@ -147,18 +147,10 @@ public class ExecutionEngineJsonRpcMethods extends ApiGroupJsonRpcMethods {
               new EngineExchangeCapabilities(
                   consensusEngineServer, protocolContext, engineQosTimer),
               new EnginePreparePayloadDebug(
-                  consensusEngineServer, protocolContext, engineQosTimer, mergeCoordinator.get())));
-
-      if (protocolSchedule.anyMatch(p -> p.spec().getName().equalsIgnoreCase("cancun"))) {
-        executionEngineApisSupported.add(
-            new EngineGetPayloadV3(
-                consensusEngineServer,
-                protocolContext,
-                mergeCoordinator.get(),
-                blockResultFactory,
-                engineQosTimer,
-                protocolSchedule));
-      }
+                  consensusEngineServer, protocolContext, engineQosTimer, mergeCoordinator.get()),
+              new EngineGetPayloadV3(
+                  consensusEngineServer, protocolContext, mergeCoordinator.get(), blockResultFactory, engineQosTimer,
+                  protocolSchedule)));
 
       if (protocolSchedule.anyMatch(p -> p.spec().getName().equalsIgnoreCase("prague"))) {
         executionEngineApisSupported.add(

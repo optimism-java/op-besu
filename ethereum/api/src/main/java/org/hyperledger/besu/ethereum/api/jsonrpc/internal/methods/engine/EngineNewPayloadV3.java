@@ -76,6 +76,9 @@ public class EngineNewPayloadV3 extends AbstractEngineNewPayload {
 
   @Override
   protected ValidationResult<RpcErrorType> validateForkSupported(final long blockTimestamp) {
+    if (this.mergeContext.get().isOptimism()) {
+      return ValidationResult.valid();
+    }
     return ForkSupportHelper.validateForkSupported(CANCUN, cancunMilestone, blockTimestamp);
   }
 }

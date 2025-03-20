@@ -68,6 +68,9 @@ public class EngineGetPayloadV3 extends AbstractEngineGetPayload {
 
   @Override
   protected ValidationResult<RpcErrorType> validateForkSupported(final long blockTimestamp) {
+    if (this.mergeContext.get().isOptimism()) {
+      return ValidationResult.valid();
+    }
     return ForkSupportHelper.validateForkSupported(CANCUN, cancunMilestone, blockTimestamp);
   }
 }

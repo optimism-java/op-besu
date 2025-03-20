@@ -35,7 +35,6 @@ import java.util.Optional;
 import io.vertx.core.Vertx;
 
 public class EngineNewPayloadV2 extends AbstractEngineNewPayload {
-  private final Optional<Long> cancunMilestone;
 
   public EngineNewPayloadV2(
       final Vertx vertx,
@@ -45,7 +44,6 @@ public class EngineNewPayloadV2 extends AbstractEngineNewPayload {
       final EthPeers ethPeers,
       final EngineCallListener engineCallListener) {
     super(vertx, protocolSchedule, protocolContext, mergeCoordinator, ethPeers, engineCallListener);
-    cancunMilestone = protocolSchedule.milestoneFor(CANCUN);
   }
 
   @Override
@@ -81,10 +79,6 @@ public class EngineNewPayloadV2 extends AbstractEngineNewPayload {
 
   @Override
   protected ValidationResult<RpcErrorType> validateForkSupported(final long blockTimestamp) {
-    if (cancunMilestone.isPresent() && blockTimestamp >= cancunMilestone.get()) {
-      return ValidationResult.invalid(RpcErrorType.UNSUPPORTED_FORK);
-    }
-
     return ValidationResult.valid();
   }
 }

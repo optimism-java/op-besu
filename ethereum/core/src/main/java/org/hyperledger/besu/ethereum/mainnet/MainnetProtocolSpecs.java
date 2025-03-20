@@ -1102,6 +1102,7 @@ public abstract class MainnetProtocolSpecs {
         .precompileContractRegistryBuilder(MainnetPrecompiledContractRegistries::cancun)
         .blockHeaderValidatorBuilder(MainnetBlockHeaderValidator::cancunBlockHeaderValidator)
         .blockHashProcessor(new CancunBlockHashProcessor())
+        .genesisConfigOptions(Optional.of(genesisConfigOptions))
         .name("Canyon");
   }
 
@@ -1179,6 +1180,7 @@ public abstract class MainnetProtocolSpecs {
         .precompileContractRegistryBuilder(MainnetPrecompiledContractRegistries::fjord)
         .blockHeaderValidatorBuilder(MainnetBlockHeaderValidator::cancunBlockHeaderValidator)
         .blockHashProcessor(new CancunBlockHashProcessor())
+        .genesisConfigOptions(Optional.of(genesisConfigOptions))
         .name("Fjord");
   }
 
@@ -1256,6 +1258,7 @@ public abstract class MainnetProtocolSpecs {
         .precompileContractRegistryBuilder(MainnetPrecompiledContractRegistries::granite)
         .blockHeaderValidatorBuilder(MainnetBlockHeaderValidator::cancunBlockHeaderValidator)
         .blockHashProcessor(new CancunBlockHashProcessor())
+        .genesisConfigOptions(Optional.of(genesisConfigOptions))
         .name("Granite");
   }
 
