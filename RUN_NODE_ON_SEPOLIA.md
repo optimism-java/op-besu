@@ -81,18 +81,58 @@ Just need to modify the access permissions of `data_sepolia` to fix it:
 sudo chmod 777 data_sepolia -R
 ```
 
-2. Run a hildr
+2. Run a op-node
+
+pull docker image:
+
+```shell
+docker pull us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.12.2
+```
+
+get IP of the op-besu container, and op-node or hildr container will use it to connect to op-besu via the docker bridge:
+
+```bash
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' op-besu
+```
+
+Run a op-node:
+```shell
+docker run -d -it --name op-node -p 11545:11545 \
+-v ./jwt.txt:/jwt/jwt.txt \
+--entrypoint op-node \
+us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.12.2 \
+--network op-sepolia \
+--l1.rpckind=basic \
+--l1=<l1-rpc-url> \
+--l2=<op-besu-engine-rpc-url> \
+--rpc.addr=0.0.0.0 \
+--rpc.port=11545 \
+--l2.jwt-secret=/jwt/jwt.txt \
+--l1.trustrpc \
+--l1.beacon=<l1-beacon-sepolia-rpc-url> \
+--syncmode=consensus-layer
+```
+
+The synchronization needs to handle empty messages at the beginning, and the actual block synchronization will take place about 10 minutes later.
+
+Use curl get block data from op-besu:
+
+```bash
+curl --request POST 'http://localhost:8545' \
+--header 'Content-Type: application/json' \
+--data-raw '{"id":2, "jsonrpc":"2.0", "method": "eth_getBlockByNumber", "params":["0xe", true]}'
+```
+
+You can confirm whether the block and transaction information is correct through the [Sepolia network's blockchain explorer](https://sepolia-optimism.etherscan.io/).
+
+3. Or run a hildr
+
+Hildr is just can run on amd64 architecture.
 
 pull docker image:
 
 ```shell
 docker pull ghcr.io/optimism-java/hildr:latest
-```
-
-get IP of the op-besu container, and hildr container will use it to connect to op-besu via the docker bridge:
-
-```bash
-docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' op-besu
 ```
 
 run a hildr node:
@@ -112,15 +152,3 @@ ghcr.io/optimism-java/hildr:latest \
 --log-level INFO \
 --sync-mode full
 ```
-
-The synchronization needs to handle empty messages at the beginning, and the actual block synchronization will take place about 10 minutes later.
-
-Use curl get block data from op-besu:
-
-```bash
-curl --request POST 'https://localhost:8545' \
---header 'Content-Type: application/json' \
---data-raw '{"id":2, "jsonrpc":"2.0", "method": "eth_getBlockByNumber", "params":["0xe", true]}'
-```
-
-You can confirm whether the block and transaction information is correct through the Sepolia network's blockchain explorer.
