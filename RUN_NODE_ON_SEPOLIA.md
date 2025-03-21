@@ -120,7 +120,7 @@ Use curl get block data from op-besu:
 ```bash
 curl --request POST 'http://localhost:8545' \
 --header 'Content-Type: application/json' \
---data-raw '{"id":2, "jsonrpc":"2.0", "method": "eth_getBlockByNumber", "params":["0xe", true]}'
+--data-raw '{"id":2, "jsonrpc":"2.0", "method": "eth_getBlockByNumber", "params":["latest", true]}'
 ```
 
 You can confirm whether the block and transaction information is correct through the [Sepolia network's blockchain explorer](https://sepolia-optimism.etherscan.io/).
